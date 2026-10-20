@@ -6,6 +6,8 @@ export const colors = {
   textRed: "#D9323B",
   surface: "#FFFFFF",
   surfaceTransparent: "rgba(255, 255, 255, 0)",
+  background: "#E9EEF6",
+  backgroundTransparent: "rgba(233, 238, 246, 0)",
   longFillStart: "#14BF62",
   longFillEnd: "#10AA56",
   shortFillStart: "#FF6970",

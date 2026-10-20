@@ -1,11 +1,16 @@
 import { BlurTargetView } from "expo-blur";
 import { useRef, useState, type ComponentRef } from "react";
-import { FlatList, View, type ListRenderItemInfo } from "react-native";
+import { View, type ListRenderItemInfo } from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FeedFilters } from "../components/feed/FeedFilters";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
+import { HeaderFade } from "../components/header/HeaderFade";
 import { PriceSection } from "../components/price/PriceSection";
 import { TabBar } from "../components/tabs/TabBar";
 import { TRADE_BAR_HEIGHT, TradeBar } from "../components/trade/TradeBar";
@@ -33,6 +38,11 @@ export function AssetDetailScreen() {
   const market = solPerpMarket;
   const insets = useSafeAreaInsets();
   const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
+  const scrollY = useSharedValue(0);
+
+  const handleScroll = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isFollowingOnly, setIsFollowingOnly] = useState(true);
 
@@ -50,51 +60,58 @@ export function AssetDetailScreen() {
 
   return (
     <View className="flex-1 bg-background">
-      {/* Android only blurs what is inside a BlurTargetView, so the content is wrapped for the trade bar. */}
-      <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
-        <FlatList
-          contentContainerStyle={{
-            paddingBottom: insets.bottom + TRADE_BAR_HEIGHT,
-          }}
-          data={traderPosts}
-          keyExtractor={keyExtractor}
-          renderItem={renderPost}
-          ItemSeparatorComponent={CardSeparator}
-          showsVerticalScrollIndicator={false}
-          ListHeaderComponent={
-            <View className="gap-6 pb-4">
-              <AssetHeader
-                symbol={market.symbol}
-                assetName={market.assetName}
-                assetIcon={market.assetIcon}
-                exchangeIcon={market.exchangeIcon}
-                onBack={handleBack}
-                onShare={handleShare}
-                onNotify={handleNotify}
-              />
-              <PriceSection
-                price={market.price}
-                openPrice={market.openPrice}
-                timeframe={market.timeframe}
-                metrics={market.metrics}
-                initialMetric={market.initialMetric}
-              />
-              <View className="gap-4">
-                <TabBar
-                  tabs={assetTabs}
-                  activeIndex={activeTabIndex}
-                  onChange={setActiveTabIndex}
-                />
-                <FeedFilters
-                  isFollowingOnly={isFollowingOnly}
-                  onFollowingOnlyChange={setIsFollowingOnly}
-                  onSortPress={handleSortPress}
-                />
-              </View>
-            </View>
-          }
+      <View className="pb-3">
+        <AssetHeader
+          symbol={market.symbol}
+          assetName={market.assetName}
+          assetIcon={market.assetIcon}
+          exchangeIcon={market.exchangeIcon}
+          onBack={handleBack}
+          onShare={handleShare}
+          onNotify={handleNotify}
         />
-      </BlurTargetView>
+      </View>
+
+      <View className="flex-1">
+        <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
+          <Animated.FlatList
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + TRADE_BAR_HEIGHT,
+            }}
+            data={traderPosts}
+            keyExtractor={keyExtractor}
+            renderItem={renderPost}
+            ItemSeparatorComponent={CardSeparator}
+            showsVerticalScrollIndicator={false}
+            onScroll={handleScroll}
+            scrollEventThrottle={16}
+            ListHeaderComponent={
+              <View className="gap-6 pb-4 pt-3">
+                <PriceSection
+                  price={market.price}
+                  openPrice={market.openPrice}
+                  timeframe={market.timeframe}
+                  metrics={market.metrics}
+                  initialMetric={market.initialMetric}
+                />
+                <View className="gap-4">
+                  <TabBar
+                    tabs={assetTabs}
+                    activeIndex={activeTabIndex}
+                    onChange={setActiveTabIndex}
+                  />
+                  <FeedFilters
+                    isFollowingOnly={isFollowingOnly}
+                    onFollowingOnlyChange={setIsFollowingOnly}
+                    onSortPress={handleSortPress}
+                  />
+                </View>
+              </View>
+            }
+          />
+        </BlurTargetView>
+        <HeaderFade blurTarget={blurTargetRef} scrollY={scrollY} />
+      </View>
 
       <TradeBar
         blurTarget={blurTargetRef}
