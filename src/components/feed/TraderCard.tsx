@@ -4,15 +4,19 @@ import { Text, View } from "react-native";
 import { surfaces } from "../../theme/surfaces";
 import type { TraderPost } from "../../types/traderPost";
 import { CommentIcon } from "../icons/CommentIcon";
-import { HeartIcon } from "../icons/HeartIcon";
+import { LikeButton } from "../ui/LikeButton";
 import { PositionStats } from "./PositionStats";
 import { TraderSummary } from "./TraderSummary";
 
 type TraderCardProps = {
   post: TraderPost;
+  onLikePress: (postId: string) => void;
 };
 
-export const TraderCard = memo(function TraderCard({ post }: TraderCardProps) {
+export const TraderCard = memo(function TraderCard({
+  post,
+  onLikePress,
+}: TraderCardProps) {
   return (
     <View className="gap-3 rounded-3xl bg-surface p-4" style={surfaces.card}>
       <TraderSummary post={post} />
@@ -30,16 +34,12 @@ export const TraderCard = memo(function TraderCard({ post }: TraderCardProps) {
 
       <View className="flex-row items-center justify-between">
         <View className="flex-row items-center gap-1">
-          <View
-            className={`h-6 flex-row items-center gap-1 rounded-full pl-2 pr-1 ${post.isLiked ? "bg-like/10" : "bg-pill"}`}
-          >
-            <Text
-              className={`font-sans text-xs font-bold tabular-nums leading-4 ${post.isLiked ? "text-like" : "text-text-tertiary"}`}
-            >
-              {post.likes}
-            </Text>
-            <HeartIcon isFilled={post.isLiked} />
-          </View>
+          <LikeButton
+            likes={post.likes}
+            isLiked={post.isLiked}
+            accessibilityLabel={`Like post by ${post.traderName}`}
+            onPress={() => onLikePress(post.id)}
+          />
 
           <View className="h-6 flex-row items-center gap-1 rounded-full bg-pill pl-2 pr-1.5">
             <Text className="font-sans text-xs font-bold leading-4 text-text-tertiary">

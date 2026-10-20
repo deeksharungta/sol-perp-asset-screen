@@ -1,6 +1,6 @@
 import { BlurTargetView } from "expo-blur";
-import { useRef, useState, type ComponentRef } from "react";
-import { View, type ListRenderItemInfo } from "react-native";
+import { useCallback, useRef, useState, type ComponentRef } from "react";
+import { View, type ListRenderItem } from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -22,14 +22,6 @@ const assetTabs = ["Feed", "Holders", "About"];
 
 const keyExtractor = (post: TraderPost) => post.id;
 
-function renderPost({ item }: ListRenderItemInfo<TraderPost>) {
-  return (
-    <View className="px-4">
-      <TraderCard post={item} />
-    </View>
-  );
-}
-
 function CardSeparator() {
   return <View className="h-2" />;
 }
@@ -45,6 +37,31 @@ export function AssetDetailScreen() {
   });
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isFollowingOnly, setIsFollowingOnly] = useState(true);
+  const [posts, setPosts] = useState(traderPosts);
+
+  // Only the tapped post gets a new object, so only its memoized card re-renders.
+  const handleLikePress = useCallback((postId: string) => {
+    setPosts((currentPosts) =>
+      currentPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked: !post.isLiked,
+              likes: post.likes + (post.isLiked ? -1 : 1),
+            }
+          : post,
+      ),
+    );
+  }, []);
+
+  const renderPost: ListRenderItem<TraderPost> = useCallback(
+    ({ item }) => (
+      <View className="px-4">
+        <TraderCard post={item} onLikePress={handleLikePress} />
+      </View>
+    ),
+    [handleLikePress],
+  );
 
   const handleBack = () => {};
 
@@ -78,7 +95,7 @@ export function AssetDetailScreen() {
             contentContainerStyle={{
               paddingBottom: insets.bottom + TRADE_BAR_HEIGHT,
             }}
-            data={traderPosts}
+            data={posts}
             keyExtractor={keyExtractor}
             renderItem={renderPost}
             ItemSeparatorComponent={CardSeparator}
