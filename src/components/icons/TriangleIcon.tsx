@@ -3,14 +3,22 @@ import Svg, { Path } from "react-native-svg";
 type TriangleIconProps = {
   direction: "up" | "down";
   color: string;
+  width?: number;
+  height?: number;
 };
 
-export function TriangleIcon({ direction, color }: TriangleIconProps) {
+export function TriangleIcon({
+  direction,
+  color,
+  width = 6,
+  height = 5,
+}: TriangleIconProps) {
   return (
     <Svg
-      width={6}
-      height={5}
+      width={width}
+      height={height}
       viewBox="0 0 6 5"
+      preserveAspectRatio="none"
       fill="none"
       style={{
         transform: [{ rotate: direction === "up" ? "0deg" : "180deg" }],
