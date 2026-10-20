@@ -1,6 +1,7 @@
 export const colors = {
   textPrimary: "#22242A",
   textSecondary: "#22242AA3",
+  textTertiary: "#22242A7A",
   textGreen: "#0FAA55",
   textRed: "#D9323B",
   surface: "#FFFFFF",
@@ -9,6 +10,8 @@ export const colors = {
   longFillEnd: "#10AA56",
   shortFillStart: "#FF6970",
   shortFillEnd: "#FC454E",
+  like: "#FC454E",
+  verified: "#5281F8",
   accent: "#2398FF",
   toggleOff: "rgba(0, 0, 0, 0.1)",
   knobOutline: "rgba(0, 0, 0, 0.04)",

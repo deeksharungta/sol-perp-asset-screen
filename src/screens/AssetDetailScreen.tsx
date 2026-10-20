@@ -1,18 +1,37 @@
 import { BlurTargetView } from "expo-blur";
 import { useRef, useState, type ComponentRef } from "react";
-import { View } from "react-native";
+import { FlatList, View, type ListRenderItemInfo } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { FeedFilters } from "../components/feed/FeedFilters";
+import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
 import { PriceSection } from "../components/price/PriceSection";
 import { TabBar } from "../components/tabs/TabBar";
-import { TradeBar } from "../components/trade/TradeBar";
+import { TRADE_BAR_HEIGHT, TradeBar } from "../components/trade/TradeBar";
 import { solPerpMarket } from "../data/market";
+import { traderPosts } from "../data/traderPosts";
+import type { TraderPost } from "../types/traderPost";
 
 const assetTabs = ["Feed", "Holders", "About"];
 
+const keyExtractor = (post: TraderPost) => post.id;
+
+function renderPost({ item }: ListRenderItemInfo<TraderPost>) {
+  return (
+    <View className="px-4">
+      <TraderCard post={item} />
+    </View>
+  );
+}
+
+function CardSeparator() {
+  return <View className="h-2" />;
+}
+
 export function AssetDetailScreen() {
   const market = solPerpMarket;
+  const insets = useSafeAreaInsets();
   const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isFollowingOnly, setIsFollowingOnly] = useState(true);
@@ -33,36 +52,48 @@ export function AssetDetailScreen() {
     <View className="flex-1 bg-background">
       {/* Android only blurs what is inside a BlurTargetView, so the content is wrapped for the trade bar. */}
       <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
-        <View className="flex-1 gap-6">
-          <AssetHeader
-            symbol={market.symbol}
-            assetName={market.assetName}
-            assetIcon={market.assetIcon}
-            exchangeIcon={market.exchangeIcon}
-            onBack={handleBack}
-            onShare={handleShare}
-            onNotify={handleNotify}
-          />
-          <PriceSection
-            price={market.price}
-            openPrice={market.openPrice}
-            timeframe={market.timeframe}
-            metrics={market.metrics}
-            initialMetric={market.initialMetric}
-          />
-          <View className="gap-4">
-            <TabBar
-              tabs={assetTabs}
-              activeIndex={activeTabIndex}
-              onChange={setActiveTabIndex}
-            />
-            <FeedFilters
-              isFollowingOnly={isFollowingOnly}
-              onFollowingOnlyChange={setIsFollowingOnly}
-              onSortPress={handleSortPress}
-            />
-          </View>
-        </View>
+        <FlatList
+          contentContainerStyle={{
+            paddingBottom: insets.bottom + TRADE_BAR_HEIGHT,
+          }}
+          data={traderPosts}
+          keyExtractor={keyExtractor}
+          renderItem={renderPost}
+          ItemSeparatorComponent={CardSeparator}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={
+            <View className="gap-6 pb-4">
+              <AssetHeader
+                symbol={market.symbol}
+                assetName={market.assetName}
+                assetIcon={market.assetIcon}
+                exchangeIcon={market.exchangeIcon}
+                onBack={handleBack}
+                onShare={handleShare}
+                onNotify={handleNotify}
+              />
+              <PriceSection
+                price={market.price}
+                openPrice={market.openPrice}
+                timeframe={market.timeframe}
+                metrics={market.metrics}
+                initialMetric={market.initialMetric}
+              />
+              <View className="gap-4">
+                <TabBar
+                  tabs={assetTabs}
+                  activeIndex={activeTabIndex}
+                  onChange={setActiveTabIndex}
+                />
+                <FeedFilters
+                  isFollowingOnly={isFollowingOnly}
+                  onFollowingOnlyChange={setIsFollowingOnly}
+                  onSortPress={handleSortPress}
+                />
+              </View>
+            </View>
+          }
+        />
       </BlurTargetView>
 
       <TradeBar

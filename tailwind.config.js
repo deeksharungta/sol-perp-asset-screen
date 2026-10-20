@@ -10,6 +10,7 @@ module.exports = {
         pill: "#22242A0A",
         "text-primary": "#22242A",
         "text-secondary": "#22242AA3",
+        "text-tertiary": "#22242A7A",
         "text-on-color": "#FFFFFF",
         "text-green": "#0FAA55",
         "text-red": "#D9323B",
