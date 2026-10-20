@@ -1,6 +1,6 @@
 import { BlurTargetView } from "expo-blur";
 import { useCallback, useRef, useState, type ComponentRef } from "react";
-import { View, type ListRenderItem } from "react-native";
+import { Share, View, type ListRenderItem } from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -18,6 +18,7 @@ import { TRADE_BAR_HEIGHT, TradeBar } from "../components/trade/TradeBar";
 import { solPerpMarket } from "../data/market";
 import { traderPosts } from "../data/traderPosts";
 import type { TraderPost } from "../types/traderPost";
+import { formatUsd } from "../utils/format";
 
 const assetTabs = ["Feed", "Holders", "About"];
 
@@ -66,7 +67,11 @@ export function AssetDetailScreen() {
 
   const handleBack = () => {};
 
-  const handleShare = () => {};
+  const handleShare = () => {
+    Share.share({
+      message: `${market.symbol} is trading at ${formatUsd(market.price)}`,
+    });
+  };
 
   const handleNotify = () => {};
 
