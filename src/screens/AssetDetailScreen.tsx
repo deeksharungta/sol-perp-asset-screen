@@ -1,10 +1,12 @@
 import { View } from "react-native";
 
-import hyperliquidIcon from "../../assets/images/hyperliquid.png";
-import solanaIcon from "../../assets/images/solana.png";
 import { AssetHeader } from "../components/header/AssetHeader";
+import { PriceSection } from "../components/price/PriceSection";
+import { solPerpMarket } from "../data/market";
 
 export function AssetDetailScreen() {
+  const market = solPerpMarket;
+
   const handleBack = () => {};
 
   const handleShare = () => {};
@@ -12,15 +14,22 @@ export function AssetDetailScreen() {
   const handleNotify = () => {};
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 gap-6 bg-background">
       <AssetHeader
-        symbol="SOL-PERP"
-        assetName="Solana"
-        assetIcon={solanaIcon}
-        exchangeIcon={hyperliquidIcon}
+        symbol={market.symbol}
+        assetName={market.assetName}
+        assetIcon={market.assetIcon}
+        exchangeIcon={market.exchangeIcon}
         onBack={handleBack}
         onShare={handleShare}
         onNotify={handleNotify}
+      />
+      <PriceSection
+        price={market.price}
+        openPrice={market.openPrice}
+        timeframe={market.timeframe}
+        metrics={market.metrics}
+        initialMetric={market.initialMetric}
       />
     </View>
   );
