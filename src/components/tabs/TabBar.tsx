@@ -54,10 +54,7 @@ export function TabBar({ tabs, activeIndex, onChange }: TabBarProps) {
         })}
       </View>
       <View onLayout={handleLayout} className="h-0.5 bg-black/10">
-        <Animated.View
-          className="absolute left-0 top-0 h-0.5 bg-accent"
-          style={indicatorStyle}
-        />
+        <Animated.View className="h-full bg-accent" style={indicatorStyle} />
       </View>
     </View>
   );

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable } from "react-native";
 
-import { colors } from "../../theme/colors";
+import { surfaces } from "../../theme/surfaces";
 
 type IconButtonProps = {
   icon: ReactNode;
@@ -21,16 +21,9 @@ export function IconButton({
       accessibilityLabel={accessibilityLabel}
       hitSlop={4}
       className="h-9 w-9 items-center justify-center rounded-full"
-      style={styles.glass}
+      style={surfaces.glass}
     >
       {icon}
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  glass: {
-    backgroundImage: `linear-gradient(to bottom, ${colors.glassFillStart}, ${colors.glassFillEnd})`,
-    boxShadow: `inset 0 -6px 12px 0 ${colors.glassInnerHighlight}, 0 2px 12px 0 ${colors.glassDropShadow}`,
-  },
-});
