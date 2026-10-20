@@ -9,7 +9,6 @@ export type Market = {
   exchangeIcon: ImageSourcePropType;
   price: number;
   openPrice: number;
-  timeframe: string;
   metrics: Metric[];
   initialMetric: Metric;
 };

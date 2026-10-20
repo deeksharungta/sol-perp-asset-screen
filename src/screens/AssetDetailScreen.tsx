@@ -7,7 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { CandleChart } from "../components/chart/CandleChart";
+import { ChartSection } from "../components/chart/ChartSection";
 import { FeedFilters } from "../components/feed/FeedFilters";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
@@ -15,8 +15,10 @@ import { HeaderFade } from "../components/header/HeaderFade";
 import { PriceSection } from "../components/price/PriceSection";
 import { TabBar } from "../components/tabs/TabBar";
 import { TRADE_BAR_HEIGHT, TradeBar } from "../components/trade/TradeBar";
+import { candlesByTimeframe } from "../data/candles";
 import { solPerpMarket } from "../data/market";
 import { traderPosts } from "../data/traderPosts";
+import type { Timeframe } from "../types/candle";
 import type { TraderPost } from "../types/traderPost";
 import { formatUsd } from "../utils/format";
 
@@ -37,6 +39,8 @@ export function AssetDetailScreen() {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
+  const [timeframe, setTimeframe] = useState<Timeframe>("1D");
+  const candles = candlesByTimeframe[timeframe];
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isFollowingOnly, setIsFollowingOnly] = useState(true);
   const [posts, setPosts] = useState(traderPosts);
@@ -112,12 +116,16 @@ export function AssetDetailScreen() {
               <View className="gap-6 pb-4 pt-3">
                 <PriceSection
                   price={market.price}
-                  openPrice={market.openPrice}
-                  timeframe={market.timeframe}
+                  openPrice={candles[0].open}
+                  timeframe={timeframe}
                   metrics={market.metrics}
                   initialMetric={market.initialMetric}
                 />
-                <CandleChart />
+                <ChartSection
+                  candles={candles}
+                  timeframe={timeframe}
+                  onTimeframeChange={setTimeframe}
+                />
                 <View className="gap-4">
                   <TabBar
                     tabs={assetTabs}

@@ -9,7 +9,6 @@ export const solPerpMarket: Market = {
   exchangeIcon: hyperliquidIcon,
   price: 171.2,
   openPrice: 163.77,
-  timeframe: "1D",
   metrics: [
     { label: "Open interest", value: 3_260_000_000 },
     { label: "24h volume", value: 4_050_000_000 },

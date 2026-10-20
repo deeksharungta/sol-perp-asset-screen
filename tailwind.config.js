@@ -20,6 +20,10 @@ module.exports = {
         "price-line-red": "#F63841",
       },
 
+      fontSize: {
+        "2xs": ["10px", { lineHeight: "13px", letterSpacing: "0.1px" }],
+      },
+
       fontFamily: {
         // iOS system rounded design (SF Pro Rounded); Android falls back to its default font.
         sans: ["ui-rounded", "system-ui", "sans-serif"],

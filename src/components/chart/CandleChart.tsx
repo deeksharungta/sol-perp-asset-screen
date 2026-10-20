@@ -1,47 +1,61 @@
-import { Canvas, Path, Skia } from "@shopify/react-native-skia";
+import {
+  Canvas,
+  DashPathEffect,
+  Line,
+  Path,
+  Skia,
+  vec,
+} from "@shopify/react-native-skia";
 import { memo } from "react";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { useDerivedValue, useSharedValue } from "react-native-reanimated";
 
-import { candlesByTimeframe } from "../../data/candles";
 import { colors } from "../../theme/colors";
-import { indexToX, priceToY } from "../../utils/chartMath";
+import type { Candle, ChartType, Timeframe } from "../../types/candle";
+import { getPriceRange, indexToX, priceToY } from "../../utils/chartMath";
+import { formatUsd } from "../../utils/format";
+import { PriceAxis } from "./PriceAxis";
 
+const PLOT_HEIGHT = 176;
 const AXIS_WIDTH = 70;
+const AXIS_RIGHT_INSET = 12;
 const CANDLE_GAP = 1.5;
 const WICK_WIDTH = 1;
-const PRICE_PADDING = 0.08;
+const LINE_WIDTH = 2;
 
-export const CandleChart = memo(function CandleChart() {
+type CandleChartProps = {
+  candles: Candle[];
+  timeframe: Timeframe;
+  chartType: ChartType;
+};
+
+export const CandleChart = memo(function CandleChart({
+  candles,
+  timeframe,
+  chartType,
+}: CandleChartProps) {
   const canvasSize = useSharedValue({ width: 0, height: 0 });
-  const candles = useSharedValue(candlesByTimeframe["1D"]);
+  const { minPrice, maxPrice, step } = getPriceRange(candles);
+  const lastClose = candles[candles.length - 1].close;
+  const isUp = lastClose >= candles[0].open;
+  const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
+  const lastCloseY = priceToY(lastClose, minPrice, maxPrice, PLOT_HEIGHT);
 
   const paths = useDerivedValue(() => {
-    const { width, height } = canvasSize.value;
-    const data = candles.value;
-    const candleStep = (width - AXIS_WIDTH) / data.length;
+    const candleStep = (canvasSize.value.width - AXIS_WIDTH) / candles.length;
     const bodyWidth = candleStep - CANDLE_GAP;
-
-    let minPrice = Infinity;
-    let maxPrice = -Infinity;
-    for (const candle of data) {
-      minPrice = Math.min(minPrice, candle.low);
-      maxPrice = Math.max(maxPrice, candle.high);
-    }
-    const padding = (maxPrice - minPrice) * PRICE_PADDING;
-    minPrice -= padding;
-    maxPrice += padding;
 
     const greenCandles = Skia.PathBuilder.Make();
     const redCandles = Skia.PathBuilder.Make();
+    const closeLine = Skia.PathBuilder.Make();
 
-    data.forEach((candle, index) => {
+    candles.forEach((candle, index) => {
       const path = candle.close >= candle.open ? greenCandles : redCandles;
       const x = indexToX(index, candleStep);
-      const openY = priceToY(candle.open, minPrice, maxPrice, height);
-      const closeY = priceToY(candle.close, minPrice, maxPrice, height);
-      const highY = priceToY(candle.high, minPrice, maxPrice, height);
-      const lowY = priceToY(candle.low, minPrice, maxPrice, height);
+      const openY = priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT);
+      const closeY = priceToY(candle.close, minPrice, maxPrice, PLOT_HEIGHT);
+      const highY = priceToY(candle.high, minPrice, maxPrice, PLOT_HEIGHT);
+      const lowY = priceToY(candle.low, minPrice, maxPrice, PLOT_HEIGHT);
 
       path.addRect({
         x: x - bodyWidth / 2,
@@ -55,23 +69,72 @@ export const CandleChart = memo(function CandleChart() {
         width: WICK_WIDTH,
         height: lowY - highY,
       });
+
+      if (index === 0) {
+        closeLine.moveTo(x, closeY);
+      } else {
+        closeLine.lineTo(x, closeY);
+      }
     });
 
     return {
       greenCandles: greenCandles.detach(),
       redCandles: redCandles.detach(),
+      closeLine: closeLine.detach(),
     };
   });
 
   const greenCandles = useDerivedValue(() => paths.value.greenCandles);
   const redCandles = useDerivedValue(() => paths.value.redCandles);
+  const closeLine = useDerivedValue(() => paths.value.closeLine);
+  const priceLineEnd = useDerivedValue(() =>
+    vec(canvasSize.value.width - AXIS_RIGHT_INSET, lastCloseY),
+  );
 
   return (
-    <View className="h-48">
-      <Canvas style={{ flex: 1 }} onSize={canvasSize}>
-        <Path path={greenCandles} color={colors.priceLineGreen} />
-        <Path path={redCandles} color={colors.priceLineRed} />
-      </Canvas>
+    <View
+      accessible
+      accessibilityLabel={`SOL price chart, ${timeframe}, last ${formatUsd(lastClose)}`}
+      className="py-2"
+    >
+      <View style={{ height: PLOT_HEIGHT }}>
+        <Canvas style={StyleSheet.absoluteFill} onSize={canvasSize}>
+          {chartType === "candles" ? (
+            <>
+              <Path path={greenCandles} color={colors.priceLineGreen} />
+              <Path path={redCandles} color={colors.priceLineRed} />
+            </>
+          ) : (
+            <Path
+              path={closeLine}
+              color={priceColor}
+              style="stroke"
+              strokeWidth={LINE_WIDTH}
+              strokeJoin="round"
+              strokeCap="round"
+            />
+          )}
+          <Line
+            p1={vec(0, lastCloseY)}
+            p2={priceLineEnd}
+            color={priceColor}
+            strokeWidth={1}
+            opacity={0.5}
+          >
+            <DashPathEffect intervals={[4, 4]} />
+          </Line>
+        </Canvas>
+
+        <PriceAxis
+          minPrice={minPrice}
+          maxPrice={maxPrice}
+          step={step}
+          lastClose={lastClose}
+          lastCloseY={lastCloseY}
+          isUp={isUp}
+          height={PLOT_HEIGHT}
+        />
+      </View>
     </View>
   );
 });
