@@ -7,6 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { CandleChart } from "../components/chart/CandleChart";
 import { FeedFilters } from "../components/feed/FeedFilters";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
@@ -111,6 +112,7 @@ export function AssetDetailScreen() {
                   metrics={market.metrics}
                   initialMetric={market.initialMetric}
                 />
+                <CandleChart />
                 <View className="gap-4">
                   <TabBar
                     tabs={assetTabs}

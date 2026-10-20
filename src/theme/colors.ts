@@ -4,6 +4,8 @@ export const colors = {
   textTertiary: "#22242A7A",
   textGreen: "#0FAA55",
   textRed: "#D9323B",
+  priceLineGreen: "#0CC25E",
+  priceLineRed: "#F63841",
   surface: "#FFFFFF",
   surfaceTransparent: "rgba(255, 255, 255, 0)",
   background: "#E9EEF6",
