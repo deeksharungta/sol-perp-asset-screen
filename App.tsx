@@ -1,21 +1,14 @@
-import './global.css';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import "./global.css";
+import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+
+import { AssetDetailScreen } from "./src/screens/AssetDetailScreen";
 
 export default function App() {
   return (
-    <View style={styles.container} className="!bg-blue-500">
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <SafeAreaProvider>
+      <AssetDetailScreen />
+      <StatusBar style="dark" />
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

@@ -9,6 +9,7 @@ module.exports = {
         surface: "#FFFFFF",
         pill: "#22242A0A",
         "text-primary": "#22242A",
+        "text-secondary": "#22242AA3",
         "text-on-color": "#FFFFFF",
         "text-green": "#0FAA55",
         "text-red": "#D9323B",
