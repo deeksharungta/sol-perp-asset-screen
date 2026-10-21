@@ -1,7 +1,15 @@
-import { startTransition, useCallback, useMemo, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Share, View, type FlatList, type ListRenderItem } from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
+  useDerivedValue,
   useSharedValue,
 } from "react-native-reanimated";
 
@@ -9,8 +17,12 @@ import { AssetOverview } from "../components/AssetOverview";
 import { AboutSection } from "../components/about/AboutSection";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
-import { HeaderFade } from "../components/header/HeaderFade";
+import {
+  HEADER_FADE_HEIGHT,
+  HeaderFade,
+} from "../components/header/HeaderFade";
 import { HoldersSection } from "../components/holders/HoldersSection";
+import { PinnedTabBar } from "../components/tabs/PinnedTabBar";
 import { TradeBar, useTradeBarHeight } from "../components/trade/TradeBar";
 import { ScrollToTopButton } from "../components/ui/ScrollToTopButton";
 import { Toast } from "../components/ui/Toast";
@@ -32,12 +44,25 @@ export function AssetDetailScreen() {
   const { toastMessage, showToast } = useToast();
   const listRef = useRef<FlatList<TraderPost>>(null);
   const scrollY = useSharedValue(0);
+  const tabIndicator = useSharedValue(0);
+  const tabRowY = useSharedValue(0);
+  const isHeaderFadeVisible = useDerivedValue(
+    () =>
+      scrollY.value > 0 && scrollY.value < tabRowY.value - HEADER_FADE_HEIGHT,
+  );
 
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const activeTab = assetTabs[activeTabIndex];
+
+  useLayoutEffect(() => {
+    listRef.current?.scrollToOffset({
+      offset: Math.min(scrollY.get(), tabRowY.get()),
+      animated: false,
+    });
+  }, [activeTabIndex, scrollY, tabRowY]);
   const {
     visiblePosts,
     toggleLike,
@@ -133,6 +158,8 @@ export function AssetDetailScreen() {
               tabs={assetTabs}
               activeTabIndex={activeTabIndex}
               onTabChange={handleTabChange}
+              tabIndicator={tabIndicator}
+              tabRowY={tabRowY}
               showFeedFilters={activeTab === "Feed"}
               isFollowingOnly={isFollowingOnly}
               onFollowingOnlyChange={changeFollowingOnly}
@@ -141,7 +168,15 @@ export function AssetDetailScreen() {
             />
           }
         />
-        <HeaderFade scrollY={scrollY} />
+        <HeaderFade isVisible={isHeaderFadeVisible} />
+        <PinnedTabBar
+          scrollY={scrollY}
+          tabRowY={tabRowY}
+          tabs={assetTabs}
+          activeIndex={activeTabIndex}
+          indicatorIndex={tabIndicator}
+          onChange={handleTabChange}
+        />
         <ScrollToTopButton
           scrollY={scrollY}
           bottom={tradeBarHeight}
