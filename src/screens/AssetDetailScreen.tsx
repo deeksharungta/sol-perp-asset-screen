@@ -47,10 +47,6 @@ const assetTabs = ["Feed", "Holders", "About"];
 
 const keyExtractor = (post: TraderPost) => post.id;
 
-function CardSeparator() {
-  return <View className="h-2" />;
-}
-
 export function AssetDetailScreen() {
   const market = solPerpMarket;
   const tradeBarInset = useTradeBarInset();
@@ -82,16 +78,13 @@ export function AssetDetailScreen() {
   const [isLargestFirst, setIsLargestFirst] = useState(true);
   const [posts, setPosts] = useState(traderPosts);
 
-  const visiblePosts = useMemo(() => {
-    const shownPosts = isFollowingOnly
-      ? posts.filter((post) => post.isFollowed)
-      : posts;
-    return [...shownPosts].sort((a, b) =>
+  const sortedPosts = useMemo(() => {
+    return [...posts].sort((a, b) =>
       isLargestFirst
         ? b.positionValue - a.positionValue
         : a.positionValue - b.positionValue,
     );
-  }, [posts, isFollowingOnly, isLargestFirst]);
+  }, [posts, isLargestFirst]);
 
   // Only the tapped post gets a new object, so only its memoized card re-renders.
   const handleLikePress = useCallback((postId: string) => {
@@ -110,11 +103,16 @@ export function AssetDetailScreen() {
 
   const renderPost: ListRenderItem<TraderPost> = useCallback(
     ({ item }) => (
-      <View className="px-4">
+      <View
+        className="px-4 pb-2"
+        style={{
+          display: isFollowingOnly && !item.isFollowed ? "none" : "flex",
+        }}
+      >
         <TraderCard post={item} onLikePress={handleLikePress} />
       </View>
     ),
-    [handleLikePress],
+    [handleLikePress, isFollowingOnly],
   );
 
   const handleBack = () => {
@@ -178,10 +176,9 @@ export function AssetDetailScreen() {
             contentContainerStyle={{
               paddingBottom: tradeBarInset + TRADE_BAR_HEIGHT,
             }}
-            data={activeTab === "Feed" ? visiblePosts : []}
+            data={activeTab === "Feed" ? sortedPosts : []}
             keyExtractor={keyExtractor}
             renderItem={renderPost}
-            ItemSeparatorComponent={CardSeparator}
             itemLayoutAnimation={feedReorderLayout}
             initialNumToRender={3}
             showsVerticalScrollIndicator={false}
