@@ -54,7 +54,6 @@ const END_HALO_RADIUS = 7;
 const DASH_INTERVALS = [4, 4];
 const DRAW_IN_SPREAD = 10;
 const SCRUB_ACTIVATION_DISTANCE = 8;
-const SCRUB_HOLD_DURATION = 150;
 
 type CandleChartProps = {
   candles: Candle[];
@@ -103,7 +102,6 @@ export const CandleChart = memo(function CandleChart({
   const scrubGesture = usePanGesture({
     activeOffsetX: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
     failOffsetY: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
-    activateAfterLongPress: SCRUB_HOLD_DURATION,
     onActivate: (event) => {
       scrubIndex.value = xToIndex(event.x, candleStep.value, candleCount);
       scrubProgress.value = withTiming(1, scrubFadeTiming);
