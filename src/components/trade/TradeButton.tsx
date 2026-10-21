@@ -1,7 +1,18 @@
+import * as Haptics from "expo-haptics";
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated";
 
+import { pressSpring } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import { TriangleIcon } from "../icons/TriangleIcon";
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
+const PRESSED_SCALE = 0.96;
 
 type TradeButtonProps = {
   side: "long" | "short";
@@ -10,14 +21,34 @@ type TradeButtonProps = {
 
 export function TradeButton({ side, onPress }: TradeButtonProps) {
   const isLong = side === "long";
+  const pressScale = useSharedValue(1);
+
+  const handlePress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    onPress();
+  };
+
+  const handlePressIn = () => {
+    pressScale.value = withSpring(PRESSED_SCALE, pressSpring);
+  };
+
+  const handlePressOut = () => {
+    pressScale.value = withSpring(1, pressSpring);
+  };
+
+  const pressStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: pressScale.value }],
+  }));
 
   return (
-    <Pressable
-      onPress={onPress}
+    <AnimatedPressable
+      onPress={handlePress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
       accessibilityRole="button"
       accessibilityLabel={isLong ? "Go long" : "Go short"}
       className={`h-12 flex-1 flex-row items-center justify-center gap-1 rounded-full ${isLong ? "px-3" : "px-2"}`}
-      style={isLong ? styles.long : styles.short}
+      style={[isLong ? styles.long : styles.short, pressStyle]}
     >
       <Text className="font-sans text-base font-semibold leading-5 text-text-on-color">
         {isLong ? "Long" : "Short"}
@@ -30,7 +61,7 @@ export function TradeButton({ side, onPress }: TradeButtonProps) {
           height={6}
         />
       </View>
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 
