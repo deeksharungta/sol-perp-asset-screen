@@ -1,9 +1,12 @@
-import type { SkPathBuilder } from "@shopify/react-native-skia";
+import { Skia, type SkPathBuilder } from "@shopify/react-native-skia";
 
 import type { Candle } from "../types/candle";
 
 const TARGET_LABEL_STEPS = 4;
 const PRICE_PADDING = 0.15;
+const CANDLE_GAP = 1.5;
+const WICK_WIDTH = 1;
+const DRAW_IN_SPREAD = 10;
 
 type Point = {
   x: number;
@@ -85,5 +88,91 @@ export function getPriceRange(candles: Candle[]) {
     minPrice: Math.floor(low / step) * step,
     maxPrice: Math.ceil(high / step) * step,
     step,
+  };
+}
+
+type ChartSizes = {
+  candleStep: number;
+  plotHeight: number;
+  minPrice: number;
+  maxPrice: number;
+};
+
+type ChartProgress = {
+  draw: number;
+  line: number;
+};
+
+export function buildChartPaths(
+  candles: Candle[],
+  livePrice: number,
+  { candleStep, plotHeight, minPrice, maxPrice }: ChartSizes,
+  progress: ChartProgress,
+) {
+  "worklet";
+  const candleCount = candles.length;
+  const bodyWidth = candleStep - CANDLE_GAP;
+
+  const greenCandles = Skia.PathBuilder.Make();
+  const redCandles = Skia.PathBuilder.Make();
+  const closePoints: Point[] = [];
+
+  candles.forEach((candle, index) => {
+    const x = indexToX(index, candleStep);
+    const isLiveCandle = index === candleCount - 1;
+    const close = isLiveCandle ? livePrice : candle.close;
+    const high = isLiveCandle ? Math.max(candle.high, close) : candle.high;
+    const low = isLiveCandle ? Math.min(candle.low, close) : candle.low;
+    const closeY = priceToY(close, minPrice, maxPrice, plotHeight);
+    closePoints.push({ x, y: closeY });
+
+    const reveal =
+      clamp(
+        progress.draw * (candleCount + DRAW_IN_SPREAD) - index,
+        0,
+        DRAW_IN_SPREAD,
+      ) / DRAW_IN_SPREAD;
+    if (reveal === 0) {
+      return;
+    }
+
+    const collapse = (y: number) => y + (closeY - y) * progress.line;
+    const highY = collapse(priceToY(high, minPrice, maxPrice, plotHeight));
+    const lowY = collapse(priceToY(low, minPrice, maxPrice, plotHeight));
+    const middleY = (highY + lowY) / 2;
+    const grow = (y: number) => middleY + (y - middleY) * reveal;
+    const openY = collapse(
+      priceToY(candle.open, minPrice, maxPrice, plotHeight),
+    );
+
+    const path = close >= candle.open ? greenCandles : redCandles;
+    path.addRect({
+      x: x - bodyWidth / 2,
+      y: grow(Math.min(openY, closeY)),
+      width: bodyWidth,
+      height: Math.max(1, Math.abs(closeY - openY) * reveal),
+    });
+    path.addRect({
+      x: x - WICK_WIDTH / 2,
+      y: grow(highY),
+      width: WICK_WIDTH,
+      height: (lowY - highY) * reveal,
+    });
+  });
+
+  const closeLine = Skia.PathBuilder.Make();
+  addSmoothLine(closeLine, closePoints);
+  const closeLinePath = closeLine.detach();
+  const closeArea = Skia.PathBuilder.MakeFromPath(closeLinePath)
+    .lineTo(indexToX(candleCount - 1, candleStep), plotHeight)
+    .lineTo(indexToX(0, candleStep), plotHeight)
+    .close()
+    .detach();
+
+  return {
+    greenCandles: greenCandles.detach(),
+    redCandles: redCandles.detach(),
+    closeLine: closeLinePath,
+    closeArea,
   };
 }

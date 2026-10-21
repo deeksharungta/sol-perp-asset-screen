@@ -9,10 +9,9 @@ import {
   Skia,
   vec,
 } from "@shopify/react-native-skia";
-import * as Haptics from "expo-haptics";
 import { memo, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
-import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
+import { GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -21,27 +20,19 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
   type SharedValue,
-  withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { scheduleOnRN } from "react-native-worklets";
 
-import {
-  chartMorphTiming,
-  drawInTiming,
-  livePulseTiming,
-  scrubFadeTiming,
-  scrubGlideTiming,
-} from "../../theme/animations";
+import { useChartScrub } from "../../hooks/useChartScrub";
+import { useLivePulse } from "../../hooks/useLivePulse";
+import { chartMorphTiming, drawInTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import type { Candle, ChartType, Timeframe } from "../../types/candle";
 import {
-  addSmoothLine,
-  clamp,
+  buildChartPaths,
   getPriceRange,
   indexToX,
   priceToY,
-  xToIndex,
 } from "../../utils/chartMath";
 import { formatUsd } from "../../utils/format";
 import { PriceAxis } from "./PriceAxis";
@@ -49,16 +40,12 @@ import { PriceAxis } from "./PriceAxis";
 const PLOT_HEIGHT = 176;
 const AXIS_WIDTH = 70;
 const AXIS_RIGHT_INSET = 12;
-const CANDLE_GAP = 1.5;
-const WICK_WIDTH = 1;
 const LINE_WIDTH = 2;
 const AREA_OPACITY = 0.24;
 const END_DOT_RADIUS = 3;
 const LIVE_PULSE_RADIUS = 14;
 const LIVE_PULSE_OPACITY = 0.3;
 const DASH_INTERVALS = [4, 4];
-const DRAW_IN_SPREAD = 10;
-const SCRUB_ACTIVATION_DISTANCE = 8;
 
 type CandleChartProps = {
   candles: Candle[];
@@ -91,9 +78,7 @@ export const CandleChart = memo(function CandleChart({
   const lastCloseY = priceToY(lastClose, minPrice, maxPrice, PLOT_HEIGHT);
 
   const lineProgress = useSharedValue(chartType === "line" ? 1 : 0);
-  const livePulse = useSharedValue(0);
-  const scrubX = useSharedValue(0);
-  const scrubPrice = useSharedValue(lastClose);
+  const livePulse = useLivePulse(chartType);
 
   useEffect(() => {
     drawProgress.value = withTiming(1, drawInTiming);
@@ -106,106 +91,30 @@ export const CandleChart = memo(function CandleChart({
     );
   }, [chartType, lineProgress]);
 
-  useEffect(() => {
-    livePulse.value =
-      chartType === "line" ? withRepeat(withTiming(1, livePulseTiming), -1) : 0;
-  }, [chartType, livePulse]);
+  const plotWidth = useDerivedValue(() => canvasSize.value.width - AXIS_WIDTH);
+  const candleStep = useDerivedValue(() => plotWidth.value / candleCount);
 
-  const candleStep = useDerivedValue(
-    () => (canvasSize.value.width - AXIS_WIDTH) / candleCount,
+  const { scrubGesture, scrubX, scrubPrice } = useChartScrub({
+    candles,
+    candleStep,
+    plotWidth,
+    scrubIndex,
+    scrubProgress,
+  });
+
+  const paths = useDerivedValue(() =>
+    buildChartPaths(
+      candles,
+      livePrice.value,
+      {
+        candleStep: candleStep.value,
+        plotHeight: PLOT_HEIGHT,
+        minPrice,
+        maxPrice,
+      },
+      { draw: drawProgress.value, line: lineProgress.value },
+    ),
   );
-
-  const scrubGesture = usePanGesture({
-    activeOffsetX: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
-    failOffsetY: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
-    onActivate: (event) => {
-      const index = xToIndex(event.x, candleStep.value, candleCount);
-      scrubX.value = clamp(event.x, 0, canvasSize.value.width - AXIS_WIDTH);
-      scrubIndex.value = index;
-      scrubPrice.value = candles[index].close;
-      scrubProgress.value = withTiming(1, scrubFadeTiming);
-      scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Light);
-    },
-    onUpdate: (event) => {
-      scrubX.value = clamp(event.x, 0, canvasSize.value.width - AXIS_WIDTH);
-      const index = xToIndex(event.x, candleStep.value, candleCount);
-      if (index !== scrubIndex.value) {
-        scrubIndex.value = index;
-        scrubPrice.value = withTiming(candles[index].close, scrubGlideTiming);
-        scheduleOnRN(Haptics.selectionAsync);
-      }
-    },
-    onDeactivate: () => {
-      scrubProgress.value = withTiming(0, scrubFadeTiming);
-    },
-  });
-
-  const paths = useDerivedValue(() => {
-    const bodyWidth = candleStep.value - CANDLE_GAP;
-
-    const greenCandles = Skia.PathBuilder.Make();
-    const redCandles = Skia.PathBuilder.Make();
-    const closePoints: { x: number; y: number }[] = [];
-
-    candles.forEach((candle, index) => {
-      const x = indexToX(index, candleStep.value);
-      const isLiveCandle = index === candleCount - 1;
-      const close = isLiveCandle ? livePrice.value : candle.close;
-      const high = isLiveCandle ? Math.max(candle.high, close) : candle.high;
-      const low = isLiveCandle ? Math.min(candle.low, close) : candle.low;
-      const closeY = priceToY(close, minPrice, maxPrice, PLOT_HEIGHT);
-      closePoints.push({ x, y: closeY });
-
-      const reveal =
-        clamp(
-          drawProgress.value * (candleCount + DRAW_IN_SPREAD) - index,
-          0,
-          DRAW_IN_SPREAD,
-        ) / DRAW_IN_SPREAD;
-      if (reveal === 0) {
-        return;
-      }
-
-      const collapse = (y: number) => y + (closeY - y) * lineProgress.value;
-      const highY = collapse(priceToY(high, minPrice, maxPrice, PLOT_HEIGHT));
-      const lowY = collapse(priceToY(low, minPrice, maxPrice, PLOT_HEIGHT));
-      const middleY = (highY + lowY) / 2;
-      const grow = (y: number) => middleY + (y - middleY) * reveal;
-      const openY = collapse(
-        priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT),
-      );
-
-      const path = close >= candle.open ? greenCandles : redCandles;
-      path.addRect({
-        x: x - bodyWidth / 2,
-        y: grow(Math.min(openY, closeY)),
-        width: bodyWidth,
-        height: Math.max(1, Math.abs(closeY - openY) * reveal),
-      });
-      path.addRect({
-        x: x - WICK_WIDTH / 2,
-        y: grow(highY),
-        width: WICK_WIDTH,
-        height: (lowY - highY) * reveal,
-      });
-    });
-
-    const closeLine = Skia.PathBuilder.Make();
-    addSmoothLine(closeLine, closePoints);
-    const closeLinePath = closeLine.detach();
-    const closeArea = Skia.PathBuilder.MakeFromPath(closeLinePath)
-      .lineTo(indexToX(candleCount - 1, candleStep.value), PLOT_HEIGHT)
-      .lineTo(indexToX(0, candleStep.value), PLOT_HEIGHT)
-      .close()
-      .detach();
-
-    return {
-      greenCandles: greenCandles.detach(),
-      redCandles: redCandles.detach(),
-      closeLine: closeLinePath,
-      closeArea,
-    };
-  });
 
   const greenCandles = useDerivedValue(() => paths.value.greenCandles);
   const redCandles = useDerivedValue(() => paths.value.redCandles);
@@ -292,7 +201,7 @@ export const CandleChart = memo(function CandleChart({
   const dimmedArea = useDerivedValue(() => {
     const slotLeft = selectedX.value - candleStep.value / 2;
     const slotRight = selectedX.value + candleStep.value / 2;
-    const plotRight = canvasSize.value.width - AXIS_WIDTH;
+    const plotRight = plotWidth.value;
     return Skia.PathBuilder.Make()
       .addRect(Skia.XYWHRect(0, 0, slotLeft, PLOT_HEIGHT))
       .addRect(Skia.XYWHRect(slotRight, 0, plotRight - slotRight, PLOT_HEIGHT))
