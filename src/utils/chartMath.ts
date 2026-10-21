@@ -1,6 +1,7 @@
 import type { Candle } from "../types/candle";
 
 const TARGET_LABEL_STEPS = 4;
+const PRICE_PADDING = 0.15;
 
 export function priceToY(
   price: number,
@@ -46,6 +47,9 @@ export function getPriceRange(candles: Candle[]) {
     low = Math.min(low, candle.low);
     high = Math.max(high, candle.high);
   }
+  const padding = (high - low) * PRICE_PADDING;
+  low -= padding;
+  high += padding;
 
   const step = niceStep(high - low);
   return {

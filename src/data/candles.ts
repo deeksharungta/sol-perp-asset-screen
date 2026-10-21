@@ -2,7 +2,7 @@ import type { Candle, Timeframe } from "../types/candle";
 import { solPerpMarket } from "./market";
 import { solDailyCloses } from "./priceHistory";
 
-const CANDLE_COUNT = 60;
+const CANDLE_COUNT = 40;
 const NOW = Date.UTC(2026, 9, 21, 12);
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
@@ -75,19 +75,18 @@ function generateCandles({
   return candles;
 }
 
-// Two 12h candles per day turn the 30 daily closes into 60 candles,
-// and each day still closes on the same price as the post page chart.
+// 40 candles of about 18h each follow the 30 daily closes,
+// so the month view agrees with the post page chart.
 function generateMonthCandles() {
   const random = createRandom(4);
   const volatility = 0.015;
-  const prices = solDailyCloses.flatMap((close, day) => {
-    if (day === 0) {
-      return [close];
-    }
-    const previousClose = solDailyCloses[day - 1];
-    const midday =
-      (previousClose + close) / 2 + (random() - 0.5) * 0.02 * close;
-    return [midday, close];
+  const days = solDailyCloses.length - 1;
+  const prices = Array.from({ length: CANDLE_COUNT + 1 }, (_, i) => {
+    const day = (i * days) / CANDLE_COUNT;
+    const before = solDailyCloses[Math.floor(day)];
+    const after = solDailyCloses[Math.ceil(day)];
+    const price = before + (after - before) * (day - Math.floor(day));
+    return i === CANDLE_COUNT ? price : price + (random() - 0.5) * 0.01 * price;
   });
 
   const candles: Candle[] = [];
@@ -96,7 +95,7 @@ function generateMonthCandles() {
     const close = prices[i];
     const wickSize = volatility * 0.6 * close;
     candles.push({
-      time: NOW - (CANDLE_COUNT - i) * 12 * HOUR,
+      time: NOW - ((CANDLE_COUNT - i) * days * DAY) / CANDLE_COUNT,
       open: roundPrice(open),
       high: roundPrice(Math.max(open, close) + random() * wickSize),
       low: roundPrice(Math.min(open, close) - random() * wickSize),
@@ -109,44 +108,44 @@ function generateMonthCandles() {
 export const candlesByTimeframe: Record<Timeframe, Candle[]> = {
   "1H": generateCandles({
     startPrice: 170.4,
-    interval: MINUTE,
+    interval: 1.5 * MINUTE,
     volatility: 0.0015,
     seed: 1,
   }),
   "1D": generateCandles({
     startPrice: solPerpMarket.openPrice,
-    interval: 24 * MINUTE,
+    interval: 36 * MINUTE,
     volatility: 0.008,
     seed: 32,
   }),
   "1W": generateCandles({
     startPrice: 158.6,
-    interval: 168 * MINUTE,
+    interval: 252 * MINUTE,
     volatility: 0.012,
     seed: 3,
   }),
   "1M": generateMonthCandles(),
   "3M": generateCandles({
     startPrice: 196.3,
-    interval: 36 * HOUR,
+    interval: 54 * HOUR,
     volatility: 0.03,
     seed: 5,
   }),
   "6M": generateCandles({
     startPrice: 142.8,
-    interval: 3 * DAY,
+    interval: 4.5 * DAY,
     volatility: 0.04,
     seed: 6,
   }),
   "1Y": generateCandles({
     startPrice: 94.5,
-    interval: 6 * DAY,
+    interval: 9 * DAY,
     volatility: 0.05,
     seed: 7,
   }),
   All: generateCandles({
     startPrice: 18.2,
-    interval: 30 * DAY,
+    interval: 45 * DAY,
     volatility: 0.12,
     seed: 8,
   }),

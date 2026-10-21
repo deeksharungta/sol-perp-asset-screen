@@ -12,7 +12,7 @@ import { AnimatedText } from "../ui/AnimatedText";
 
 const LABEL_HEIGHT = 13;
 const TAG_WIDTH = 52;
-const TAG_HEIGHT = 20;
+const TAG_HEIGHT = 16;
 const EDGE_ROOM = 8;
 
 type PriceAxisProps = {
@@ -80,7 +80,7 @@ export function PriceAxis({
       })}
 
       <Animated.View
-        className="absolute right-3 top-0 h-5 justify-center rounded-full"
+        className="absolute right-3 top-0 h-4 justify-center rounded-full"
         style={[{ width: TAG_WIDTH }, tagStyle]}
       >
         <AnimatedText
