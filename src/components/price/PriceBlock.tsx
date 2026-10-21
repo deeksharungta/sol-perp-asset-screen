@@ -1,11 +1,10 @@
 import { useRef, type ComponentRef } from "react";
 import { Pressable, Text, View } from "react-native";
 
-import { colors } from "../../theme/colors";
 import type { Metric } from "../../types/metric";
 import { formatCompactUsd, formatPercent, formatUsd } from "../../utils/format";
 import { SwitchIcon } from "../icons/SwitchIcon";
-import { TriangleIcon } from "../icons/TriangleIcon";
+import { PriceChange } from "./PriceChange";
 
 type PriceBlockProps = {
   price: number;
@@ -40,18 +39,9 @@ export function PriceBlock({
         <Text className="font-sans text-xl font-semibold tabular-nums leading-6 text-text-primary">
           {formatUsd(price)}
         </Text>
-        <View className="flex-row items-center gap-0.5">
-          <TriangleIcon
-            direction={isPositive ? "up" : "down"}
-            color={isPositive ? colors.textGreen : colors.textRed}
-          />
-          <Text
-            className={`font-sans text-xs font-semibold tabular-nums leading-4 ${isPositive ? "text-text-green" : "text-text-red"}`}
-          >
-            {changeText}{" "}
-            <Text className="text-text-secondary">{timeframe}</Text>
-          </Text>
-        </View>
+        <PriceChange isPositive={isPositive}>
+          {changeText} <Text className="text-text-secondary">{timeframe}</Text>
+        </PriceChange>
       </View>
 
       <Pressable

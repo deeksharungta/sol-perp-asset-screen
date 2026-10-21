@@ -1,6 +1,6 @@
 import { BlurTargetView } from "expo-blur";
 import { useCallback, useRef, useState, type ComponentRef } from "react";
-import { Share, View, type ListRenderItem } from "react-native";
+import { Share, View, type FlatList, type ListRenderItem } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ChartSection } from "../components/chart/ChartSection";
 import { ScrubDetails } from "../components/chart/ScrubDetails";
 import { FeedFilters } from "../components/feed/FeedFilters";
+import { ScrollToTopButton } from "../components/feed/ScrollToTopButton";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
 import { HeaderFade } from "../components/header/HeaderFade";
@@ -39,6 +40,7 @@ export function AssetDetailScreen() {
   const market = solPerpMarket;
   const insets = useSafeAreaInsets();
   const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
+  const listRef = useRef<FlatList<TraderPost>>(null);
   const scrollY = useSharedValue(0);
 
   const handleScroll = useAnimatedScrollHandler((event) => {
@@ -46,6 +48,8 @@ export function AssetDetailScreen() {
   });
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const candles = candlesByTimeframe[timeframe];
+  const dayChangePercent =
+    ((market.price - market.openPrice) / market.openPrice) * 100;
   // Shared with the chart so the scrub panel can replace the price block without re-renders.
   const scrubIndex = useSharedValue(0);
   const scrubProgress = useSharedValue(0);
@@ -101,6 +105,10 @@ export function AssetDetailScreen() {
 
   const handleGoShort = () => {};
 
+  const handleScrollToTop = () => {
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
+
   return (
     <View className="flex-1 bg-background">
       <View className="pb-3">
@@ -109,6 +117,10 @@ export function AssetDetailScreen() {
           assetName={market.assetName}
           assetIcon={market.assetIcon}
           exchangeIcon={market.exchangeIcon}
+          price={market.price}
+          changePercent={dayChangePercent}
+          scrollY={scrollY}
+          onTitlePress={handleScrollToTop}
           onBack={handleBack}
           onShare={handleShare}
           onNotify={handleNotify}
@@ -118,6 +130,7 @@ export function AssetDetailScreen() {
       <View className="flex-1">
         <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
           <Animated.FlatList
+            ref={listRef}
             contentContainerStyle={{
               paddingBottom: insets.bottom + TRADE_BAR_HEIGHT,
             }}
@@ -172,6 +185,11 @@ export function AssetDetailScreen() {
           />
         </BlurTargetView>
         <HeaderFade blurTarget={blurTargetRef} scrollY={scrollY} />
+        <ScrollToTopButton
+          scrollY={scrollY}
+          bottom={insets.bottom + TRADE_BAR_HEIGHT}
+          onPress={handleScrollToTop}
+        />
       </View>
 
       <TradeBar

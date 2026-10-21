@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Pressable } from "react-native";
+import { Pressable, type StyleProp, type ViewStyle } from "react-native";
 
 import { surfaces } from "../../theme/surfaces";
 
@@ -7,12 +7,14 @@ type IconButtonProps = {
   icon: ReactNode;
   onPress: () => void;
   accessibilityLabel: string;
+  style?: StyleProp<ViewStyle>;
 };
 
 export function IconButton({
   icon,
   onPress,
   accessibilityLabel,
+  style = surfaces.glass,
 }: IconButtonProps) {
   return (
     <Pressable
@@ -21,7 +23,7 @@ export function IconButton({
       accessibilityLabel={accessibilityLabel}
       hitSlop={4}
       className="h-9 w-9 items-center justify-center rounded-full"
-      style={surfaces.glass}
+      style={style}
     >
       {icon}
     </Pressable>

@@ -13,6 +13,10 @@ export const surfaces = StyleSheet.create({
     backgroundImage: `linear-gradient(to bottom, ${colors.pillFillStart}, ${colors.pillFillEnd})`,
     boxShadow: glassShadow,
   },
+  floating: {
+    backgroundColor: colors.surface,
+    boxShadow: `0 4px 12px 0 ${colors.floatingShadow}`,
+  },
   card: {
     boxShadow: `0 1px 0 0 ${colors.surface}`,
   },
