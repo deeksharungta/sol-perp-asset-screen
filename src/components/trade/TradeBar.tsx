@@ -31,11 +31,14 @@ export const TradeBar = memo(function TradeBar({
 
   return (
     <View
-      className="absolute bottom-0 left-0 right-0 flex-row gap-1 px-4 pt-6"
-      style={[styles.passThrough, { paddingBottom: bottomInset }]}
+      className="pointer-events-box-none absolute bottom-0 left-0 right-0 flex-row gap-1 px-4 pt-6"
+      style={{ paddingBottom: bottomInset }}
     >
       <MaskedBlur maskStyle={styles.blurMask} />
-      <View style={[styles.layer, styles.fade]} />
+      <View
+        className="pointer-events-none absolute inset-0"
+        style={styles.fade}
+      />
 
       <TradeButton side="long" onPress={onGoLong} />
       <TradeButton side="short" onPress={onGoShort} />
@@ -44,13 +47,6 @@ export const TradeBar = memo(function TradeBar({
 });
 
 const styles = StyleSheet.create({
-  passThrough: {
-    pointerEvents: "box-none",
-  },
-  layer: {
-    ...StyleSheet.absoluteFill,
-    pointerEvents: "none",
-  },
   // A mask only reads alpha, so the white tokens work here.
   blurMask: {
     backgroundImage: `linear-gradient(to bottom, ${colors.surfaceTransparent}, ${colors.surface} 20%)`,

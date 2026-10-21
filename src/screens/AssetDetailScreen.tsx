@@ -19,10 +19,9 @@ import { useFeed } from "../hooks/useFeed";
 import { useLivePrice } from "../hooks/useLivePrice";
 import { useToast } from "../hooks/useToast";
 import { feedReorderLayout } from "../theme/animations";
+import { assetTabs } from "../types/market";
 import type { TraderPost } from "../types/traderPost";
 import { formatUsd } from "../utils/format";
-
-const assetTabs = ["Feed", "Holders", "About"] as const;
 
 const keyExtractor = (post: TraderPost) => post.id;
 
@@ -109,40 +108,39 @@ export function AssetDetailScreen() {
       </View>
 
       <View className="flex-1">
-        <View className="flex-1 bg-background">
-          <Animated.FlatList
-            ref={listRef}
-            contentContainerStyle={listContentStyle}
-            data={activeTab === "Feed" ? visiblePosts : []}
-            keyExtractor={keyExtractor}
-            renderItem={renderPost}
-            itemLayoutAnimation={feedReorderLayout}
-            initialNumToRender={3}
-            showsVerticalScrollIndicator={false}
-            onScroll={handleScroll}
-            ListFooterComponent={
-              <View className="px-4">
-                {activeTab === "Holders" && <HoldersSection />}
-                {activeTab === "About" && (
-                  <AboutSection market={market} livePrice={livePrice} />
-                )}
-              </View>
-            }
-            ListHeaderComponent={
-              <AssetOverview
-                market={market}
-                livePrice={livePrice}
-                tabs={assetTabs}
-                activeTabIndex={activeTabIndex}
-                onTabChange={handleTabChange}
-                isFollowingOnly={isFollowingOnly}
-                onFollowingOnlyChange={changeFollowingOnly}
-                isLargestFirst={isLargestFirst}
-                onSortPress={toggleSort}
-              />
-            }
-          />
-        </View>
+        <Animated.FlatList
+          ref={listRef}
+          contentContainerStyle={listContentStyle}
+          data={activeTab === "Feed" ? visiblePosts : []}
+          keyExtractor={keyExtractor}
+          renderItem={renderPost}
+          itemLayoutAnimation={feedReorderLayout}
+          initialNumToRender={3}
+          showsVerticalScrollIndicator={false}
+          onScroll={handleScroll}
+          ListFooterComponent={
+            <View className="px-4">
+              {activeTab === "Holders" && <HoldersSection />}
+              {activeTab === "About" && (
+                <AboutSection market={market} livePrice={livePrice} />
+              )}
+            </View>
+          }
+          ListHeaderComponent={
+            <AssetOverview
+              market={market}
+              livePrice={livePrice}
+              tabs={assetTabs}
+              activeTabIndex={activeTabIndex}
+              onTabChange={handleTabChange}
+              showFeedFilters={activeTab === "Feed"}
+              isFollowingOnly={isFollowingOnly}
+              onFollowingOnlyChange={changeFollowingOnly}
+              isLargestFirst={isLargestFirst}
+              onSortPress={toggleSort}
+            />
+          }
+        />
         <HeaderFade scrollY={scrollY} />
         <ScrollToTopButton
           scrollY={scrollY}

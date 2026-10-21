@@ -7,18 +7,8 @@ import Animated, {
 
 import { slideTiming } from "../../theme/animations";
 import { surfaces } from "../../theme/surfaces";
-import type { Timeframe } from "../../types/candle";
+import { timeframes, type Timeframe } from "../../types/candle";
 
-const timeframeOptions: Timeframe[] = [
-  "1H",
-  "1D",
-  "1W",
-  "1M",
-  "3M",
-  "6M",
-  "1Y",
-  "All",
-];
 const OPTION_GAP = 12;
 const PILL_OVERHANG = 8;
 
@@ -32,18 +22,17 @@ export function TimeframeSelector({
   onChange,
 }: TimeframeSelectorProps) {
   const optionWidth = useSharedValue(0);
-  const pillIndex = useSharedValue(timeframeOptions.indexOf(selected));
+  const pillIndex = useSharedValue(timeframes.indexOf(selected));
 
   const handleLayout = (event: LayoutChangeEvent) => {
     const rowWidth = event.nativeEvent.layout.width;
     optionWidth.value =
-      (rowWidth - OPTION_GAP * (timeframeOptions.length - 1)) /
-      timeframeOptions.length;
+      (rowWidth - OPTION_GAP * (timeframes.length - 1)) / timeframes.length;
   };
 
   const handlePress = (index: number) => {
     pillIndex.value = withTiming(index, slideTiming);
-    onChange(timeframeOptions[index]);
+    onChange(timeframes[index]);
   };
 
   const pillStyle = useAnimatedStyle(() => ({
@@ -63,7 +52,7 @@ export function TimeframeSelector({
           className="absolute left-0 h-6 rounded-full"
           style={[surfaces.pill, pillStyle]}
         />
-        {timeframeOptions.map((timeframe, index) => {
+        {timeframes.map((timeframe, index) => {
           const isSelected = timeframe === selected;
           return (
             <Pressable
