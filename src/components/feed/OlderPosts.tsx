@@ -34,22 +34,24 @@ function OlderPostRow({ post }: OlderPostRowProps) {
   const isLoss = post.pnl < 0;
 
   return (
-    <View className="flex-row items-center gap-2 py-2">
-      <SideLabel side={post.side} leverage={post.leverage} />
+    <View className="gap-1 py-2">
+      <View className="flex-row items-center gap-2">
+        <SideLabel side={post.side} leverage={post.leverage} />
+        <Text className="flex-1 font-sans text-xs font-semibold leading-4 text-text-tertiary">
+          {formatShortDate(post.closedAt)}
+        </Text>
+        <Text
+          style={typography.tabularNums}
+          className={`font-sans text-xs font-semibold leading-4 ${isLoss ? "text-text-red" : "text-text-green"}`}
+        >
+          {formatSignedUsd(post.pnl)}
+        </Text>
+      </View>
       <Text
         numberOfLines={1}
-        className="flex-1 font-sans text-xs font-semibold leading-4 text-text-primary"
+        className="font-sans text-xs font-semibold leading-4 text-text-primary"
       >
         {post.thesis}
-      </Text>
-      <Text className="font-sans text-xs font-semibold leading-4 text-text-tertiary">
-        {formatShortDate(post.closedAt)}
-      </Text>
-      <Text
-        style={typography.tabularNums}
-        className={`font-sans text-xs font-semibold leading-4 ${isLoss ? "text-text-red" : "text-text-green"}`}
-      >
-        {formatSignedUsd(post.pnl)}
       </Text>
     </View>
   );
