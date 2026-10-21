@@ -41,14 +41,21 @@ export function PriceBlock({
   const metricRef = useRef<ComponentRef<typeof View>>(null);
   const priceText = useDerivedValue(() => formatPrice(livePrice.value));
   const priceFlash = useSharedValue(0);
+  const priceDirection = useSharedValue(0);
 
+  // The live price glides every frame, so flash only when it turns, not on every frame it moves.
   useAnimatedReaction(
     () => livePrice.value,
     (current, previous) => {
       if (previous === null || current === previous) {
         return;
       }
-      priceFlash.value = current > previous ? 1 : -1;
+      const direction = current > previous ? 1 : -1;
+      if (direction === priceDirection.value) {
+        return;
+      }
+      priceDirection.value = direction;
+      priceFlash.value = direction;
       priceFlash.value = withTiming(0, priceFlashTiming);
     },
   );

@@ -17,8 +17,8 @@ Then press `i` for the iOS simulator, or open the URL in Expo Go on a phone.
 
 - Header with back, asset icon and chain badge, share (native share sheet) and notifications. Once the chart scrolls away, the header shows the live price, and tapping the title scrolls back up.
 - Price block with the live price and change, and the Open interest / 24h volume switcher.
-- Candlestick and line charts (switch with the toggle), with y-axis labels, the dashed current price line, the price tag and 8 timeframes.
-- Scrub: drag sideways to move a crosshair over the chart, in either mode. The price block turns into an O/H/L/C readout for that candle, and the price tag and dashed line move to its close.
+- Candlestick and line charts, with y-axis labels, the dashed current price line, the price tag and 8 timeframes. The toggle morphs between them: candles collapse onto the line and grow back out of it. The line is drawn as smooth curves and its live end dot pulses.
+- Scrub: drag sideways and the crosshair follows your finger, in either mode. The price block turns into an O/H/L/C readout for the nearest candle, and the price tag and dashed line glide to its close.
 - Feed / Holders / About tabs, the "People you follow" filter and the Size sort.
 - Trader cards with stats, likes, comments and the "older" expander.
 - Long / Short buttons pinned to the bottom, with a blur behind them.
@@ -39,17 +39,17 @@ src/
 
 ### Decisions
 
-**The chart is Skia, drawn as a few paths.** All green candles are one path, all red candles another, and line mode is a third. They're rebuilt only when the data, the size, the draw-in or the live price changes, never while scrubbing. The crosshair and the dimming are separate small paths.
+**The chart is Skia, drawn as a few paths.** All green candles are one path, all red candles another, and line mode is a third. They're rebuilt only when the data, the size, the draw-in, the candles/line toggle or the live price changes, never while scrubbing. The crosshair and the dimming are separate small paths.
 
 **Gestures stay on the UI thread.** The scrub is one pan gesture. A vertical swipe fails it, so the page still scrolls when you start on the chart. Haptics fire only when the selected candle changes.
 
 **Live values don't re-render React.** The price, the scrub position and the scrub progress are shared values. Text that changes every frame (price, change, OHLC, tag) is a read-only `TextInput` whose text is set from the UI thread (`AnimatedText`). `Intl` isn't available on the UI thread, so candle times are formatted once on the JS side and prices use a small worklet formatter.
 
-**Mock live price.** `useLivePrice` nudges the price every second. The price block, the header, the tag, the dashed line and the last candle all read the same shared value, so a tick doesn't re-render the screen or the feed.
+**Mock live price.** `useLivePrice` picks a new target price every 500ms, and a frame callback eases the shown price toward it, so it glides like a live feed instead of jumping. It stops writing once it has caught up, so nothing redraws while the price is still. The price block, the header, the tag, the dashed line and the last candle all read the same shared value, so a tick doesn't re-render the screen or the feed.
 
 **Timeframe changes keep the chart mounted.** I first remounted the chart with `key={timeframe}` to restart the draw-in, but for a moment after each switch the new pan gesture wasn't hooked up yet, so scrubbing didn't start. Now the chart stays mounted and the draw-in progress resets before the data changes.
 
-**Motion.** Things you press (Long/Short, like) use springs. Things that slide between options (tabs, the timeframe pill, the candles/line crossfade) share one 250ms ease-out curve. Candles grow in from left to right over 700ms. Reanimated's default `ReduceMotion.System` turns all of it off when Reduce Motion is on.
+**Motion.** Things you press (Long/Short, like) use springs. Things that slide between options (tabs, the timeframe pill) share one 250ms ease-out curve. The candles/line morph is slower, 450ms ease-in-out, so you can watch the candles fold into the line. Candles grow in from left to right over 700ms. Reanimated's default `ReduceMotion.System` turns all of it off when Reduce Motion is on.
 
 **Feed.** Cards are memoized, and liking a post creates a new object for that post only, so only that card re-renders. Holders and About are short, so they render as the list footer instead of their own lists.
 

@@ -14,10 +14,6 @@ export const slideTiming: WithTimingConfig = {
   easing: Easing.out(Easing.cubic),
 };
 
-export const priceTickTiming: WithTimingConfig = {
-  duration: 300,
-};
-
 export const priceFlashTiming: WithTimingConfig = {
   duration: 300,
   easing: Easing.out(Easing.quad),
@@ -65,5 +61,20 @@ export const drawInTiming: WithTimingConfig = {
 
 export const scrubFadeTiming: WithTimingConfig = {
   duration: 150,
+  easing: Easing.out(Easing.quad),
+};
+
+export const chartMorphTiming: WithTimingConfig = {
+  duration: 450,
+  easing: Easing.inOut(Easing.cubic),
+};
+
+export const scrubGlideTiming: WithTimingConfig = {
+  duration: 120,
+  easing: Easing.out(Easing.quad),
+};
+
+export const livePulseTiming: WithTimingConfig = {
+  duration: 1500,
   easing: Easing.out(Easing.quad),
 };
