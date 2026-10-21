@@ -45,20 +45,12 @@ function randomWalk(
   return prices.map((price, i) => price + (offset * i) / CANDLE_COUNT);
 }
 
-function generateCandles({
-  startPrice,
-  interval,
-  volatility,
-  seed,
-}: CandleOptions) {
-  const random = createRandom(seed);
-  const prices = randomWalk(
-    startPrice,
-    solPerpMarket.price,
-    volatility,
-    random,
-  );
-
+function buildCandles(
+  prices: number[],
+  interval: number,
+  volatility: number,
+  random: () => number,
+) {
   const candles: Candle[] = [];
   for (let i = 1; i <= CANDLE_COUNT; i++) {
     const open = prices[i - 1];
@@ -75,6 +67,23 @@ function generateCandles({
   return candles;
 }
 
+function generateCandles({
+  startPrice,
+  interval,
+  volatility,
+  seed,
+}: CandleOptions) {
+  const random = createRandom(seed);
+  const prices = randomWalk(
+    startPrice,
+    solPerpMarket.price,
+    volatility,
+    random,
+  );
+
+  return buildCandles(prices, interval, volatility, random);
+}
+
 // 40 candles of about 18h each follow the 30 daily closes,
 // so the month view agrees with the post page chart.
 function generateMonthCandles() {
@@ -89,20 +98,7 @@ function generateMonthCandles() {
     return i === CANDLE_COUNT ? price : price + (random() - 0.5) * 0.01 * price;
   });
 
-  const candles: Candle[] = [];
-  for (let i = 1; i <= CANDLE_COUNT; i++) {
-    const open = prices[i - 1];
-    const close = prices[i];
-    const wickSize = volatility * 0.6 * close;
-    candles.push({
-      time: NOW - ((CANDLE_COUNT - i) * days * DAY) / CANDLE_COUNT,
-      open: roundPrice(open),
-      high: roundPrice(Math.max(open, close) + random() * wickSize),
-      low: roundPrice(Math.min(open, close) - random() * wickSize),
-      close: roundPrice(close),
-    });
-  }
-  return candles;
+  return buildCandles(prices, (days * DAY) / CANDLE_COUNT, volatility, random);
 }
 
 export const candlesByTimeframe: Record<Timeframe, Candle[]> = {
