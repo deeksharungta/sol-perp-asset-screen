@@ -122,7 +122,7 @@ export function AssetHeader({
                 <AnimatedText
                   text={priceText}
                   className="font-sans text-xs font-semibold text-text-secondary"
-                  style={[typography.tabularNums, typography.animatedTextXs]}
+                  style={typography.animatedTextXs}
                 />
                 <AnimatedPriceChange isUp={isUp} text={changeText} />
               </Animated.View>

@@ -12,7 +12,6 @@ import {
 
 import { priceFlashTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
-import { typography } from "../../theme/typography";
 import type { Metric } from "../../types/metric";
 import { formatPrice, formatPriceChange } from "../../utils/format";
 import { AnimatedText } from "../ui/AnimatedText";
@@ -80,7 +79,7 @@ export function PriceBlock({
         <AnimatedText
           text={priceText}
           className="h-6 font-sans text-xl font-semibold"
-          style={[typography.tabularNums, priceFlashStyle]}
+          style={priceFlashStyle}
         />
         <AnimatedPriceChange isUp={isUp} text={changeText}>
           <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">

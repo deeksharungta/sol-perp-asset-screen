@@ -44,7 +44,7 @@ export function AnimatedPriceChange({
       <AnimatedText
         text={text}
         className="font-sans text-xs font-semibold"
-        style={[typography.tabularNums, typography.animatedTextXs, colorStyle]}
+        style={[typography.animatedTextXs, colorStyle]}
       />
       {children}
     </View>
