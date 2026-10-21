@@ -13,10 +13,9 @@ export const solPerpMarket: Market = {
   price: 171.2,
   openPrice: 163.77,
   metrics: [
-    { label: "Open interest", value: 3_260_000_000 },
+    { label: "Open interest", value: 178.63 },
     { label: "24h volume", value: 4_050_000_000 },
   ],
-  initialMetric: { label: "Open interest", value: 178.63 },
   fundingRate: 0.0013,
   maxLeverage: 20,
 };

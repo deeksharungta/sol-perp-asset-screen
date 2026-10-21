@@ -207,7 +207,6 @@ export function AssetDetailScreen() {
                       openPrice={candles[0].open}
                       timeframe={timeframe}
                       metrics={market.metrics}
-                      initialMetric={market.initialMetric}
                     />
                   </Animated.View>
                   <ScrubDetails

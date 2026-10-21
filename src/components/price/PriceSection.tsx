@@ -10,7 +10,6 @@ type PriceSectionProps = {
   openPrice: number;
   timeframe: string;
   metrics: Metric[];
-  initialMetric: Metric;
 };
 
 export function PriceSection({
@@ -18,9 +17,8 @@ export function PriceSection({
   openPrice,
   timeframe,
   metrics,
-  initialMetric,
 }: PriceSectionProps) {
-  const [selectedMetric, setSelectedMetric] = useState(initialMetric);
+  const [selectedMetric, setSelectedMetric] = useState(metrics[0]);
   const [isMetricSheetOpen, setIsMetricSheetOpen] = useState(false);
   const [metricSheetAnchorY, setMetricSheetAnchorY] = useState(0);
 
