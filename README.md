@@ -18,7 +18,7 @@ Then press `i` for the iOS simulator, or open the URL in Expo Go on a phone.
 - Header with back, asset icon and chain badge, share (native share sheet) and notifications. Once the chart scrolls away, the header shows the live price, and tapping the title scrolls back up.
 - Price block with the live price and change, and the Open interest / 24h volume switcher.
 - Candlestick and line charts (switch with the toggle), with y-axis labels, the dashed current price line, the price tag and 8 timeframes.
-- Scrub: drag sideways (or hold for 150ms) to move a crosshair over the chart, in either mode. The price block turns into an O/H/L/C readout for that candle, and the price tag and dashed line move to its close.
+- Scrub: drag sideways to move a crosshair over the chart, in either mode. The price block turns into an O/H/L/C readout for that candle, and the price tag and dashed line move to its close.
 - Feed / Holders / About tabs, the "People you follow" filter and the Size sort.
 - Trader cards with stats, likes, comments and the "older" expander.
 - Long / Short buttons pinned to the bottom, with a blur behind them.
@@ -55,13 +55,14 @@ src/
 
 **Safe areas.** The header and the trade bar use the safe-area insets. On phones without a home indicator (iPhone SE) the bar still keeps 12pt from the bottom edge.
 
-**Theme.** Colours come from the Figma variables (`theme/colors.ts` and the Tailwind config). The font is SF Pro Rounded through iOS's built-in `ui-rounded` family, so nothing has to be bundled or licensed. Android falls back to Roboto.
+**Theme.** Colours come from the Figma variables (`theme/colors.ts` and the Tailwind config). The font is SF Pro Rounded. iOS uses the system copy through the `ui-rounded` family. Android bundles the font files through expo-font. Apple's licence only covers Apple platforms, so a production app would switch Android to a licensed rounded font.
 
 ### Trade-offs and notes on the Figma
 
 - The Figma has a green text colour but no red one, so I added `#D9323B` with the same weight as the green.
 - The candles are a seeded random walk, so the chart looks the same on every launch. 1D starts at the open price ($163.77), so the "+$7.43 1D" in the price block matches the chart.
 - The avatars are illustrations rather than the photos in the Figma.
+- Android uses a plain fade instead of a blur under the header and the trade buttons, because the blur looked muddy on some devices.
 - There are no tests yet.
 
 ## What I'd do next
