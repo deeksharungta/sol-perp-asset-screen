@@ -31,6 +31,7 @@ export const ChartSection = memo(function ChartSection({
   return (
     <View className="gap-4">
       <CandleChart
+        key={timeframe}
         candles={candles}
         timeframe={timeframe}
         chartType={chartType}

@@ -8,11 +8,13 @@ import {
   vec,
 } from "@shopify/react-native-skia";
 import * as Haptics from "expo-haptics";
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
-import {
+import Animated, {
+  Extrapolation,
   interpolate,
+  useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
   type SharedValue,
@@ -20,10 +22,11 @@ import {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-import { scrubFadeTiming } from "../../theme/animations";
+import { drawInTiming, scrubFadeTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import type { Candle, ChartType, Timeframe } from "../../types/candle";
 import {
+  clamp,
   getPriceRange,
   indexToX,
   priceToY,
@@ -39,6 +42,7 @@ const CANDLE_GAP = 1.5;
 const WICK_WIDTH = 1;
 const LINE_WIDTH = 2;
 const DASH_INTERVALS = [4, 4];
+const DRAW_IN_SPREAD = 10;
 const SCRUB_ACTIVATION_DISTANCE = 8;
 const SCRUB_HOLD_DURATION = 150;
 
@@ -64,6 +68,12 @@ export const CandleChart = memo(function CandleChart({
   const isUp = lastClose >= candles[0].open;
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
   const lastCloseY = priceToY(lastClose, minPrice, maxPrice, PLOT_HEIGHT);
+
+  const drawProgress = useSharedValue(0);
+
+  useEffect(() => {
+    drawProgress.value = withTiming(1, drawInTiming);
+  }, [drawProgress]);
 
   const candleStep = useDerivedValue(
     () => (canvasSize.value.width - AXIS_WIDTH) / candleCount,
@@ -98,31 +108,49 @@ export const CandleChart = memo(function CandleChart({
     const closeLine = Skia.PathBuilder.Make();
 
     candles.forEach((candle, index) => {
-      const path = candle.close >= candle.open ? greenCandles : redCandles;
       const x = indexToX(index, candleStep.value);
-      const openY = priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT);
       const closeY = priceToY(candle.close, minPrice, maxPrice, PLOT_HEIGHT);
-      const highY = priceToY(candle.high, minPrice, maxPrice, PLOT_HEIGHT);
-      const lowY = priceToY(candle.low, minPrice, maxPrice, PLOT_HEIGHT);
-
-      path.addRect({
-        x: x - bodyWidth / 2,
-        y: Math.min(openY, closeY),
-        width: bodyWidth,
-        height: Math.max(1, Math.abs(closeY - openY)),
-      });
-      path.addRect({
-        x: x - WICK_WIDTH / 2,
-        y: highY,
-        width: WICK_WIDTH,
-        height: lowY - highY,
-      });
 
       if (index === 0) {
         closeLine.moveTo(x, closeY);
       } else {
         closeLine.lineTo(x, closeY);
       }
+
+      const reveal =
+        clamp(
+          drawProgress.value * (candleCount + DRAW_IN_SPREAD) - index,
+          0,
+          DRAW_IN_SPREAD,
+        ) / DRAW_IN_SPREAD;
+      if (reveal === 0) {
+        return;
+      }
+
+      const highY = priceToY(candle.high, minPrice, maxPrice, PLOT_HEIGHT);
+      const lowY = priceToY(candle.low, minPrice, maxPrice, PLOT_HEIGHT);
+      const middleY = (highY + lowY) / 2;
+      const grow = (y: number) => middleY + (y - middleY) * reveal;
+      const openY = grow(
+        priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT),
+      );
+      const grownCloseY = grow(closeY);
+      const grownHighY = grow(highY);
+      const grownLowY = grow(lowY);
+
+      const path = candle.close >= candle.open ? greenCandles : redCandles;
+      path.addRect({
+        x: x - bodyWidth / 2,
+        y: Math.min(openY, grownCloseY),
+        width: bodyWidth,
+        height: Math.max(1, Math.abs(grownCloseY - openY)),
+      });
+      path.addRect({
+        x: x - WICK_WIDTH / 2,
+        y: grownHighY,
+        width: WICK_WIDTH,
+        height: grownLowY - grownHighY,
+      });
     });
 
     return {
@@ -138,6 +166,13 @@ export const CandleChart = memo(function CandleChart({
   const priceLineEnd = useDerivedValue(() =>
     vec(canvasSize.value.width - AXIS_RIGHT_INSET, lastCloseY),
   );
+
+  const axisOpacity = useDerivedValue(() =>
+    interpolate(drawProgress.value, [0.6, 1], [0, 1], Extrapolation.CLAMP),
+  );
+  const axisFadeStyle = useAnimatedStyle(() => ({
+    opacity: axisOpacity.value,
+  }));
 
   const crosshairX = useDerivedValue(() =>
     indexToX(scrubIndex.value, candleStep.value),
@@ -191,20 +226,23 @@ export const CandleChart = memo(function CandleChart({
                 strokeWidth={LINE_WIDTH}
                 strokeJoin="round"
                 strokeCap="round"
+                end={drawProgress}
               />
             )}
             <Group opacity={scrubProgress}>
               <Path path={dimmedArea} color={colors.background} opacity={0.5} />
             </Group>
-            <Line
-              p1={vec(0, lastCloseY)}
-              p2={priceLineEnd}
-              color={priceColor}
-              strokeWidth={1}
-              opacity={0.5}
-            >
-              <DashPathEffect intervals={DASH_INTERVALS} />
-            </Line>
+            <Group opacity={axisOpacity}>
+              <Line
+                p1={vec(0, lastCloseY)}
+                p2={priceLineEnd}
+                color={priceColor}
+                strokeWidth={1}
+                opacity={0.5}
+              >
+                <DashPathEffect intervals={DASH_INTERVALS} />
+              </Line>
+            </Group>
             <Group opacity={scrubProgress}>
               <Path
                 path={crosshair}
@@ -215,15 +253,20 @@ export const CandleChart = memo(function CandleChart({
             </Group>
           </Canvas>
 
-          <PriceAxis
-            minPrice={minPrice}
-            maxPrice={maxPrice}
-            step={step}
-            lastCloseY={lastCloseY}
-            tagPrice={tagPrice}
-            isUp={isUp}
-            height={PLOT_HEIGHT}
-          />
+          <Animated.View
+            className="pointer-events-none absolute inset-0"
+            style={axisFadeStyle}
+          >
+            <PriceAxis
+              minPrice={minPrice}
+              maxPrice={maxPrice}
+              step={step}
+              lastCloseY={lastCloseY}
+              tagPrice={tagPrice}
+              isUp={isUp}
+              height={PLOT_HEIGHT}
+            />
+          </Animated.View>
         </View>
       </GestureDetector>
     </View>

@@ -5,6 +5,11 @@ export const slideTiming: WithTimingConfig = {
   easing: Easing.out(Easing.cubic),
 };
 
+export const drawInTiming: WithTimingConfig = {
+  duration: 700,
+  easing: Easing.out(Easing.cubic),
+};
+
 export const scrubFadeTiming: WithTimingConfig = {
   duration: 150,
   easing: Easing.out(Easing.quad),
