@@ -70,6 +70,8 @@ export const ScrubDetails = memo(function ScrubDetails({
     <Animated.View
       className="pointer-events-none absolute inset-x-0 top-0 flex-row justify-between px-4"
       style={fadeStyle}
+      accessibilityElementsHidden
+      importantForAccessibility="no-hide-descendants"
     >
       <View className="gap-1">
         <AnimatedText

@@ -18,6 +18,7 @@ import Animated, {
   type SharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
 import { useChartScrub } from "../../hooks/useChartScrub";
 import {
@@ -55,7 +56,7 @@ type CandleChartProps = {
 };
 
 export function CandleChart({
-  candles,
+  candles: latestCandles,
   timeframe,
   chartType,
   scrubIndex,
@@ -65,25 +66,28 @@ export function CandleChart({
   const canvasSize = useSharedValue({ width: 0, height: 0 });
   // The last timeframe's candles stay drawn so the chart can zoom from them to the new ones.
   const [layers, setLayers] = useState({
-    candles,
-    previousCandles: candles,
+    candles: latestCandles,
+    previousCandles: latestCandles,
   });
-  if (layers.candles !== candles) {
-    setLayers({ candles, previousCandles: layers.candles });
+  const [isZooming, setIsZooming] = useState(false);
+  if (!isZooming && layers.candles !== latestCandles) {
+    setLayers({ candles: latestCandles, previousCandles: layers.candles });
+    setIsZooming(true);
   }
-  const { previousCandles } = layers;
+  const { candles, previousCandles } = layers;
 
   const range = getPriceRange(candles);
   const previousRange = getPriceRange(previousCandles);
   const candleCount = candles.length;
   const lastClose = candles[candleCount - 1].close;
   const isUp = lastClose >= candles[0].open;
-  const previousLastClose = previousCandles[candleCount - 1].close;
+  const previousLastIndex = previousCandles.length - 1;
+  const previousLastClose = previousCandles[previousLastIndex].close;
   const isPreviousUp = previousLastClose >= previousCandles[0].open;
   // The zoom runs in log space, so every frame scales by the same factor instead of crawling and then snapping at the end.
   const logRatio = Math.log(
     (candles[candleCount - 1].time - candles[0].time) /
-      (previousCandles[candleCount - 1].time - previousCandles[0].time),
+      (previousCandles[previousLastIndex].time - previousCandles[0].time),
   );
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
 
@@ -100,7 +104,11 @@ export function CandleChart({
       return;
     }
     zoomProgress.value = 0;
-    zoomProgress.value = withTiming(1, timeframeZoomTiming);
+    zoomProgress.value = withTiming(1, timeframeZoomTiming, (finished) => {
+      if (finished) {
+        scheduleOnRN(setIsZooming, false);
+      }
+    });
   }, [candles, previousCandles, zoomProgress]);
 
   useEffect(() => {

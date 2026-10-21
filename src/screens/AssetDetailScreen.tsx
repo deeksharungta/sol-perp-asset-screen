@@ -63,9 +63,9 @@ export function AssetDetailScreen() {
 
   const handleShare = useCallback(() => {
     Share.share({
-      message: `${market.symbol} is trading at ${formatUsd(market.price)}`,
+      message: `${market.symbol} is trading at ${formatUsd(livePrice.get())}`,
     });
-  }, [market]);
+  }, [market, livePrice]);
 
   const handleNotify = useCallback(() => {
     showToast("Price alerts are coming soon");

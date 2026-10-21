@@ -45,13 +45,18 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
 });
+const utcDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  timeZone: "UTC",
+});
 const monthFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   year: "numeric",
 });
 
 export function formatShortDate(time: number) {
-  return dateFormatter.format(time);
+  return utcDateFormatter.format(time);
 }
 
 export function formatCandleTime(time: number, timeframe: Timeframe) {
