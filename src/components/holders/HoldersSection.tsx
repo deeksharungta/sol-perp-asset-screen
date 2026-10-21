@@ -1,32 +1,27 @@
 import { Fragment } from "react";
 import { Text, View } from "react-native";
-import Animated from "react-native-reanimated";
 
 import { holders } from "../../data/holders";
 import { fadeInEntering } from "../../theme/animations";
-import { surfaces } from "../../theme/surfaces";
 import { typography } from "../../theme/typography";
 import type { Holder } from "../../types/holder";
 import { formatUsd } from "../../utils/format";
 import { AmountWithPnl } from "../ui/AmountWithPnl";
 import { Avatar } from "../ui/Avatar";
+import { Card } from "../ui/Card";
 import { Divider } from "../ui/Divider";
 import { SideLabel } from "../ui/SideLabel";
 
 export function HoldersSection() {
   return (
-    <Animated.View
-      entering={fadeInEntering}
-      className="rounded-3xl bg-surface px-4"
-      style={surfaces.card}
-    >
+    <Card entering={fadeInEntering} className="px-4">
       {holders.map((holder, index) => (
         <Fragment key={holder.id}>
           {index > 0 && <Divider />}
           <HolderRow holder={holder} rank={index + 1} />
         </Fragment>
       ))}
-    </Animated.View>
+    </Card>
   );
 }
 

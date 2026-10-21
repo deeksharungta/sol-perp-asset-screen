@@ -12,10 +12,10 @@ import {
   feedCardExiting,
   slideTiming,
 } from "../../theme/animations";
-import { surfaces } from "../../theme/surfaces";
 import type { TraderPost } from "../../types/traderPost";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon";
 import { CommentIcon } from "../icons/CommentIcon";
+import { Card } from "../ui/Card";
 import { LikeButton } from "../ui/LikeButton";
 import { OlderPosts } from "./OlderPosts";
 import { PositionStats } from "./PositionStats";
@@ -44,12 +44,11 @@ export const TraderCard = memo(function TraderCard({
   }));
 
   return (
-    <Animated.View
+    <Card
       layout={expandLayout}
       entering={feedCardEntering}
       exiting={feedCardExiting}
-      className="gap-3 rounded-3xl bg-surface p-4"
-      style={surfaces.card}
+      className="gap-3 p-4"
     >
       <TraderSummary post={post} />
 
@@ -106,6 +105,6 @@ export const TraderCard = memo(function TraderCard({
       </View>
 
       {isExpanded && <OlderPosts posts={olderPosts} />}
-    </Animated.View>
+    </Card>
   );
 });

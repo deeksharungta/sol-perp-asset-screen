@@ -6,7 +6,6 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { fadeInEntering } from "../../theme/animations";
-import { surfaces } from "../../theme/surfaces";
 import { typography } from "../../theme/typography";
 import type { Market } from "../../types/market";
 import {
@@ -16,6 +15,7 @@ import {
 } from "../../utils/format";
 import { AnimatedPriceChange } from "../price/AnimatedPriceChange";
 import { AnimatedText } from "../ui/AnimatedText";
+import { Card } from "../ui/Card";
 import { Divider } from "../ui/Divider";
 
 const statValueClassName =
@@ -72,16 +72,16 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
 
   return (
     <Animated.View entering={fadeInEntering} className="gap-2">
-      <View className="gap-2 rounded-3xl bg-surface p-4" style={surfaces.card}>
+      <Card className="gap-2 p-4">
         <Text className="font-sans text-base font-semibold leading-5 text-text-primary">
           About {market.assetName}
         </Text>
         <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
           {market.description}
         </Text>
-      </View>
+      </Card>
 
-      <View className="rounded-3xl bg-surface px-4" style={surfaces.card}>
+      <Card className="px-4">
         {stats.map((stat, index) => (
           <Fragment key={stat.label}>
             {index > 0 && <Divider />}
@@ -102,7 +102,7 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
             </View>
           </Fragment>
         ))}
-      </View>
+      </Card>
     </Animated.View>
   );
 }
