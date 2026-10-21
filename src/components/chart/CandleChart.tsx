@@ -1,8 +1,10 @@
 import {
   Canvas,
+  Circle,
   DashPathEffect,
   Group,
   Line,
+  LinearGradient,
   Path,
   Skia,
   vec,
@@ -45,6 +47,9 @@ const AXIS_RIGHT_INSET = 12;
 const CANDLE_GAP = 1.5;
 const WICK_WIDTH = 1;
 const LINE_WIDTH = 2;
+const AREA_OPACITY = 0.24;
+const END_DOT_RADIUS = 3;
+const END_HALO_RADIUS = 7;
 const DASH_INTERVALS = [4, 4];
 const DRAW_IN_SPREAD = 10;
 const SCRUB_ACTIVATION_DISTANCE = 8;
@@ -73,6 +78,9 @@ export const CandleChart = memo(function CandleChart({
   const lastClose = candles[candleCount - 1].close;
   const isUp = lastClose >= candles[0].open;
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
+  const priceFadeColor = isUp
+    ? colors.priceLineGreenTransparent
+    : colors.priceLineRedTransparent;
   const lastCloseY = priceToY(lastClose, minPrice, maxPrice, PLOT_HEIGHT);
 
   const lineProgress = useSharedValue(chartType === "line" ? 1 : 0);
@@ -158,16 +166,28 @@ export const CandleChart = memo(function CandleChart({
       });
     });
 
+    const closeLinePath = closeLine.detach();
+    const closeArea = Skia.PathBuilder.MakeFromPath(closeLinePath)
+      .lineTo(indexToX(candleCount - 1, candleStep.value), PLOT_HEIGHT)
+      .lineTo(indexToX(0, candleStep.value), PLOT_HEIGHT)
+      .close()
+      .detach();
+
     return {
       greenCandles: greenCandles.detach(),
       redCandles: redCandles.detach(),
-      closeLine: closeLine.detach(),
+      closeLine: closeLinePath,
+      closeArea,
     };
   });
 
   const greenCandles = useDerivedValue(() => paths.value.greenCandles);
   const redCandles = useDerivedValue(() => paths.value.redCandles);
   const closeLine = useDerivedValue(() => paths.value.closeLine);
+  const closeArea = useDerivedValue(() => paths.value.closeArea);
+  const lastPointX = useDerivedValue(() =>
+    indexToX(candleCount - 1, candleStep.value),
+  );
   const priceLineEnd = useDerivedValue(() =>
     vec(canvasSize.value.width - AXIS_RIGHT_INSET, lastCloseY),
   );
@@ -214,6 +234,15 @@ export const CandleChart = memo(function CandleChart({
               <Path path={redCandles} color={colors.priceLineRed} />
             </Group>
             <Group opacity={lineProgress}>
+              <Group opacity={axisOpacity}>
+                <Path path={closeArea} opacity={AREA_OPACITY}>
+                  <LinearGradient
+                    start={vec(0, 0)}
+                    end={vec(0, PLOT_HEIGHT)}
+                    colors={[priceColor, priceFadeColor]}
+                  />
+                </Path>
+              </Group>
               <Path
                 path={closeLine}
                 color={priceColor}
@@ -223,6 +252,21 @@ export const CandleChart = memo(function CandleChart({
                 strokeCap="round"
                 end={drawProgress}
               />
+              <Group opacity={axisOpacity}>
+                <Circle
+                  cx={lastPointX}
+                  cy={lastCloseY}
+                  r={END_HALO_RADIUS}
+                  color={priceColor}
+                  opacity={AREA_OPACITY}
+                />
+                <Circle
+                  cx={lastPointX}
+                  cy={lastCloseY}
+                  r={END_DOT_RADIUS}
+                  color={priceColor}
+                />
+              </Group>
             </Group>
             <Group opacity={scrubProgress}>
               <Path path={dimmedArea} color={colors.background} opacity={0.5} />

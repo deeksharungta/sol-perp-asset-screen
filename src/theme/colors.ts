@@ -6,6 +6,8 @@ export const colors = {
   textRed: "#D9323B",
   priceLineGreen: "#0CC25E",
   priceLineRed: "#F63841",
+  priceLineGreenTransparent: "rgba(12, 194, 94, 0)",
+  priceLineRedTransparent: "rgba(246, 56, 65, 0)",
   surface: "#FFFFFF",
   surfaceTransparent: "rgba(255, 255, 255, 0)",
   background: "#E9EEF6",
