@@ -23,7 +23,7 @@ export function ChartTypeToggle({ chartType, onPress }: ChartTypeToggleProps) {
       className="h-6 w-10 items-center justify-center rounded-full"
       style={surfaces.pill}
     >
-      {isCandles ? <CandlesIcon /> : <LineChartIcon />}
+      {isCandles ? <LineChartIcon /> : <CandlesIcon />}
     </Pressable>
   );
 }
