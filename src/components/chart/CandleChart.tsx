@@ -1,18 +1,34 @@
 import {
   Canvas,
   DashPathEffect,
+  Group,
   Line,
   Path,
   Skia,
   vec,
 } from "@shopify/react-native-skia";
+import * as Haptics from "expo-haptics";
 import { memo } from "react";
 import { StyleSheet, View } from "react-native";
-import { useDerivedValue, useSharedValue } from "react-native-reanimated";
+import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
+import {
+  interpolate,
+  useDerivedValue,
+  useSharedValue,
+  type SharedValue,
+  withTiming,
+} from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
+import { scrubFadeTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import type { Candle, ChartType, Timeframe } from "../../types/candle";
-import { getPriceRange, indexToX, priceToY } from "../../utils/chartMath";
+import {
+  getPriceRange,
+  indexToX,
+  priceToY,
+  xToIndex,
+} from "../../utils/chartMath";
 import { formatUsd } from "../../utils/format";
 import { PriceAxis } from "./PriceAxis";
 
@@ -22,28 +38,60 @@ const AXIS_RIGHT_INSET = 12;
 const CANDLE_GAP = 1.5;
 const WICK_WIDTH = 1;
 const LINE_WIDTH = 2;
+const DASH_INTERVALS = [4, 4];
+const SCRUB_ACTIVATION_DISTANCE = 8;
+const SCRUB_HOLD_DURATION = 150;
 
 type CandleChartProps = {
   candles: Candle[];
   timeframe: Timeframe;
   chartType: ChartType;
+  scrubIndex: SharedValue<number>;
+  scrubProgress: SharedValue<number>;
 };
 
 export const CandleChart = memo(function CandleChart({
   candles,
   timeframe,
   chartType,
+  scrubIndex,
+  scrubProgress,
 }: CandleChartProps) {
   const canvasSize = useSharedValue({ width: 0, height: 0 });
   const { minPrice, maxPrice, step } = getPriceRange(candles);
-  const lastClose = candles[candles.length - 1].close;
+  const candleCount = candles.length;
+  const lastClose = candles[candleCount - 1].close;
   const isUp = lastClose >= candles[0].open;
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
   const lastCloseY = priceToY(lastClose, minPrice, maxPrice, PLOT_HEIGHT);
 
+  const candleStep = useDerivedValue(
+    () => (canvasSize.value.width - AXIS_WIDTH) / candleCount,
+  );
+
+  const scrubGesture = usePanGesture({
+    activeOffsetX: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
+    failOffsetY: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
+    activateAfterLongPress: SCRUB_HOLD_DURATION,
+    onActivate: (event) => {
+      scrubIndex.value = xToIndex(event.x, candleStep.value, candleCount);
+      scrubProgress.value = withTiming(1, scrubFadeTiming);
+      scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Light);
+    },
+    onUpdate: (event) => {
+      const index = xToIndex(event.x, candleStep.value, candleCount);
+      if (index !== scrubIndex.value) {
+        scrubIndex.value = index;
+        scheduleOnRN(Haptics.selectionAsync);
+      }
+    },
+    onDeactivate: () => {
+      scrubProgress.value = withTiming(0, scrubFadeTiming);
+    },
+  });
+
   const paths = useDerivedValue(() => {
-    const candleStep = (canvasSize.value.width - AXIS_WIDTH) / candles.length;
-    const bodyWidth = candleStep - CANDLE_GAP;
+    const bodyWidth = candleStep.value - CANDLE_GAP;
 
     const greenCandles = Skia.PathBuilder.Make();
     const redCandles = Skia.PathBuilder.Make();
@@ -51,7 +99,7 @@ export const CandleChart = memo(function CandleChart({
 
     candles.forEach((candle, index) => {
       const path = candle.close >= candle.open ? greenCandles : redCandles;
-      const x = indexToX(index, candleStep);
+      const x = indexToX(index, candleStep.value);
       const openY = priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT);
       const closeY = priceToY(candle.close, minPrice, maxPrice, PLOT_HEIGHT);
       const highY = priceToY(candle.high, minPrice, maxPrice, PLOT_HEIGHT);
@@ -91,50 +139,93 @@ export const CandleChart = memo(function CandleChart({
     vec(canvasSize.value.width - AXIS_RIGHT_INSET, lastCloseY),
   );
 
+  const crosshairX = useDerivedValue(() =>
+    indexToX(scrubIndex.value, candleStep.value),
+  );
+  const tagPrice = useDerivedValue(() =>
+    interpolate(
+      scrubProgress.value,
+      [0, 1],
+      [lastClose, candles[scrubIndex.value].close],
+    ),
+  );
+  const crosshair = useDerivedValue(() => {
+    const tagY = priceToY(tagPrice.value, minPrice, maxPrice, PLOT_HEIGHT);
+    return Skia.PathBuilder.Make()
+      .moveTo(crosshairX.value, 0)
+      .lineTo(crosshairX.value, PLOT_HEIGHT)
+      .moveTo(0, tagY)
+      .lineTo(canvasSize.value.width - AXIS_RIGHT_INSET, tagY)
+      .detach();
+  });
+  // Covers everything except the selected candle's slot.
+  const dimmedArea = useDerivedValue(() => {
+    const slotLeft = crosshairX.value - candleStep.value / 2;
+    const slotRight = crosshairX.value + candleStep.value / 2;
+    const plotRight = canvasSize.value.width - AXIS_WIDTH;
+    return Skia.PathBuilder.Make()
+      .addRect(Skia.XYWHRect(0, 0, slotLeft, PLOT_HEIGHT))
+      .addRect(Skia.XYWHRect(slotRight, 0, plotRight - slotRight, PLOT_HEIGHT))
+      .detach();
+  });
+
   return (
     <View
       accessible
       accessibilityLabel={`SOL price chart, ${timeframe}, last ${formatUsd(lastClose)}`}
       className="py-2"
     >
-      <View style={{ height: PLOT_HEIGHT }}>
-        <Canvas style={StyleSheet.absoluteFill} onSize={canvasSize}>
-          {chartType === "candles" ? (
-            <>
-              <Path path={greenCandles} color={colors.priceLineGreen} />
-              <Path path={redCandles} color={colors.priceLineRed} />
-            </>
-          ) : (
-            <Path
-              path={closeLine}
+      <GestureDetector gesture={scrubGesture}>
+        <View style={{ height: PLOT_HEIGHT }}>
+          <Canvas style={StyleSheet.absoluteFill} onSize={canvasSize}>
+            {chartType === "candles" ? (
+              <>
+                <Path path={greenCandles} color={colors.priceLineGreen} />
+                <Path path={redCandles} color={colors.priceLineRed} />
+              </>
+            ) : (
+              <Path
+                path={closeLine}
+                color={priceColor}
+                style="stroke"
+                strokeWidth={LINE_WIDTH}
+                strokeJoin="round"
+                strokeCap="round"
+              />
+            )}
+            <Group opacity={scrubProgress}>
+              <Path path={dimmedArea} color={colors.background} opacity={0.5} />
+            </Group>
+            <Line
+              p1={vec(0, lastCloseY)}
+              p2={priceLineEnd}
               color={priceColor}
-              style="stroke"
-              strokeWidth={LINE_WIDTH}
-              strokeJoin="round"
-              strokeCap="round"
-            />
-          )}
-          <Line
-            p1={vec(0, lastCloseY)}
-            p2={priceLineEnd}
-            color={priceColor}
-            strokeWidth={1}
-            opacity={0.5}
-          >
-            <DashPathEffect intervals={[4, 4]} />
-          </Line>
-        </Canvas>
+              strokeWidth={1}
+              opacity={0.5}
+            >
+              <DashPathEffect intervals={DASH_INTERVALS} />
+            </Line>
+            <Group opacity={scrubProgress}>
+              <Path
+                path={crosshair}
+                color={colors.textTertiary}
+                style="stroke"
+                strokeWidth={StyleSheet.hairlineWidth}
+              />
+            </Group>
+          </Canvas>
 
-        <PriceAxis
-          minPrice={minPrice}
-          maxPrice={maxPrice}
-          step={step}
-          lastClose={lastClose}
-          lastCloseY={lastCloseY}
-          isUp={isUp}
-          height={PLOT_HEIGHT}
-        />
-      </View>
+          <PriceAxis
+            minPrice={minPrice}
+            maxPrice={maxPrice}
+            step={step}
+            lastCloseY={lastCloseY}
+            tagPrice={tagPrice}
+            isUp={isUp}
+            height={PLOT_HEIGHT}
+          />
+        </View>
+      </GestureDetector>
     </View>
   );
 });

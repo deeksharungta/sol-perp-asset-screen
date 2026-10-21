@@ -1,9 +1,16 @@
 import { Text, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useDerivedValue,
+  type SharedValue,
+} from "react-native-reanimated";
 
 import { clamp, priceToY } from "../../utils/chartMath";
-import { formatUsd } from "../../utils/format";
+import { formatPrice } from "../../utils/format";
+import { AnimatedText } from "../ui/AnimatedText";
 
 const LABEL_HEIGHT = 13;
+const TAG_WIDTH = 46;
 const TAG_HEIGHT = 16;
 const EDGE_ROOM = 8;
 
@@ -11,8 +18,8 @@ type PriceAxisProps = {
   minPrice: number;
   maxPrice: number;
   step: number;
-  lastClose: number;
   lastCloseY: number;
+  tagPrice: SharedValue<number>;
   isUp: boolean;
   height: number;
 };
@@ -21,8 +28,8 @@ export function PriceAxis({
   minPrice,
   maxPrice,
   step,
-  lastClose,
   lastCloseY,
+  tagPrice,
   isUp,
   height,
 }: PriceAxisProps) {
@@ -38,6 +45,19 @@ export function PriceAxis({
     height + EDGE_ROOM - TAG_HEIGHT,
   );
   const tagCenterY = tagTop + TAG_HEIGHT / 2;
+
+  const tagText = useDerivedValue(() => formatPrice(tagPrice.value));
+  const tagStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateY: clamp(
+          priceToY(tagPrice.value, minPrice, maxPrice, height) - TAG_HEIGHT / 2,
+          -EDGE_ROOM,
+          height + EDGE_ROOM - TAG_HEIGHT,
+        ),
+      },
+    ],
+  }));
 
   return (
     <View className="pointer-events-none absolute inset-0">
@@ -57,14 +77,15 @@ export function PriceAxis({
         );
       })}
 
-      <View
-        className={`absolute right-3 h-4 justify-center rounded-full px-1 ${isUp ? "bg-price-line-green" : "bg-price-line-red"}`}
-        style={{ top: tagTop }}
+      <Animated.View
+        className={`absolute right-3 top-0 h-4 justify-center rounded-full ${isUp ? "bg-price-line-green" : "bg-price-line-red"}`}
+        style={[{ width: TAG_WIDTH }, tagStyle]}
       >
-        <Text className="font-sans text-2xs font-bold tabular-nums text-text-on-color">
-          {formatUsd(lastClose)}
-        </Text>
-      </View>
+        <AnimatedText
+          text={tagText}
+          className="text-center font-sans text-2xs font-bold text-text-on-color"
+        />
+      </Animated.View>
     </View>
   );
 }

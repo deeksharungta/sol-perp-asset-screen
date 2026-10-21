@@ -1,3 +1,5 @@
+import type { Timeframe } from "../types/candle";
+
 const usdFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -7,6 +9,46 @@ const usdFormatter = new Intl.NumberFormat("en-US", {
 
 export function formatUsd(value: number) {
   return usdFormatter.format(value);
+}
+
+// Intl isn't available on the UI thread, so chart readouts use this while scrubbing.
+export function formatPrice(price: number) {
+  "worklet";
+  return `$${price.toFixed(2)}`;
+}
+
+const timeFormatter = new Intl.DateTimeFormat("en-US", {
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+});
+const monthFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  year: "numeric",
+});
+
+export function formatCandleTime(time: number, timeframe: Timeframe) {
+  if (timeframe === "1H" || timeframe === "1D") {
+    return timeFormatter.format(time);
+  }
+  if (timeframe === "1W" || timeframe === "1M") {
+    return dateTimeFormatter.format(time);
+  }
+  if (timeframe === "All") {
+    return monthFormatter.format(time);
+  }
+  return dateFormatter.format(time);
 }
 
 export function formatPercent(value: number) {

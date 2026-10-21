@@ -22,6 +22,11 @@ export function indexToX(index: number, candleStep: number) {
   return index * candleStep + candleStep / 2;
 }
 
+export function xToIndex(x: number, candleStep: number, candleCount: number) {
+  "worklet";
+  return clamp(Math.floor(x / candleStep), 0, candleCount - 1);
+}
+
 // Rounds the step up to 1, 2 or 5 × 10^n, so labels read like $160, $165, $170.
 export function niceStep(range: number) {
   "worklet";

@@ -2,12 +2,16 @@ import { BlurTargetView } from "expo-blur";
 import { useCallback, useRef, useState, type ComponentRef } from "react";
 import { Share, View, type ListRenderItem } from "react-native";
 import Animated, {
+  Extrapolation,
+  interpolate,
   useAnimatedScrollHandler,
+  useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ChartSection } from "../components/chart/ChartSection";
+import { ScrubDetails } from "../components/chart/ScrubDetails";
 import { FeedFilters } from "../components/feed/FeedFilters";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
@@ -41,6 +45,17 @@ export function AssetDetailScreen() {
   });
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const candles = candlesByTimeframe[timeframe];
+  // Shared with the chart so the scrub panel can replace the price block without re-renders.
+  const scrubIndex = useSharedValue(0);
+  const scrubProgress = useSharedValue(0);
+  const priceFadeStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(
+      scrubProgress.value,
+      [0, 0.5],
+      [1, 0],
+      Extrapolation.CLAMP,
+    ),
+  }));
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const [isFollowingOnly, setIsFollowingOnly] = useState(true);
   const [posts, setPosts] = useState(traderPosts);
@@ -114,17 +129,29 @@ export function AssetDetailScreen() {
             scrollEventThrottle={16}
             ListHeaderComponent={
               <View className="gap-6 pb-4 pt-3">
-                <PriceSection
-                  price={market.price}
-                  openPrice={candles[0].open}
-                  timeframe={timeframe}
-                  metrics={market.metrics}
-                  initialMetric={market.initialMetric}
-                />
+                <View>
+                  <Animated.View style={priceFadeStyle}>
+                    <PriceSection
+                      price={market.price}
+                      openPrice={candles[0].open}
+                      timeframe={timeframe}
+                      metrics={market.metrics}
+                      initialMetric={market.initialMetric}
+                    />
+                  </Animated.View>
+                  <ScrubDetails
+                    candles={candles}
+                    timeframe={timeframe}
+                    scrubIndex={scrubIndex}
+                    scrubProgress={scrubProgress}
+                  />
+                </View>
                 <ChartSection
                   candles={candles}
                   timeframe={timeframe}
                   onTimeframeChange={setTimeframe}
+                  scrubIndex={scrubIndex}
+                  scrubProgress={scrubProgress}
                 />
                 <View className="gap-4">
                   <TabBar
