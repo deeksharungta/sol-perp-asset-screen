@@ -1,3 +1,5 @@
+const { platformSelect } = require("nativewind/theme");
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ["./App.tsx", "./src/**/*.{ts,tsx}"],
@@ -25,8 +27,12 @@ module.exports = {
       },
 
       fontFamily: {
-        // iOS system rounded design (SF Pro Rounded); Android falls back to its default font.
-        sans: ["ui-rounded", "system-ui", "sans-serif"],
+        // iOS uses its built-in SF Pro Rounded; Android uses the bundled copy from app.json.
+        sans: platformSelect({
+          ios: "ui-rounded",
+          android: "SFProRounded",
+          default: "system-ui",
+        }),
       },
     },
   },

@@ -20,6 +20,34 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-font",
+        {
+          "android": {
+            "fonts": [
+              {
+                "fontFamily": "SFProRounded",
+                "fontDefinitions": [
+                  {
+                    "path": "./assets/fonts/SF-Pro-Rounded-Regular.otf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./assets/fonts/SF-Pro-Rounded-Semibold.otf",
+                    "weight": 600
+                  },
+                  {
+                    "path": "./assets/fonts/SF-Pro-Rounded-Bold.otf",
+                    "weight": 700
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    ]
   }
 }
