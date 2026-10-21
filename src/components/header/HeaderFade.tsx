@@ -1,4 +1,4 @@
-import { memo, type ComponentRef, type RefObject } from "react";
+import { memo } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedProps,
@@ -10,12 +10,10 @@ import { colors } from "../../theme/colors";
 import { BLUR_INTENSITY, MaskedBlur } from "../ui/MaskedBlur";
 
 type HeaderFadeProps = {
-  blurTarget: RefObject<ComponentRef<typeof View> | null>;
   scrollY: SharedValue<number>;
 };
 
 export const HeaderFade = memo(function HeaderFade({
-  blurTarget,
   scrollY,
 }: HeaderFadeProps) {
   // iOS blur ignores parent opacity, so the blur strength itself is turned off at the top.
@@ -29,11 +27,7 @@ export const HeaderFade = memo(function HeaderFade({
 
   return (
     <View className="pointer-events-none absolute left-0 right-0 top-0 h-6">
-      <MaskedBlur
-        blurTarget={blurTarget}
-        maskStyle={styles.blurMask}
-        animatedProps={blurProps}
-      />
+      <MaskedBlur maskStyle={styles.blurMask} animatedProps={blurProps} />
       <Animated.View
         className="absolute inset-0"
         style={[styles.fade, fadeStyle]}

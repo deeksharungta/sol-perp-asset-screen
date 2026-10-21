@@ -1,12 +1,4 @@
-import { BlurTargetView } from "expo-blur";
-import {
-  startTransition,
-  useCallback,
-  useMemo,
-  useRef,
-  useState,
-  type ComponentRef,
-} from "react";
+import { startTransition, useCallback, useMemo, useRef, useState } from "react";
 import { Share, View, type FlatList, type ListRenderItem } from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
@@ -15,12 +7,12 @@ import Animated, {
 
 import { AssetOverview } from "../components/AssetOverview";
 import { AboutSection } from "../components/about/AboutSection";
-import { ScrollToTopButton } from "../components/ui/ScrollToTopButton";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
-import { HoldersSection } from "../components/holders/HoldersSection";
 import { HeaderFade } from "../components/header/HeaderFade";
+import { HoldersSection } from "../components/holders/HoldersSection";
 import { TradeBar, useTradeBarHeight } from "../components/trade/TradeBar";
+import { ScrollToTopButton } from "../components/ui/ScrollToTopButton";
 import { Toast } from "../components/ui/Toast";
 import { solPerpMarket } from "../data/market";
 import { useFeed } from "../hooks/useFeed";
@@ -39,7 +31,6 @@ export function AssetDetailScreen() {
   const tradeBarHeight = useTradeBarHeight();
   const livePrice = useLivePrice(market.price);
   const { toastMessage, showToast } = useToast();
-  const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
   const listRef = useRef<FlatList<TraderPost>>(null);
   const scrollY = useSharedValue(0);
 
@@ -118,7 +109,7 @@ export function AssetDetailScreen() {
       </View>
 
       <View className="flex-1">
-        <BlurTargetView ref={blurTargetRef} className="flex-1 bg-background">
+        <View className="flex-1 bg-background">
           <Animated.FlatList
             ref={listRef}
             contentContainerStyle={listContentStyle}
@@ -151,8 +142,8 @@ export function AssetDetailScreen() {
               />
             }
           />
-        </BlurTargetView>
-        <HeaderFade blurTarget={blurTargetRef} scrollY={scrollY} />
+        </View>
+        <HeaderFade scrollY={scrollY} />
         <ScrollToTopButton
           scrollY={scrollY}
           bottom={tradeBarHeight}
@@ -160,11 +151,7 @@ export function AssetDetailScreen() {
         />
       </View>
 
-      <TradeBar
-        blurTarget={blurTargetRef}
-        onGoLong={handleGoLong}
-        onGoShort={handleGoShort}
-      />
+      <TradeBar onGoLong={handleGoLong} onGoShort={handleGoShort} />
       {toastMessage && <Toast message={toastMessage} bottom={tradeBarHeight} />}
     </View>
   );

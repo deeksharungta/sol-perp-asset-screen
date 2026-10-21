@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "sol-perp-asset-screen",
+    "name": "SOL-PERP",
     "slug": "sol-perp-asset-screen",
     "owner": "deeksharungta",
     "version": "1.0.0",
@@ -8,7 +8,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.deeksharungta.solperp"
     },
     "android": {
@@ -20,9 +20,6 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {

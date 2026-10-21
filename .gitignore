@@ -39,3 +39,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# build outputs
+*.apk
+*.aab
+*.ipa
+
+# Claude Code
+.claude/
