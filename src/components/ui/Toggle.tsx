@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import Animated, {
   interpolateColor,
@@ -5,6 +6,7 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
 import { slideTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
@@ -26,10 +28,16 @@ export function Toggle({
   accessibilityLabel,
 }: ToggleProps) {
   const progress = useSharedValue(value ? 1 : 0);
+  const nextValue = useRef(value);
 
   const handlePress = () => {
-    progress.value = withTiming(value ? 0 : 1, slideTiming);
-    onValueChange(!value);
+    const isOn = !nextValue.current;
+    nextValue.current = isOn;
+    progress.value = withTiming(isOn ? 1 : 0, slideTiming, (finished) => {
+      if (finished) {
+        scheduleOnRN(onValueChange, isOn);
+      }
+    });
   };
 
   const trackStyle = useAnimatedStyle(() => ({

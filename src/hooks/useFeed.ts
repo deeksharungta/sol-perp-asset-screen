@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { startTransition, useCallback, useMemo, useState } from "react";
 
 import { traderPosts } from "../data/traderPosts";
 
@@ -7,13 +7,16 @@ export function useFeed() {
   const [isFollowingOnly, setIsFollowingOnly] = useState(true);
   const [isLargestFirst, setIsLargestFirst] = useState(true);
 
-  const sortedPosts = useMemo(() => {
-    return [...posts].sort((a, b) =>
+  const visiblePosts = useMemo(() => {
+    const sortedPosts = [...posts].sort((a, b) =>
       isLargestFirst
         ? b.positionValue - a.positionValue
         : a.positionValue - b.positionValue,
     );
-  }, [posts, isLargestFirst]);
+    return isFollowingOnly
+      ? sortedPosts.filter((post) => post.isFollowed)
+      : sortedPosts;
+  }, [posts, isLargestFirst, isFollowingOnly]);
 
   // Only the tapped post gets a new object, so only its memoized card re-renders.
   const handleLikePress = useCallback((postId: string) => {
@@ -30,15 +33,21 @@ export function useFeed() {
     );
   }, []);
 
+  const changeFollowingOnly = (value: boolean) => {
+    startTransition(() => {
+      setIsFollowingOnly(value);
+    });
+  };
+
   const toggleSort = () => {
     setIsLargestFirst(!isLargestFirst);
   };
 
   return {
-    sortedPosts,
+    visiblePosts,
     handleLikePress,
     isFollowingOnly,
-    setIsFollowingOnly,
+    changeFollowingOnly,
     isLargestFirst,
     toggleSort,
   };
