@@ -1,6 +1,6 @@
 import { memo, useState } from "react";
 import { View } from "react-native";
-import type { SharedValue } from "react-native-reanimated";
+import { useSharedValue, type SharedValue } from "react-native-reanimated";
 
 import type { Candle, ChartType, Timeframe } from "../../types/candle";
 import { CandleChart } from "./CandleChart";
@@ -23,6 +23,15 @@ export const ChartSection = memo(function ChartSection({
   scrubProgress,
 }: ChartSectionProps) {
   const [chartType, setChartType] = useState<ChartType>("candles");
+  const drawProgress = useSharedValue(0);
+
+  const handleTimeframeChange = (next: Timeframe) => {
+    if (next === timeframe) {
+      return;
+    }
+    drawProgress.value = 0;
+    onTimeframeChange(next);
+  };
 
   const handleChartTypePress = () => {
     setChartType(chartType === "candles" ? "line" : "candles");
@@ -31,15 +40,18 @@ export const ChartSection = memo(function ChartSection({
   return (
     <View className="gap-4">
       <CandleChart
-        key={timeframe}
         candles={candles}
         timeframe={timeframe}
         chartType={chartType}
         scrubIndex={scrubIndex}
         scrubProgress={scrubProgress}
+        drawProgress={drawProgress}
       />
       <View className="flex-row items-center px-4">
-        <TimeframeSelector selected={timeframe} onChange={onTimeframeChange} />
+        <TimeframeSelector
+          selected={timeframe}
+          onChange={handleTimeframeChange}
+        />
         <ChartTypeToggle chartType={chartType} onPress={handleChartTypePress} />
       </View>
     </View>

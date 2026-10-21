@@ -56,6 +56,7 @@ type CandleChartProps = {
   chartType: ChartType;
   scrubIndex: SharedValue<number>;
   scrubProgress: SharedValue<number>;
+  drawProgress: SharedValue<number>;
 };
 
 export const CandleChart = memo(function CandleChart({
@@ -64,6 +65,7 @@ export const CandleChart = memo(function CandleChart({
   chartType,
   scrubIndex,
   scrubProgress,
+  drawProgress,
 }: CandleChartProps) {
   const canvasSize = useSharedValue({ width: 0, height: 0 });
   const { minPrice, maxPrice, step } = getPriceRange(candles);
@@ -73,13 +75,11 @@ export const CandleChart = memo(function CandleChart({
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
   const lastCloseY = priceToY(lastClose, minPrice, maxPrice, PLOT_HEIGHT);
 
-  const drawProgress = useSharedValue(0);
-
   const lineProgress = useSharedValue(chartType === "line" ? 1 : 0);
 
   useEffect(() => {
     drawProgress.value = withTiming(1, drawInTiming);
-  }, [drawProgress]);
+  }, [candles, drawProgress]);
 
   useEffect(() => {
     lineProgress.value = withTiming(chartType === "line" ? 1 : 0, slideTiming);
