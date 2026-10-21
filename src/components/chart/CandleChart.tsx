@@ -22,7 +22,11 @@ import Animated, {
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
-import { drawInTiming, scrubFadeTiming } from "../../theme/animations";
+import {
+  drawInTiming,
+  scrubFadeTiming,
+  slideTiming,
+} from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import type { Candle, ChartType, Timeframe } from "../../types/candle";
 import {
@@ -71,9 +75,15 @@ export const CandleChart = memo(function CandleChart({
 
   const drawProgress = useSharedValue(0);
 
+  const lineProgress = useSharedValue(chartType === "line" ? 1 : 0);
+
   useEffect(() => {
     drawProgress.value = withTiming(1, drawInTiming);
   }, [drawProgress]);
+
+  useEffect(() => {
+    lineProgress.value = withTiming(chartType === "line" ? 1 : 0, slideTiming);
+  }, [chartType, lineProgress]);
 
   const candleStep = useDerivedValue(
     () => (canvasSize.value.width - AXIS_WIDTH) / candleCount,
@@ -131,25 +141,20 @@ export const CandleChart = memo(function CandleChart({
       const lowY = priceToY(candle.low, minPrice, maxPrice, PLOT_HEIGHT);
       const middleY = (highY + lowY) / 2;
       const grow = (y: number) => middleY + (y - middleY) * reveal;
-      const openY = grow(
-        priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT),
-      );
-      const grownCloseY = grow(closeY);
-      const grownHighY = grow(highY);
-      const grownLowY = grow(lowY);
+      const openY = priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT);
 
       const path = candle.close >= candle.open ? greenCandles : redCandles;
       path.addRect({
         x: x - bodyWidth / 2,
-        y: Math.min(openY, grownCloseY),
+        y: grow(Math.min(openY, closeY)),
         width: bodyWidth,
-        height: Math.max(1, Math.abs(grownCloseY - openY)),
+        height: Math.max(1, Math.abs(closeY - openY) * reveal),
       });
       path.addRect({
         x: x - WICK_WIDTH / 2,
-        y: grownHighY,
+        y: grow(highY),
         width: WICK_WIDTH,
-        height: grownLowY - grownHighY,
+        height: (lowY - highY) * reveal,
       });
     });
 
@@ -167,6 +172,7 @@ export const CandleChart = memo(function CandleChart({
     vec(canvasSize.value.width - AXIS_RIGHT_INSET, lastCloseY),
   );
 
+  const candlesOpacity = useDerivedValue(() => 1 - lineProgress.value);
   const axisOpacity = useDerivedValue(() =>
     interpolate(drawProgress.value, [0.6, 1], [0, 1], Extrapolation.CLAMP),
   );
@@ -213,12 +219,11 @@ export const CandleChart = memo(function CandleChart({
       <GestureDetector gesture={scrubGesture}>
         <View style={{ height: PLOT_HEIGHT }}>
           <Canvas style={StyleSheet.absoluteFill} onSize={canvasSize}>
-            {chartType === "candles" ? (
-              <>
-                <Path path={greenCandles} color={colors.priceLineGreen} />
-                <Path path={redCandles} color={colors.priceLineRed} />
-              </>
-            ) : (
+            <Group opacity={candlesOpacity}>
+              <Path path={greenCandles} color={colors.priceLineGreen} />
+              <Path path={redCandles} color={colors.priceLineRed} />
+            </Group>
+            <Group opacity={lineProgress}>
               <Path
                 path={closeLine}
                 color={priceColor}
@@ -228,7 +233,7 @@ export const CandleChart = memo(function CandleChart({
                 strokeCap="round"
                 end={drawProgress}
               />
-            )}
+            </Group>
             <Group opacity={scrubProgress}>
               <Path path={dimmedArea} color={colors.background} opacity={0.5} />
             </Group>
