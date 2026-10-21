@@ -128,6 +128,7 @@ Nothing else buzzes, so the haptics keep meaning something.
   - The candles/line morph takes 450ms, the timeframe zoom 500ms, both ease-in-out.
   - Candles grow in from left to right over 700ms on first load.
 - **Pinned tabs:** the tab row pins under the header. It's an overlay copy that shares the indicator with the real row and appears exactly when the real row reaches the top, so the swap can't be seen.
+- **Long / Short:** the buttons settle slightly smaller once the chart scrolls away, at the same moment the header switches to the price, and stay full size with Reduce Motion on.
 - **Reduce Motion:** Reanimated's default `ReduceMotion.System` turns all of this off when Reduce Motion is on.
 
 **Safe areas.** The header and the trade bar use the safe-area insets. On phones without a home indicator (iPhone SE), the bar still keeps 12pt from the bottom edge.
