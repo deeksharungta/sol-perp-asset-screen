@@ -7,7 +7,8 @@ import { fadeInEntering } from "../../theme/animations";
 import { surfaces } from "../../theme/surfaces";
 import { typography } from "../../theme/typography";
 import type { Holder } from "../../types/holder";
-import { formatSignedUsd, formatUsd } from "../../utils/format";
+import { formatUsd } from "../../utils/format";
+import { AmountWithPnl } from "../ui/AmountWithPnl";
 import { Avatar } from "../ui/Avatar";
 import { Divider } from "../ui/Divider";
 import { SideLabel } from "../ui/SideLabel";
@@ -50,20 +51,7 @@ function HolderRow({ holder, rank }: HolderRowProps) {
         </Text>
         <SideLabel side={holder.side} leverage={holder.leverage} />
       </View>
-      <View className="items-end gap-0.5">
-        <Text
-          style={typography.tabularNums}
-          className="font-sans text-base font-semibold leading-5 text-text-primary"
-        >
-          {formatUsd(holder.size)}
-        </Text>
-        <Text
-          style={typography.tabularNums}
-          className={`font-sans text-xs font-semibold leading-4 ${holder.pnl < 0 ? "text-text-red" : "text-text-green"}`}
-        >
-          {formatSignedUsd(holder.pnl)}
-        </Text>
-      </View>
+      <AmountWithPnl amount={formatUsd(holder.size)} pnl={holder.pnl} />
     </View>
   );
 }

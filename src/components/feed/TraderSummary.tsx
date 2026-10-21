@@ -1,12 +1,8 @@
 import { Text, View } from "react-native";
 
-import { typography } from "../../theme/typography";
 import type { TraderPost } from "../../types/traderPost";
-import {
-  formatCompactUsd,
-  formatSignedUsd,
-  formatUsd,
-} from "../../utils/format";
+import { formatCompactUsd, formatUsd } from "../../utils/format";
+import { AmountWithPnl } from "../ui/AmountWithPnl";
 import { Avatar } from "../ui/Avatar";
 
 type TraderSummaryProps = {
@@ -39,20 +35,7 @@ export function TraderSummary({ post }: TraderSummaryProps) {
         </View>
       </View>
 
-      <View className="items-end gap-0.5">
-        <Text
-          style={typography.tabularNums}
-          className="font-sans text-base font-semibold leading-5 text-text-primary"
-        >
-          {formatUsd(post.positionValue)}
-        </Text>
-        <Text
-          style={typography.tabularNums}
-          className={`font-sans text-xs font-semibold leading-4 ${post.pnl < 0 ? "text-text-red" : "text-text-green"}`}
-        >
-          {formatSignedUsd(post.pnl)}
-        </Text>
-      </View>
+      <AmountWithPnl amount={formatUsd(post.positionValue)} pnl={post.pnl} />
     </View>
   );
 }
