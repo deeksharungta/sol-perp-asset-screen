@@ -1,9 +1,23 @@
-import { Easing, type WithTimingConfig } from "react-native-reanimated";
+import {
+  Easing,
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  type WithTimingConfig,
+} from "react-native-reanimated";
 
 export const slideTiming: WithTimingConfig = {
   duration: 250,
   easing: Easing.out(Easing.cubic),
 };
+
+export const expandLayout = LinearTransition.duration(250).easing(
+  Easing.out(Easing.cubic),
+);
+
+export const fadeInEntering = FadeIn.duration(250);
+
+export const fadeOutExiting = FadeOut.duration(150);
 
 export const drawInTiming: WithTimingConfig = {
   duration: 700,

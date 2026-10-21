@@ -2,6 +2,15 @@ import type { ImageSourcePropType } from "react-native";
 
 export type TradeSide = "long" | "short";
 
+export type OlderPost = {
+  id: string;
+  side: TradeSide;
+  leverage: number;
+  thesis: string;
+  pnl: number;
+  closedAt: number;
+};
+
 export type TraderPost = {
   id: string;
   traderName: string;
@@ -24,4 +33,5 @@ export type TraderPost = {
   isLiked: boolean;
   commentCount: number;
   copyingCount: number;
+  olderPosts?: OlderPost[];
 };

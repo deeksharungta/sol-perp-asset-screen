@@ -38,6 +38,10 @@ const monthFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
+export function formatShortDate(time: number) {
+  return dateFormatter.format(time);
+}
+
 export function formatCandleTime(time: number, timeframe: Timeframe) {
   if (timeframe === "1H" || timeframe === "1D") {
     return timeFormatter.format(time);
