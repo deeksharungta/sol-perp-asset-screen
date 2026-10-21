@@ -16,6 +16,7 @@ import { GestureDetector, usePanGesture } from "react-native-gesture-handler";
 import Animated, {
   Extrapolation,
   interpolate,
+  interpolateColor,
   useAnimatedStyle,
   useDerivedValue,
   useSharedValue,
@@ -188,8 +189,32 @@ export const CandleChart = memo(function CandleChart({
   const lastPointX = useDerivedValue(() =>
     indexToX(candleCount - 1, candleStep.value),
   );
+  const tagPrice = useDerivedValue(() =>
+    interpolate(
+      scrubProgress.value,
+      [0, 1],
+      [lastClose, candles[scrubIndex.value].close],
+    ),
+  );
+  const tagY = useDerivedValue(() =>
+    priceToY(tagPrice.value, minPrice, maxPrice, PLOT_HEIGHT),
+  );
+  const tagColor = useDerivedValue(() => {
+    const candle = candles[scrubIndex.value];
+    return interpolateColor(
+      scrubProgress.value,
+      [0, 1],
+      [
+        priceColor,
+        candle.close >= candle.open
+          ? colors.priceLineGreen
+          : colors.priceLineRed,
+      ],
+    );
+  });
+  const priceLineStart = useDerivedValue(() => vec(0, tagY.value));
   const priceLineEnd = useDerivedValue(() =>
-    vec(canvasSize.value.width - AXIS_RIGHT_INSET, lastCloseY),
+    vec(canvasSize.value.width - AXIS_RIGHT_INSET, tagY.value),
   );
 
   const candlesOpacity = useDerivedValue(() => 1 - lineProgress.value);
@@ -273,9 +298,9 @@ export const CandleChart = memo(function CandleChart({
             </Group>
             <Group opacity={axisOpacity}>
               <Line
-                p1={vec(0, lastCloseY)}
+                p1={priceLineStart}
                 p2={priceLineEnd}
-                color={priceColor}
+                color={tagColor}
                 strokeWidth={1}
                 opacity={0.5}
               >
@@ -300,9 +325,9 @@ export const CandleChart = memo(function CandleChart({
               minPrice={minPrice}
               maxPrice={maxPrice}
               step={step}
-              lastClose={lastClose}
+              tagPrice={tagPrice}
               lastCloseY={lastCloseY}
-              isUp={isUp}
+              tagColor={tagColor}
               height={PLOT_HEIGHT}
             />
           </Animated.View>
