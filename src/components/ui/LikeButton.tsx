@@ -1,4 +1,5 @@
 import * as Haptics from "expo-haptics";
+import { useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, {
   interpolate,
@@ -9,6 +10,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
 
 import {
   likeBurstTiming,
@@ -55,6 +57,7 @@ export function LikeButton({
   const heartScale = useSharedValue(1);
   const burstProgress = useSharedValue(0);
   const burst = useSharedValue(createBurst());
+  const [isBursting, setIsBursting] = useState(false);
 
   const handlePress = () => {
     if (isLiked) {
@@ -68,8 +71,13 @@ export function LikeButton({
         withSpring(1, pressSpring),
       );
       burst.value = createBurst();
+      setIsBursting(true);
       burstProgress.value = 0;
-      burstProgress.value = withTiming(1, likeBurstTiming);
+      burstProgress.value = withTiming(1, likeBurstTiming, (finished) => {
+        if (finished) {
+          scheduleOnRN(setIsBursting, false);
+        }
+      });
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     onPress();
@@ -98,16 +106,18 @@ export function LikeButton({
         <Animated.View style={heartStyle}>
           <HeartIcon isFilled={isLiked} />
         </Animated.View>
-        <View className="pointer-events-none absolute inset-0 items-center justify-center">
-          {Array.from({ length: BURST_DOT_COUNT }, (_, index) => (
-            <BurstDot
-              key={index}
-              index={index}
-              burst={burst}
-              progress={burstProgress}
-            />
-          ))}
-        </View>
+        {isBursting && (
+          <View className="pointer-events-none absolute inset-0 items-center justify-center">
+            {Array.from({ length: BURST_DOT_COUNT }, (_, index) => (
+              <BurstDot
+                key={index}
+                index={index}
+                burst={burst}
+                progress={burstProgress}
+              />
+            ))}
+          </View>
+        )}
       </View>
     </Pressable>
   );

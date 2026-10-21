@@ -55,26 +55,21 @@ export function AssetDetailScreen() {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const activeTab = assetTabs[activeTabIndex];
   const {
-    sortedPosts,
+    visiblePosts,
     handleLikePress,
     isFollowingOnly,
-    setIsFollowingOnly,
+    changeFollowingOnly,
     isLargestFirst,
     toggleSort,
   } = useFeed();
 
   const renderPost: ListRenderItem<TraderPost> = useCallback(
     ({ item }) => (
-      <View
-        className="px-4 pb-2"
-        style={{
-          display: isFollowingOnly && !item.isFollowed ? "none" : "flex",
-        }}
-      >
+      <View className="px-4 pb-2">
         <TraderCard post={item} onLikePress={handleLikePress} />
       </View>
     ),
-    [handleLikePress, isFollowingOnly],
+    [handleLikePress],
   );
 
   const handleBack = () => {
@@ -134,7 +129,7 @@ export function AssetDetailScreen() {
             contentContainerStyle={{
               paddingBottom: tradeBarInset + TRADE_BAR_HEIGHT,
             }}
-            data={activeTab === "Feed" ? sortedPosts : []}
+            data={activeTab === "Feed" ? visiblePosts : []}
             keyExtractor={keyExtractor}
             renderItem={renderPost}
             itemLayoutAnimation={feedReorderLayout}
@@ -163,7 +158,7 @@ export function AssetDetailScreen() {
                 activeTabIndex={activeTabIndex}
                 onTabChange={handleTabChange}
                 isFollowingOnly={isFollowingOnly}
-                onFollowingOnlyChange={setIsFollowingOnly}
+                onFollowingOnlyChange={changeFollowingOnly}
                 isLargestFirst={isLargestFirst}
                 onSortPress={toggleSort}
               />
