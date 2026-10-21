@@ -1,7 +1,9 @@
 import {
   Easing,
   FadeIn,
+  FadeInDown,
   FadeOut,
+  FadeOutDown,
   LinearTransition,
   type WithSpringConfig,
   type WithTimingConfig,
@@ -47,6 +49,10 @@ export const feedReorderLayout = LinearTransition.duration(450).easing(
 export const feedCardEntering = FadeIn.duration(300);
 
 export const feedCardExiting = FadeOut.duration(200);
+
+export const toastEntering = FadeInDown.duration(250);
+
+export const toastExiting = FadeOutDown.duration(200);
 
 export const fadeInEntering = FadeIn.duration(250);
 

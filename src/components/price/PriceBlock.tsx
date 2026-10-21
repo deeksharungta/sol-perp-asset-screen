@@ -93,7 +93,10 @@ export function PriceBlock({
         hitSlop={8}
         className="items-end"
       >
-        <Text className="font-sans text-base font-semibold tabular-nums leading-5 text-text-primary">
+        <Text
+          style={typography.tabularNums}
+          className="font-sans text-base font-semibold leading-5 text-text-primary"
+        >
           {formatCompactUsd(metric.value)}
         </Text>
         <View className="flex-row items-center gap-1">

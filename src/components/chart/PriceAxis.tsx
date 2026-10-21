@@ -71,8 +71,8 @@ export function PriceAxis({
         return (
           <Text
             key={price}
-            className="absolute right-5 font-sans text-2xs font-bold tabular-nums text-text-secondary"
-            style={{ top: y - LABEL_HEIGHT / 2 }}
+            className="absolute right-5 font-sans text-2xs font-bold text-text-secondary"
+            style={[typography.tabularNums, { top: y - LABEL_HEIGHT / 2 }]}
           >
             ${price.toFixed(step >= 1 ? 0 : 2)}
           </Text>

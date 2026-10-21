@@ -74,7 +74,8 @@ export const ScrubDetails = memo(function ScrubDetails({
       <View className="gap-1">
         <AnimatedText
           text={close}
-          className="h-6 w-32 font-sans text-xl font-semibold tabular-nums text-text-primary"
+          className="h-6 w-32 font-sans text-xl font-semibold text-text-primary"
+          style={typography.tabularNums}
         />
         <AnimatedPriceChange isUp={isUp} text={change} />
         <AnimatedText

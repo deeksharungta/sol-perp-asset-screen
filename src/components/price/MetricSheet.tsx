@@ -1,5 +1,6 @@
 import { Modal, Pressable, Text, View } from "react-native";
 
+import { typography } from "../../theme/typography";
 import type { Metric } from "../../types/metric";
 import { formatCompactUsd } from "../../utils/format";
 import { SwitchIcon } from "../icons/SwitchIcon";
@@ -44,7 +45,10 @@ export function MetricSheet({
             accessibilityRole="button"
             className="items-end"
           >
-            <Text className="font-sans text-base font-semibold tabular-nums leading-5 text-text-primary">
+            <Text
+              style={typography.tabularNums}
+              className="font-sans text-base font-semibold leading-5 text-text-primary"
+            >
               {formatCompactUsd(metric.value)}
             </Text>
             <View className="flex-row items-center gap-1">

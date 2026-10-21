@@ -3,6 +3,7 @@ import { Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 
 import { fadeInEntering, fadeOutExiting } from "../../theme/animations";
+import { typography } from "../../theme/typography";
 import type { OlderPost } from "../../types/traderPost";
 import { formatShortDate, formatSignedUsd } from "../../utils/format";
 import { Divider } from "../ui/Divider";
@@ -45,7 +46,8 @@ function OlderPostRow({ post }: OlderPostRowProps) {
         {formatShortDate(post.closedAt)}
       </Text>
       <Text
-        className={`font-sans text-xs font-semibold tabular-nums leading-4 ${isLoss ? "text-text-red" : "text-text-green"}`}
+        style={typography.tabularNums}
+        className={`font-sans text-xs font-semibold leading-4 ${isLoss ? "text-text-red" : "text-text-green"}`}
       >
         {formatSignedUsd(post.pnl)}
       </Text>

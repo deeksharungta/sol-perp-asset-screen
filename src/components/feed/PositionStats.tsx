@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 
+import { typography } from "../../theme/typography";
 import type { TraderPost } from "../../types/traderPost";
 import { formatUsd } from "../../utils/format";
 
@@ -22,7 +23,10 @@ export function PositionStats({ post }: PositionStatsProps) {
           <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
             {stat.label}
           </Text>
-          <Text className="font-sans text-xs font-semibold tabular-nums leading-4 text-text-primary">
+          <Text
+            style={typography.tabularNums}
+            className="font-sans text-xs font-semibold leading-4 text-text-primary"
+          >
             {formatUsd(stat.value)}
           </Text>
         </View>

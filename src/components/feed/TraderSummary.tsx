@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 
+import { typography } from "../../theme/typography";
 import type { TraderPost } from "../../types/traderPost";
 import {
   formatCompactUsd,
@@ -39,11 +40,15 @@ export function TraderSummary({ post }: TraderSummaryProps) {
       </View>
 
       <View className="items-end gap-0.5">
-        <Text className="font-sans text-base font-semibold tabular-nums leading-5 text-text-primary">
+        <Text
+          style={typography.tabularNums}
+          className="font-sans text-base font-semibold leading-5 text-text-primary"
+        >
           {formatUsd(post.positionValue)}
         </Text>
         <Text
-          className={`font-sans text-xs font-semibold tabular-nums leading-4 ${post.pnl < 0 ? "text-text-red" : "text-text-green"}`}
+          style={typography.tabularNums}
+          className={`font-sans text-xs font-semibold leading-4 ${post.pnl < 0 ? "text-text-red" : "text-text-green"}`}
         >
           {formatSignedUsd(post.pnl)}
         </Text>

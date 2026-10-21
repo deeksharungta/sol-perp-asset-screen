@@ -5,6 +5,7 @@ import Animated from "react-native-reanimated";
 import { holders } from "../../data/holders";
 import { fadeInEntering } from "../../theme/animations";
 import { surfaces } from "../../theme/surfaces";
+import { typography } from "../../theme/typography";
 import type { Holder } from "../../types/holder";
 import { formatSignedUsd, formatUsd } from "../../utils/format";
 import { Avatar } from "../ui/Avatar";
@@ -36,7 +37,10 @@ type HolderRowProps = {
 function HolderRow({ holder, rank }: HolderRowProps) {
   return (
     <View className="flex-row items-center gap-3 py-3">
-      <Text className="w-4 font-sans text-xs font-semibold tabular-nums leading-4 text-text-tertiary">
+      <Text
+        style={typography.tabularNums}
+        className="w-4 font-sans text-xs font-semibold leading-4 text-text-tertiary"
+      >
         {rank}
       </Text>
       <Avatar source={holder.avatar} isVerified={holder.isVerified} />
@@ -47,11 +51,15 @@ function HolderRow({ holder, rank }: HolderRowProps) {
         <SideLabel side={holder.side} leverage={holder.leverage} />
       </View>
       <View className="items-end gap-0.5">
-        <Text className="font-sans text-base font-semibold tabular-nums leading-5 text-text-primary">
+        <Text
+          style={typography.tabularNums}
+          className="font-sans text-base font-semibold leading-5 text-text-primary"
+        >
           {formatUsd(holder.size)}
         </Text>
         <Text
-          className={`font-sans text-xs font-semibold tabular-nums leading-4 ${holder.pnl < 0 ? "text-text-red" : "text-text-green"}`}
+          style={typography.tabularNums}
+          className={`font-sans text-xs font-semibold leading-4 ${holder.pnl < 0 ? "text-text-red" : "text-text-green"}`}
         >
           {formatSignedUsd(holder.pnl)}
         </Text>

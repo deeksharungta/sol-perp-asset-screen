@@ -32,10 +32,12 @@ import {
   TradeBar,
   useTradeBarInset,
 } from "../components/trade/TradeBar";
+import { Toast } from "../components/ui/Toast";
 import { candlesByTimeframe } from "../data/candles";
 import { solPerpMarket } from "../data/market";
 import { traderPosts } from "../data/traderPosts";
 import { useLivePrice } from "../hooks/useLivePrice";
+import { useToast } from "../hooks/useToast";
 import { feedReorderLayout } from "../theme/animations";
 import type { Timeframe } from "../types/candle";
 import type { TraderPost } from "../types/traderPost";
@@ -53,6 +55,7 @@ export function AssetDetailScreen() {
   const market = solPerpMarket;
   const tradeBarInset = useTradeBarInset();
   const livePrice = useLivePrice(market.price);
+  const { toastMessage, showToast } = useToast();
   const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
   const listRef = useRef<FlatList<TraderPost>>(null);
   const scrollY = useSharedValue(0);
@@ -114,7 +117,9 @@ export function AssetDetailScreen() {
     [handleLikePress],
   );
 
-  const handleBack = () => {};
+  const handleBack = () => {
+    showToast("Back navigation is coming soon");
+  };
 
   const handleShare = () => {
     Share.share({
@@ -122,7 +127,9 @@ export function AssetDetailScreen() {
     });
   };
 
-  const handleNotify = () => {};
+  const handleNotify = () => {
+    showToast("Price alerts are coming soon");
+  };
 
   const handleTabChange = (index: number) => {
     startTransition(() => {
@@ -134,9 +141,13 @@ export function AssetDetailScreen() {
     setIsLargestFirst(!isLargestFirst);
   };
 
-  const handleGoLong = () => {};
+  const handleGoLong = () => {
+    showToast("Long orders are coming soon");
+  };
 
-  const handleGoShort = () => {};
+  const handleGoShort = () => {
+    showToast("Short orders are coming soon");
+  };
 
   const handleScrollToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -246,6 +257,12 @@ export function AssetDetailScreen() {
         onGoLong={handleGoLong}
         onGoShort={handleGoShort}
       />
+      {toastMessage && (
+        <Toast
+          message={toastMessage}
+          bottom={tradeBarInset + TRADE_BAR_HEIGHT}
+        />
+      )}
     </View>
   );
 }
