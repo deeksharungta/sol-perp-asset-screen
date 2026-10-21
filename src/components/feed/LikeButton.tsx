@@ -93,10 +93,12 @@ export function LikeButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       accessibilityState={{ selected: isLiked }}
+      accessibilityValue={{ text: `${likes} likes` }}
       hitSlop={4}
       className={`h-6 flex-row items-center gap-1 rounded-full pl-2 pr-1.5 active:opacity-60 ${isLiked ? "bg-like/10" : "bg-pill"}`}
     >
       <Text
+        maxFontSizeMultiplier={1.3}
         className={`font-sans text-xs font-bold leading-4 ${isLiked ? "text-like" : "text-text-tertiary"}`}
         style={typography.tabularNums}
       >

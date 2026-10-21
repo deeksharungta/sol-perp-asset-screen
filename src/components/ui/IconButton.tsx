@@ -22,7 +22,7 @@ export function IconButton({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       hitSlop={4}
-      className="h-9 w-9 items-center justify-center rounded-full"
+      className="h-9 w-9 items-center justify-center rounded-full active:opacity-60"
       style={style}
     >
       {icon}

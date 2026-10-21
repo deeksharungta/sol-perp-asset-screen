@@ -51,7 +51,10 @@ export function TradeButton({ side, onPress }: TradeButtonProps) {
       className={`h-12 flex-1 flex-row items-center justify-center gap-1 rounded-full ${isLong ? "px-3" : "px-2"}`}
       style={[isLong ? styles.long : styles.short, pressStyle]}
     >
-      <Text className="font-sans text-base font-semibold leading-5 text-text-on-color">
+      <Text
+        maxFontSizeMultiplier={1.3}
+        className="font-sans text-base font-semibold leading-5 text-text-on-color"
+      >
         {isLong ? "Long" : "Short"}
       </Text>
       <View className="h-4 w-4 items-center justify-center rounded-full bg-surface">

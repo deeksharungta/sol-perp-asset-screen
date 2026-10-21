@@ -18,12 +18,15 @@ export function TraderSummary({ post }: TraderSummaryProps) {
   ];
 
   return (
-    <View className="flex-row items-center justify-between">
-      <View className="flex-row items-center gap-3">
+    <View className="flex-row items-center justify-between gap-3">
+      <View className="flex-1 flex-row items-center gap-3">
         <Avatar source={post.avatar} isVerified={post.isVerified} />
 
-        <View className="gap-0.5">
-          <Text className="font-sans text-base font-semibold leading-5 text-text-primary">
+        <View className="flex-1 gap-0.5">
+          <Text
+            numberOfLines={1}
+            className="font-sans text-base font-semibold leading-5 text-text-primary"
+          >
             {post.traderName}
           </Text>
           <View className="flex-row items-center gap-1">
@@ -32,7 +35,10 @@ export function TraderSummary({ post }: TraderSummaryProps) {
                 {index > 0 && (
                   <View className="h-0.5 w-0.5 rounded-full bg-separator" />
                 )}
-                <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
+                <Text
+                  numberOfLines={1}
+                  className="shrink font-sans text-xs font-semibold leading-4 text-text-secondary"
+                >
                   {stat}
                 </Text>
               </Fragment>
