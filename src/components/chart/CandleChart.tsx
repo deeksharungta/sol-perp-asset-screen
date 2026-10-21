@@ -183,22 +183,12 @@ export const CandleChart = memo(function CandleChart({
   const crosshairX = useDerivedValue(() =>
     indexToX(scrubIndex.value, candleStep.value),
   );
-  const tagPrice = useDerivedValue(() =>
-    interpolate(
-      scrubProgress.value,
-      [0, 1],
-      [lastClose, candles[scrubIndex.value].close],
-    ),
-  );
-  const crosshair = useDerivedValue(() => {
-    const tagY = priceToY(tagPrice.value, minPrice, maxPrice, PLOT_HEIGHT);
-    return Skia.PathBuilder.Make()
+  const crosshair = useDerivedValue(() =>
+    Skia.PathBuilder.Make()
       .moveTo(crosshairX.value, 0)
       .lineTo(crosshairX.value, PLOT_HEIGHT)
-      .moveTo(0, tagY)
-      .lineTo(canvasSize.value.width - AXIS_RIGHT_INSET, tagY)
-      .detach();
-  });
+      .detach(),
+  );
   // Covers everything except the selected candle's slot.
   const dimmedArea = useDerivedValue(() => {
     const slotLeft = crosshairX.value - candleStep.value / 2;
@@ -266,8 +256,8 @@ export const CandleChart = memo(function CandleChart({
               minPrice={minPrice}
               maxPrice={maxPrice}
               step={step}
+              lastClose={lastClose}
               lastCloseY={lastCloseY}
-              tagPrice={tagPrice}
               isUp={isUp}
               height={PLOT_HEIGHT}
             />
