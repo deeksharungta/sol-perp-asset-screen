@@ -14,11 +14,18 @@ import { TradeButton } from "./TradeButton";
 
 export const TRADE_BAR_HEIGHT = 72;
 
+const MIN_BOTTOM_SPACE = 12;
+
 const BLUR_INTENSITY = 30;
 
 const MaskedView = MaskedViewBase as unknown as ComponentType<
   ViewProps & { maskElement: ReactElement }
 >;
+
+export function useTradeBarInset() {
+  const insets = useSafeAreaInsets();
+  return Math.max(insets.bottom, MIN_BOTTOM_SPACE);
+}
 
 type TradeBarProps = {
   blurTarget: RefObject<ComponentRef<typeof View> | null>;
@@ -27,12 +34,12 @@ type TradeBarProps = {
 };
 
 export function TradeBar({ blurTarget, onGoLong, onGoShort }: TradeBarProps) {
-  const insets = useSafeAreaInsets();
+  const bottomInset = useTradeBarInset();
 
   return (
     <View
       className="absolute bottom-0 left-0 right-0 flex-row gap-1 px-4 pt-6"
-      style={[styles.passThrough, { paddingBottom: insets.bottom }]}
+      style={[styles.passThrough, { paddingBottom: bottomInset }]}
     >
       <MaskedView
         style={styles.layer}

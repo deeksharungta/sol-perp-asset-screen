@@ -14,7 +14,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AboutSection } from "../components/about/AboutSection";
 import { ChartSection } from "../components/chart/ChartSection";
@@ -27,7 +26,11 @@ import { HoldersSection } from "../components/holders/HoldersSection";
 import { HeaderFade } from "../components/header/HeaderFade";
 import { PriceSection } from "../components/price/PriceSection";
 import { TabBar } from "../components/tabs/TabBar";
-import { TRADE_BAR_HEIGHT, TradeBar } from "../components/trade/TradeBar";
+import {
+  TRADE_BAR_HEIGHT,
+  TradeBar,
+  useTradeBarInset,
+} from "../components/trade/TradeBar";
 import { candlesByTimeframe } from "../data/candles";
 import { solPerpMarket } from "../data/market";
 import { traderPosts } from "../data/traderPosts";
@@ -47,7 +50,7 @@ function CardSeparator() {
 
 export function AssetDetailScreen() {
   const market = solPerpMarket;
-  const insets = useSafeAreaInsets();
+  const tradeBarInset = useTradeBarInset();
   const livePrice = useLivePrice(market.price);
   const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
   const listRef = useRef<FlatList<TraderPost>>(null);
@@ -155,7 +158,7 @@ export function AssetDetailScreen() {
           <Animated.FlatList
             ref={listRef}
             contentContainerStyle={{
-              paddingBottom: insets.bottom + TRADE_BAR_HEIGHT,
+              paddingBottom: tradeBarInset + TRADE_BAR_HEIGHT,
             }}
             data={activeTab === "Feed" ? visiblePosts : []}
             keyExtractor={keyExtractor}
@@ -225,7 +228,7 @@ export function AssetDetailScreen() {
         <HeaderFade blurTarget={blurTargetRef} scrollY={scrollY} />
         <ScrollToTopButton
           scrollY={scrollY}
-          bottom={insets.bottom + TRADE_BAR_HEIGHT}
+          bottom={tradeBarInset + TRADE_BAR_HEIGHT}
           onPress={handleScrollToTop}
         />
       </View>
