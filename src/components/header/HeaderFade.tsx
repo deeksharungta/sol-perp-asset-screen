@@ -6,7 +6,7 @@ import type {
   ReactElement,
   RefObject,
 } from "react";
-import { StyleSheet, View, type ViewProps } from "react-native";
+import { Platform, StyleSheet, View, type ViewProps } from "react-native";
 import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
@@ -43,17 +43,19 @@ export function HeaderFade({ blurTarget, scrollY }: HeaderFadeProps) {
       className="absolute left-0 right-0 top-0 h-6"
       style={styles.passThrough}
     >
-      <MaskedView
-        style={styles.layer}
-        maskElement={<View style={[styles.layer, styles.blurMask]} />}
-      >
-        <AnimatedBlurView
-          blurTarget={blurTarget}
-          blurMethod="dimezisBlurViewSdk31Plus"
-          animatedProps={blurProps}
+      {Platform.OS === "ios" && (
+        <MaskedView
           style={styles.layer}
-        />
-      </MaskedView>
+          maskElement={<View style={[styles.layer, styles.blurMask]} />}
+        >
+          <AnimatedBlurView
+            blurTarget={blurTarget}
+            blurMethod="dimezisBlurViewSdk31Plus"
+            animatedProps={blurProps}
+            style={styles.layer}
+          />
+        </MaskedView>
+      )}
       <Animated.View style={[styles.layer, styles.fade, fadeStyle]} />
     </View>
   );
