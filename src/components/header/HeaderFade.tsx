@@ -1,12 +1,5 @@
-import MaskedViewBase from "@react-native-masked-view/masked-view";
-import { BlurView } from "expo-blur";
-import type {
-  ComponentRef,
-  ComponentType,
-  ReactElement,
-  RefObject,
-} from "react";
-import { Platform, StyleSheet, View, type ViewProps } from "react-native";
+import type { ComponentRef, RefObject } from "react";
+import { StyleSheet, View } from "react-native";
 import Animated, {
   useAnimatedProps,
   useAnimatedStyle,
@@ -14,14 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { colors } from "../../theme/colors";
-
-const BLUR_INTENSITY = 30;
-
-const MaskedView = MaskedViewBase as unknown as ComponentType<
-  ViewProps & { maskElement: ReactElement }
->;
-
-const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+import { BLUR_INTENSITY, MaskedBlur } from "../ui/MaskedBlur";
 
 type HeaderFadeProps = {
   blurTarget: RefObject<ComponentRef<typeof View> | null>;
@@ -43,19 +29,11 @@ export function HeaderFade({ blurTarget, scrollY }: HeaderFadeProps) {
       className="absolute left-0 right-0 top-0 h-6"
       style={styles.passThrough}
     >
-      {Platform.OS === "ios" && (
-        <MaskedView
-          style={styles.layer}
-          maskElement={<View style={[styles.layer, styles.blurMask]} />}
-        >
-          <AnimatedBlurView
-            blurTarget={blurTarget}
-            blurMethod="dimezisBlurViewSdk31Plus"
-            animatedProps={blurProps}
-            style={styles.layer}
-          />
-        </MaskedView>
-      )}
+      <MaskedBlur
+        blurTarget={blurTarget}
+        maskStyle={styles.blurMask}
+        animatedProps={blurProps}
+      />
       <Animated.View style={[styles.layer, styles.fade, fadeStyle]} />
     </View>
   );

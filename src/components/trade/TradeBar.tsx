@@ -1,26 +1,14 @@
-import MaskedViewBase from "@react-native-masked-view/masked-view";
-import { BlurView } from "expo-blur";
-import type {
-  ComponentRef,
-  ComponentType,
-  ReactElement,
-  RefObject,
-} from "react";
-import { Platform, StyleSheet, View, type ViewProps } from "react-native";
+import type { ComponentRef, RefObject } from "react";
+import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors } from "../../theme/colors";
+import { MaskedBlur } from "../ui/MaskedBlur";
 import { TradeButton } from "./TradeButton";
 
 export const TRADE_BAR_HEIGHT = 72;
 
 const MIN_BOTTOM_SPACE = 12;
-
-const BLUR_INTENSITY = 30;
-
-const MaskedView = MaskedViewBase as unknown as ComponentType<
-  ViewProps & { maskElement: ReactElement }
->;
 
 export function useTradeBarInset() {
   const insets = useSafeAreaInsets();
@@ -41,19 +29,7 @@ export function TradeBar({ blurTarget, onGoLong, onGoShort }: TradeBarProps) {
       className="absolute bottom-0 left-0 right-0 flex-row gap-1 px-4 pt-6"
       style={[styles.passThrough, { paddingBottom: bottomInset }]}
     >
-      {Platform.OS === "ios" && (
-        <MaskedView
-          style={styles.layer}
-          maskElement={<View style={[styles.fill, styles.blurMask]} />}
-        >
-          <BlurView
-            blurTarget={blurTarget}
-            blurMethod="dimezisBlurViewSdk31Plus"
-            intensity={BLUR_INTENSITY}
-            style={styles.fill}
-          />
-        </MaskedView>
-      )}
+      <MaskedBlur blurTarget={blurTarget} maskStyle={styles.blurMask} />
       <View style={[styles.layer, styles.fade]} />
 
       <TradeButton side="long" onPress={onGoLong} />
@@ -69,9 +45,6 @@ const styles = StyleSheet.create({
   layer: {
     ...StyleSheet.absoluteFill,
     pointerEvents: "none",
-  },
-  fill: {
-    flex: 1,
   },
   // A mask only reads alpha, so the white tokens work here.
   blurMask: {
