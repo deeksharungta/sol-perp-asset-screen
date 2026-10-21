@@ -1,11 +1,15 @@
-import { Pressable, Text, View, type LayoutChangeEvent } from "react-native";
+import * as Haptics from "expo-haptics";
+import { Pressable, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  type SharedValue,
 } from "react-native-reanimated";
 
 import { slideTiming } from "../../theme/animations";
+import { colors } from "../../theme/colors";
 
 type TabBarProps = {
   tabs: string[];
@@ -22,6 +26,10 @@ export function TabBar({ tabs, activeIndex, onChange }: TabBarProps) {
   };
 
   const handlePress = (index: number) => {
+    if (index === activeIndex) {
+      return;
+    }
+    Haptics.selectionAsync();
     indicatorIndex.value = withTiming(index, slideTiming);
     onChange(index);
   };
@@ -34,28 +42,50 @@ export function TabBar({ tabs, activeIndex, onChange }: TabBarProps) {
   return (
     <View accessibilityRole="tablist" className="px-4">
       <View className="flex-row">
-        {tabs.map((tab, index) => {
-          const isActive = index === activeIndex;
-          return (
-            <Pressable
-              key={tab}
-              onPress={() => handlePress(index)}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: isActive }}
-              className="flex-1 py-3"
-            >
-              <Text
-                className={`text-center font-sans text-base font-semibold leading-5 ${isActive ? "text-text-primary" : "text-text-secondary"}`}
-              >
-                {tab}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {tabs.map((tab, index) => (
+          <Pressable
+            key={tab}
+            onPress={() => handlePress(index)}
+            accessibilityRole="tab"
+            accessibilityState={{ selected: index === activeIndex }}
+            className="flex-1 py-3"
+          >
+            <TabLabel
+              label={tab}
+              index={index}
+              indicatorIndex={indicatorIndex}
+            />
+          </Pressable>
+        ))}
       </View>
       <View onLayout={handleLayout} className="h-0.5 bg-black/10">
         <Animated.View className="h-full bg-accent" style={indicatorStyle} />
       </View>
     </View>
+  );
+}
+
+type TabLabelProps = {
+  label: string;
+  index: number;
+  indicatorIndex: SharedValue<number>;
+};
+
+function TabLabel({ label, index, indicatorIndex }: TabLabelProps) {
+  const colorStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      Math.min(Math.abs(indicatorIndex.value - index), 1),
+      [0, 1],
+      [colors.textPrimary, colors.textSecondary],
+    ),
+  }));
+
+  return (
+    <Animated.Text
+      className="text-center font-sans text-base font-semibold leading-5"
+      style={colorStyle}
+    >
+      {label}
+    </Animated.Text>
   );
 }
