@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 
 import { typography } from "../../theme/typography";
-import type { Metric } from "../../types/metric";
+import type { Metric } from "../../types/market";
 import { formatCompactUsd } from "../../utils/format";
 import { SwitchIcon } from "../icons/SwitchIcon";
 

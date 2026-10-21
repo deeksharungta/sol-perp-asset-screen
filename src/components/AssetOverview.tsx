@@ -4,6 +4,7 @@ import Animated, {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
+  useSharedValue,
   type SharedValue,
 } from "react-native-reanimated";
 
@@ -19,9 +20,7 @@ import { TabBar } from "./tabs/TabBar";
 type AssetOverviewProps = {
   market: Market;
   livePrice: SharedValue<number>;
-  scrubIndex: SharedValue<number>;
-  scrubProgress: SharedValue<number>;
-  tabs: string[];
+  tabs: readonly string[];
   activeTabIndex: number;
   onTabChange: (index: number) => void;
   isFollowingOnly: boolean;
@@ -33,8 +32,6 @@ type AssetOverviewProps = {
 export const AssetOverview = memo(function AssetOverview({
   market,
   livePrice,
-  scrubIndex,
-  scrubProgress,
   tabs,
   activeTabIndex,
   onTabChange,
@@ -45,6 +42,9 @@ export const AssetOverview = memo(function AssetOverview({
 }: AssetOverviewProps) {
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const candles = candlesByTimeframe[timeframe];
+  // Shared with the chart so the scrub panel can replace the price block without re-renders.
+  const scrubIndex = useSharedValue(0);
+  const scrubProgress = useSharedValue(0);
 
   const priceFadeStyle = useAnimatedStyle(() => ({
     opacity: interpolate(

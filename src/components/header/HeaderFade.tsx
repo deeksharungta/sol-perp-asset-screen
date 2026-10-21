@@ -28,27 +28,21 @@ export const HeaderFade = memo(function HeaderFade({
   }));
 
   return (
-    <View
-      className="absolute left-0 right-0 top-0 h-6"
-      style={styles.passThrough}
-    >
+    <View className="pointer-events-none absolute left-0 right-0 top-0 h-6">
       <MaskedBlur
         blurTarget={blurTarget}
         maskStyle={styles.blurMask}
         animatedProps={blurProps}
       />
-      <Animated.View style={[styles.layer, styles.fade, fadeStyle]} />
+      <Animated.View
+        className="absolute inset-0"
+        style={[styles.fade, fadeStyle]}
+      />
     </View>
   );
 });
 
 const styles = StyleSheet.create({
-  passThrough: {
-    pointerEvents: "none",
-  },
-  layer: {
-    ...StyleSheet.absoluteFill,
-  },
   blurMask: {
     backgroundImage: `linear-gradient(to top, ${colors.surfaceTransparent}, ${colors.surface} 80%)`,
   },

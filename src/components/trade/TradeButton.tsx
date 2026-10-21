@@ -8,6 +8,7 @@ import Animated, {
 
 import { pressSpring } from "../../theme/animations";
 import { colors } from "../../theme/colors";
+import type { TradeSide } from "../../types/traderPost";
 import { TriangleIcon } from "../icons/TriangleIcon";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -15,7 +16,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const PRESSED_SCALE = 0.96;
 
 type TradeButtonProps = {
-  side: "long" | "short";
+  side: TradeSide;
   onPress: () => void;
 };
 

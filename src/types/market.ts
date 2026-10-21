@@ -1,6 +1,9 @@
 import type { ImageSourcePropType } from "react-native";
 
-import type { Metric } from "./metric";
+export type Metric = {
+  label: string;
+  value: number;
+};
 
 export type Market = {
   symbol: string;

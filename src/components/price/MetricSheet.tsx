@@ -1,6 +1,6 @@
 import { Modal, Pressable, View } from "react-native";
 
-import type { Metric } from "../../types/metric";
+import type { Metric } from "../../types/market";
 import { MetricValue } from "./MetricValue";
 
 type MetricSheetProps = {

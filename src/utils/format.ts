@@ -11,17 +11,22 @@ export function formatUsd(value: number) {
   return usdFormatter.format(value);
 }
 
-// Intl isn't available on the UI thread, so chart readouts use this while scrubbing.
+// Intl isn't available on the UI thread, so prices that update from worklets use this instead of formatUsd.
 export function formatPrice(price: number) {
   "worklet";
   return `$${price.toFixed(2)}`;
 }
 
+export function formatPercentChange(price: number, basePrice: number) {
+  "worklet";
+  const percent = ((price - basePrice) / basePrice) * 100;
+  return `${Math.abs(percent).toFixed(2)}%`;
+}
+
 export function formatPriceChange(price: number, basePrice: number) {
   "worklet";
-  const difference = price - basePrice;
-  const percent = (difference / basePrice) * 100;
-  return `${formatPrice(Math.abs(difference))} (${Math.abs(percent).toFixed(2)}%)`;
+  const difference = Math.abs(price - basePrice);
+  return `${formatPrice(difference)} (${formatPercentChange(price, basePrice)})`;
 }
 
 const timeFormatter = new Intl.DateTimeFormat("en-US", {
@@ -60,11 +65,6 @@ export function formatCandleTime(time: number, timeframe: Timeframe) {
     return monthFormatter.format(time);
   }
   return dateFormatter.format(time);
-}
-
-export function formatPercent(value: number) {
-  "worklet";
-  return `${value.toFixed(2)}%`;
 }
 
 export function formatSignedUsd(value: number) {

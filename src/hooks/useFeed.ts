@@ -19,7 +19,7 @@ export function useFeed() {
   }, [posts, isLargestFirst, isFollowingOnly]);
 
   // Only the tapped post gets a new object, so only its memoized card re-renders.
-  const handleLikePress = useCallback((postId: string) => {
+  const toggleLike = useCallback((postId: string) => {
     setPosts((currentPosts) =>
       currentPosts.map((post) =>
         post.id === postId
@@ -45,7 +45,7 @@ export function useFeed() {
 
   return {
     visiblePosts,
-    handleLikePress,
+    toggleLike,
     isFollowingOnly,
     changeFollowingOnly,
     isLargestFirst,

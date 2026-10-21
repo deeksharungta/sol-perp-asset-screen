@@ -89,7 +89,7 @@ function buildFineHistory(longHistory: number[]) {
   return prices;
 }
 
-// Splits the latest span into 40 equal buckets and reads each bucket's OHLC.
+// Splits the latest span into CANDLE_COUNT equal buckets and reads each bucket's OHLC.
 function buildCandles(
   pricesBetween: (start: number, end: number) => number[],
   span: number,
@@ -128,11 +128,11 @@ function buildCandlesByTimeframe(): Record<Timeframe, Candle[]> {
     "1H": candlesFor(HOUR),
     "1D": candlesFor(DAY),
     "1W": candlesFor(7 * DAY),
-    "1M": candlesFor(30 * DAY),
+    "1M": candlesFor(DETAIL_SPAN),
     "3M": candlesFor(90 * DAY),
     "6M": candlesFor(180 * DAY),
     "1Y": candlesFor(360 * DAY),
-    All: candlesFor(1800 * DAY),
+    All: candlesFor(HISTORY_SPAN),
   };
 }
 

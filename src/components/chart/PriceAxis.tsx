@@ -17,6 +17,20 @@ const TAG_WIDTH = 52;
 const TAG_HEIGHT = 16;
 const EDGE_ROOM = 8;
 
+function getTagTop(
+  price: number,
+  minPrice: number,
+  maxPrice: number,
+  height: number,
+) {
+  "worklet";
+  return clamp(
+    priceToY(price, minPrice, maxPrice, height) - TAG_HEIGHT / 2,
+    -EDGE_ROOM,
+    height + EDGE_ROOM - TAG_HEIGHT,
+  );
+}
+
 type PriceAxisProps = {
   range: PriceRange;
   previousRange: PriceRange;
@@ -45,11 +59,11 @@ export function PriceAxis({
     backgroundColor: tagColor.value,
     transform: [
       {
-        translateY: clamp(
-          priceToY(tagPrice.value, minPrice.value, maxPrice.value, height) -
-            TAG_HEIGHT / 2,
-          -EDGE_ROOM,
-          height + EDGE_ROOM - TAG_HEIGHT,
+        translateY: getTagTop(
+          tagPrice.value,
+          minPrice.value,
+          maxPrice.value,
+          height,
         ),
       },
     ],
@@ -114,12 +128,8 @@ function PriceLabels({
     { length: labelCount },
     (_, index) => minPrice + index * step,
   );
-  const tagTop = clamp(
-    priceToY(lastClose, minPrice, maxPrice, height) - TAG_HEIGHT / 2,
-    -EDGE_ROOM,
-    height + EDGE_ROOM - TAG_HEIGHT,
-  );
-  const tagCenterY = tagTop + TAG_HEIGHT / 2;
+  const tagCenterY =
+    getTagTop(lastClose, minPrice, maxPrice, height) + TAG_HEIGHT / 2;
 
   return labelPrices.map((price) => {
     const y = priceToY(price, minPrice, maxPrice, height);

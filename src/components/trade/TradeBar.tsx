@@ -6,13 +6,16 @@ import { colors } from "../../theme/colors";
 import { MaskedBlur } from "../ui/MaskedBlur";
 import { TradeButton } from "./TradeButton";
 
-export const TRADE_BAR_HEIGHT = 72;
-
+const TRADE_BAR_HEIGHT = 72;
 const MIN_BOTTOM_SPACE = 12;
 
-export function useTradeBarInset() {
+function useTradeBarInset() {
   const insets = useSafeAreaInsets();
   return Math.max(insets.bottom, MIN_BOTTOM_SPACE);
+}
+
+export function useTradeBarHeight() {
+  return useTradeBarInset() + TRADE_BAR_HEIGHT;
 }
 
 type TradeBarProps = {
