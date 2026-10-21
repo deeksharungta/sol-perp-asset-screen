@@ -6,14 +6,16 @@ import {
   type ImageSourcePropType,
 } from "react-native";
 import Animated, {
-  Extrapolation,
-  interpolate,
+  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
+  useSharedValue,
+  withTiming,
   type SharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { slideTiming } from "../../theme/animations";
 import { typography } from "../../theme/typography";
 import { formatPercent, formatPrice } from "../../utils/format";
 import { BackIcon } from "../icons/BackIcon";
@@ -24,7 +26,6 @@ import { AnimatedText } from "../ui/AnimatedText";
 import { IconButton } from "../ui/IconButton";
 
 const PRICE_PEEK_START = 320;
-const PRICE_PEEK_DISTANCE = 40;
 const PRICE_PEEK_SLIDE = 4;
 
 type AssetHeaderProps = {
@@ -61,13 +62,14 @@ export function AssetHeader({
     formatPercent(Math.abs(((livePrice.value - openPrice) / openPrice) * 100)),
   );
   const isUp = useDerivedValue(() => livePrice.value >= openPrice);
-  const peekProgress = useDerivedValue(() =>
-    interpolate(
-      scrollY.value,
-      [PRICE_PEEK_START, PRICE_PEEK_START + PRICE_PEEK_DISTANCE],
-      [0, 1],
-      Extrapolation.CLAMP,
-    ),
+  const peekProgress = useSharedValue(0);
+  useAnimatedReaction(
+    () => scrollY.value > PRICE_PEEK_START,
+    (isPeeking, wasPeeking) => {
+      if (isPeeking !== wasPeeking) {
+        peekProgress.value = withTiming(isPeeking ? 1 : 0, slideTiming);
+      }
+    },
   );
   const assetNameStyle = useAnimatedStyle(() => ({
     opacity: 1 - peekProgress.value,
