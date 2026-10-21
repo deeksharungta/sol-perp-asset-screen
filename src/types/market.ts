@@ -12,7 +12,6 @@ export type Market = {
   price: number;
   openPrice: number;
   metrics: Metric[];
-  initialMetric: Metric;
   fundingRate: number;
   maxLeverage: number;
 };
