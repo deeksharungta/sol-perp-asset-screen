@@ -7,8 +7,12 @@ export type Market = {
   assetName: string;
   assetIcon: ImageSourcePropType;
   exchangeIcon: ImageSourcePropType;
+  exchangeName: string;
+  description: string;
   price: number;
   openPrice: number;
   metrics: Metric[];
   initialMetric: Metric;
+  fundingRate: number;
+  maxLeverage: number;
 };

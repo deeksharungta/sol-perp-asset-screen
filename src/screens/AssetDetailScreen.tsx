@@ -10,12 +10,14 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AboutSection } from "../components/about/AboutSection";
 import { ChartSection } from "../components/chart/ChartSection";
 import { ScrubDetails } from "../components/chart/ScrubDetails";
 import { FeedFilters } from "../components/feed/FeedFilters";
 import { ScrollToTopButton } from "../components/feed/ScrollToTopButton";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
+import { HoldersSection } from "../components/holders/HoldersSection";
 import { HeaderFade } from "../components/header/HeaderFade";
 import { PriceSection } from "../components/price/PriceSection";
 import { TabBar } from "../components/tabs/TabBar";
@@ -62,6 +64,7 @@ export function AssetDetailScreen() {
     ),
   }));
   const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const activeTab = assetTabs[activeTabIndex];
   const [isFollowingOnly, setIsFollowingOnly] = useState(true);
   const [posts, setPosts] = useState(traderPosts);
 
@@ -134,7 +137,7 @@ export function AssetDetailScreen() {
             contentContainerStyle={{
               paddingBottom: insets.bottom + TRADE_BAR_HEIGHT,
             }}
-            data={posts}
+            data={activeTab === "Feed" ? posts : []}
             keyExtractor={keyExtractor}
             renderItem={renderPost}
             ItemSeparatorComponent={CardSeparator}
@@ -142,6 +145,17 @@ export function AssetDetailScreen() {
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
             scrollEventThrottle={16}
+            ListFooterComponent={
+              activeTab === "Feed" ? undefined : (
+                <View className="px-4">
+                  {activeTab === "Holders" ? (
+                    <HoldersSection />
+                  ) : (
+                    <AboutSection market={market} />
+                  )}
+                </View>
+              )
+            }
             ListHeaderComponent={
               <View className="gap-6 pb-4 pt-3">
                 <View>
@@ -174,11 +188,13 @@ export function AssetDetailScreen() {
                     activeIndex={activeTabIndex}
                     onChange={setActiveTabIndex}
                   />
-                  <FeedFilters
-                    isFollowingOnly={isFollowingOnly}
-                    onFollowingOnlyChange={setIsFollowingOnly}
-                    onSortPress={handleSortPress}
-                  />
+                  {activeTab === "Feed" && (
+                    <FeedFilters
+                      isFollowingOnly={isFollowingOnly}
+                      onFollowingOnlyChange={setIsFollowingOnly}
+                      onSortPress={handleSortPress}
+                    />
+                  )}
                 </View>
               </View>
             }
