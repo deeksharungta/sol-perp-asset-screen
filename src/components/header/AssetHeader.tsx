@@ -21,7 +21,7 @@ import { AnimatedPriceChange } from "../ui/AnimatedPriceChange";
 import { AnimatedText } from "../ui/AnimatedText";
 import { IconButton } from "../ui/IconButton";
 
-const PRICE_PEEK_START = 320;
+export const PRICE_PEEK_START = 320;
 const PRICE_PEEK_SLIDE = 4;
 
 type AssetHeaderProps = {

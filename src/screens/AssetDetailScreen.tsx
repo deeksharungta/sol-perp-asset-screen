@@ -6,7 +6,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { Share, View, type FlatList, type ListRenderItem } from "react-native";
+import {
+  Share,
+  View,
+  type FlatList,
+  type LayoutChangeEvent,
+  type ListRenderItem,
+} from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
   useDerivedValue,
@@ -55,6 +61,7 @@ export function AssetDetailScreen() {
     scrollY.value = event.contentOffset.y;
   });
   const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [listHeight, setListHeight] = useState(0);
   const activeTab = assetTabs[activeTabIndex];
 
   useLayoutEffect(() => {
@@ -113,6 +120,10 @@ export function AssetDetailScreen() {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   }, []);
 
+  const handleListLayout = (event: LayoutChangeEvent) => {
+    setListHeight(event.nativeEvent.layout.height);
+  };
+
   const listContentStyle = useMemo(
     () => ({ paddingBottom: tradeBarHeight }),
     [tradeBarHeight],
@@ -132,7 +143,7 @@ export function AssetDetailScreen() {
         />
       </View>
 
-      <View className="flex-1">
+      <View onLayout={handleListLayout} className="flex-1">
         <Animated.FlatList
           ref={listRef}
           contentContainerStyle={listContentStyle}
@@ -144,7 +155,15 @@ export function AssetDetailScreen() {
           showsVerticalScrollIndicator={false}
           onScroll={handleScroll}
           ListFooterComponent={
-            <View className="px-4">
+            // Short tabs are padded to a screen so the tab row can stay pinned when you switch to them.
+            <View
+              className="px-4"
+              style={
+                activeTab === "Feed"
+                  ? undefined
+                  : { minHeight: listHeight - tradeBarHeight }
+              }
+            >
               {activeTab === "Holders" && <HoldersSection />}
               {activeTab === "About" && (
                 <AboutSection market={market} livePrice={livePrice} />
@@ -184,7 +203,11 @@ export function AssetDetailScreen() {
         />
       </View>
 
-      <TradeBar onGoLong={handleGoLong} onGoShort={handleGoShort} />
+      <TradeBar
+        scrollY={scrollY}
+        onGoLong={handleGoLong}
+        onGoShort={handleGoShort}
+      />
       {toastMessage && <Toast message={toastMessage} bottom={tradeBarHeight} />}
     </View>
   );

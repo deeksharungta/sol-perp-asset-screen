@@ -1,7 +1,6 @@
 import * as Haptics from "expo-haptics";
 import { Pressable, View, type LayoutChangeEvent } from "react-native";
 import Animated, {
-  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
@@ -55,11 +54,7 @@ export function TabBar({
             accessibilityState={{ selected: index === activeIndex }}
             className="flex-1 py-3"
           >
-            <TabLabel
-              label={tab}
-              index={index}
-              indicatorIndex={indicatorIndex}
-            />
+            <TabLabel label={tab} isActive={index === activeIndex} />
           </Pressable>
         ))}
       </View>
@@ -72,16 +67,14 @@ export function TabBar({
 
 type TabLabelProps = {
   label: string;
-  index: number;
-  indicatorIndex: SharedValue<number>;
+  isActive: boolean;
 };
 
-function TabLabel({ label, index, indicatorIndex }: TabLabelProps) {
+function TabLabel({ label, isActive }: TabLabelProps) {
   const colorStyle = useAnimatedStyle(() => ({
-    color: interpolateColor(
-      Math.min(Math.abs(indicatorIndex.value - index), 1),
-      [0, 1],
-      [colors.textPrimary, colors.textSecondary],
+    color: withTiming(
+      isActive ? colors.textPrimary : colors.textSecondary,
+      slideTiming,
     ),
   }));
 
