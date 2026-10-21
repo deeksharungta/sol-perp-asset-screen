@@ -231,11 +231,11 @@ export function CandleChart({
   const lineOpacity = useDerivedValue(() =>
     interpolate(lineProgress.value, [0, 0.6], [0, 1], Extrapolation.CLAMP),
   );
-  const axisOpacity = useDerivedValue(() =>
+  const revealOpacity = useDerivedValue(() =>
     interpolate(drawProgress.value, [0.6, 1], [0, 1], Extrapolation.CLAMP),
   );
   const axisFadeStyle = useAnimatedStyle(() => ({
-    opacity: axisOpacity.value,
+    opacity: revealOpacity.value,
   }));
 
   return (
@@ -254,7 +254,7 @@ export function CandleChart({
               lineProgress={lineProgress}
               lineOpacity={lineOpacity}
               drawProgress={drawProgress}
-              axisOpacity={axisOpacity}
+              revealOpacity={revealOpacity}
               plotHeight={PLOT_HEIGHT}
             />
             <ChartLayer
@@ -264,11 +264,11 @@ export function CandleChart({
               lineProgress={lineProgress}
               lineOpacity={lineOpacity}
               drawProgress={drawProgress}
-              axisOpacity={axisOpacity}
+              revealOpacity={revealOpacity}
               plotHeight={PLOT_HEIGHT}
             />
             <Group opacity={lineOpacity}>
-              <Group opacity={axisOpacity}>
+              <Group opacity={revealOpacity}>
                 <LiveDot
                   x={lastPointX}
                   y={livePriceY}
@@ -285,7 +285,7 @@ export function CandleChart({
               plotWidth={plotWidth}
               height={PLOT_HEIGHT}
             />
-            <Group opacity={axisOpacity}>
+            <Group opacity={revealOpacity}>
               <Line
                 p1={priceLineStart}
                 p2={priceLineEnd}

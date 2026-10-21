@@ -1,7 +1,14 @@
 import { Circle } from "@shopify/react-native-skia";
-import { useDerivedValue, type SharedValue } from "react-native-reanimated";
+import { useEffect } from "react";
+import {
+  useDerivedValue,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+  type SharedValue,
+} from "react-native-reanimated";
 
-import { useLivePulse } from "../../hooks/useLivePulse";
+import { livePulseTiming } from "../../theme/animations";
 import type { ChartType } from "../../types/candle";
 
 const END_DOT_RADIUS = 3;
@@ -16,7 +23,13 @@ type LiveDotProps = {
 };
 
 export function LiveDot({ x, y, color, chartType }: LiveDotProps) {
-  const livePulse = useLivePulse(chartType);
+  const livePulse = useSharedValue(0);
+
+  useEffect(() => {
+    livePulse.value =
+      chartType === "line" ? withRepeat(withTiming(1, livePulseTiming), -1) : 0;
+  }, [chartType, livePulse]);
+
   const pulseRadius = useDerivedValue(
     () =>
       END_DOT_RADIUS + (LIVE_PULSE_RADIUS - END_DOT_RADIUS) * livePulse.value,

@@ -10,7 +10,7 @@ import Animated, {
 
 import { candlesByTimeframe } from "../data/candles";
 import type { Timeframe } from "../types/candle";
-import type { Market } from "../types/market";
+import type { AssetTab, Market } from "../types/market";
 import { ChartSection } from "./chart/ChartSection";
 import { ScrubDetails } from "./chart/ScrubDetails";
 import { FeedFilters } from "./feed/FeedFilters";
@@ -20,9 +20,10 @@ import { TabBar } from "./tabs/TabBar";
 type AssetOverviewProps = {
   market: Market;
   livePrice: SharedValue<number>;
-  tabs: readonly string[];
+  tabs: readonly AssetTab[];
   activeTabIndex: number;
   onTabChange: (index: number) => void;
+  showFeedFilters: boolean;
   isFollowingOnly: boolean;
   onFollowingOnlyChange: (value: boolean) => void;
   isLargestFirst: boolean;
@@ -35,6 +36,7 @@ export const AssetOverview = memo(function AssetOverview({
   tabs,
   activeTabIndex,
   onTabChange,
+  showFeedFilters,
   isFollowingOnly,
   onFollowingOnlyChange,
   isLargestFirst,
@@ -88,7 +90,7 @@ export const AssetOverview = memo(function AssetOverview({
           activeIndex={activeTabIndex}
           onChange={onTabChange}
         />
-        {tabs[activeTabIndex] === "Feed" && (
+        {showFeedFilters && (
           <FeedFilters
             isFollowingOnly={isFollowingOnly}
             onFollowingOnlyChange={onFollowingOnlyChange}

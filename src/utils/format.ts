@@ -77,15 +77,18 @@ export function formatSignedUsd(value: number) {
 }
 
 // Number() drops trailing zeros, so 1.20 shows as "$1.2M" like the Figma.
+const compactUnits = [
+  { size: 1_000_000_000, suffix: "B" },
+  { size: 1_000_000, suffix: "M" },
+  { size: 1_000, suffix: "K" },
+];
+
 export function formatCompactUsd(value: number) {
-  if (value >= 1_000_000_000) {
-    return `$${Number((value / 1_000_000_000).toFixed(2))}B`;
-  }
-  if (value >= 1_000_000) {
-    return `$${Number((value / 1_000_000).toFixed(2))}M`;
-  }
-  if (value >= 1_000) {
-    return `$${Number((value / 1_000).toFixed(2))}K`;
+  for (const { size, suffix } of compactUnits) {
+    const rounded = Number((value / size).toFixed(2));
+    if (rounded >= 1) {
+      return `$${rounded}${suffix}`;
+    }
   }
   return formatUsd(value);
 }
