@@ -170,7 +170,7 @@ export function AssetDetailScreen() {
       </View>
 
       <View className="flex-1">
-        <BlurTargetView ref={blurTargetRef} style={{ flex: 1 }}>
+        <BlurTargetView ref={blurTargetRef} className="flex-1 bg-background">
           <Animated.FlatList
             ref={listRef}
             contentContainerStyle={{
