@@ -12,6 +12,10 @@ export const slideTiming: WithTimingConfig = {
   easing: Easing.out(Easing.cubic),
 };
 
+export const priceTickTiming: WithTimingConfig = {
+  duration: 300,
+};
+
 export const likePopTiming: WithTimingConfig = {
   duration: 120,
   easing: Easing.out(Easing.quad),

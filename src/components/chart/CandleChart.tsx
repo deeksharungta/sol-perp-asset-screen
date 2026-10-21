@@ -63,6 +63,7 @@ type CandleChartProps = {
   scrubIndex: SharedValue<number>;
   scrubProgress: SharedValue<number>;
   drawProgress: SharedValue<number>;
+  livePrice: SharedValue<number>;
 };
 
 export const CandleChart = memo(function CandleChart({
@@ -72,6 +73,7 @@ export const CandleChart = memo(function CandleChart({
   scrubIndex,
   scrubProgress,
   drawProgress,
+  livePrice,
 }: CandleChartProps) {
   const canvasSize = useSharedValue({ width: 0, height: 0 });
   const { minPrice, maxPrice, step } = getPriceRange(candles);
@@ -128,7 +130,11 @@ export const CandleChart = memo(function CandleChart({
 
     candles.forEach((candle, index) => {
       const x = indexToX(index, candleStep.value);
-      const closeY = priceToY(candle.close, minPrice, maxPrice, PLOT_HEIGHT);
+      const isLiveCandle = index === candleCount - 1;
+      const close = isLiveCandle ? livePrice.value : candle.close;
+      const high = isLiveCandle ? Math.max(candle.high, close) : candle.high;
+      const low = isLiveCandle ? Math.min(candle.low, close) : candle.low;
+      const closeY = priceToY(close, minPrice, maxPrice, PLOT_HEIGHT);
 
       if (index === 0) {
         closeLine.moveTo(x, closeY);
@@ -146,13 +152,13 @@ export const CandleChart = memo(function CandleChart({
         return;
       }
 
-      const highY = priceToY(candle.high, minPrice, maxPrice, PLOT_HEIGHT);
-      const lowY = priceToY(candle.low, minPrice, maxPrice, PLOT_HEIGHT);
+      const highY = priceToY(high, minPrice, maxPrice, PLOT_HEIGHT);
+      const lowY = priceToY(low, minPrice, maxPrice, PLOT_HEIGHT);
       const middleY = (highY + lowY) / 2;
       const grow = (y: number) => middleY + (y - middleY) * reveal;
       const openY = priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT);
 
-      const path = candle.close >= candle.open ? greenCandles : redCandles;
+      const path = close >= candle.open ? greenCandles : redCandles;
       path.addRect({
         x: x - bodyWidth / 2,
         y: grow(Math.min(openY, closeY)),
@@ -189,11 +195,14 @@ export const CandleChart = memo(function CandleChart({
   const lastPointX = useDerivedValue(() =>
     indexToX(candleCount - 1, candleStep.value),
   );
+  const livePriceY = useDerivedValue(() =>
+    priceToY(livePrice.value, minPrice, maxPrice, PLOT_HEIGHT),
+  );
   const tagPrice = useDerivedValue(() =>
     interpolate(
       scrubProgress.value,
       [0, 1],
-      [lastClose, candles[scrubIndex.value].close],
+      [livePrice.value, candles[scrubIndex.value].close],
     ),
   );
   const tagY = useDerivedValue(() =>
@@ -280,14 +289,14 @@ export const CandleChart = memo(function CandleChart({
               <Group opacity={axisOpacity}>
                 <Circle
                   cx={lastPointX}
-                  cy={lastCloseY}
+                  cy={livePriceY}
                   r={END_HALO_RADIUS}
                   color={priceColor}
                   opacity={AREA_OPACITY}
                 />
                 <Circle
                   cx={lastPointX}
-                  cy={lastCloseY}
+                  cy={livePriceY}
                   r={END_DOT_RADIUS}
                   color={priceColor}
                 />

@@ -31,6 +31,7 @@ import { TRADE_BAR_HEIGHT, TradeBar } from "../components/trade/TradeBar";
 import { candlesByTimeframe } from "../data/candles";
 import { solPerpMarket } from "../data/market";
 import { traderPosts } from "../data/traderPosts";
+import { useLivePrice } from "../hooks/useLivePrice";
 import { expandLayout } from "../theme/animations";
 import type { Timeframe } from "../types/candle";
 import type { TraderPost } from "../types/traderPost";
@@ -47,6 +48,7 @@ function CardSeparator() {
 export function AssetDetailScreen() {
   const market = solPerpMarket;
   const insets = useSafeAreaInsets();
+  const livePrice = useLivePrice(market.price);
   const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
   const listRef = useRef<FlatList<TraderPost>>(null);
   const scrollY = useSharedValue(0);
@@ -201,6 +203,7 @@ export function AssetDetailScreen() {
                   onTimeframeChange={setTimeframe}
                   scrubIndex={scrubIndex}
                   scrubProgress={scrubProgress}
+                  livePrice={livePrice}
                 />
                 <View className="gap-4">
                   <TabBar

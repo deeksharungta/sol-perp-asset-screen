@@ -13,6 +13,7 @@ type ChartSectionProps = {
   onTimeframeChange: (timeframe: Timeframe) => void;
   scrubIndex: SharedValue<number>;
   scrubProgress: SharedValue<number>;
+  livePrice: SharedValue<number>;
 };
 
 export const ChartSection = memo(function ChartSection({
@@ -21,6 +22,7 @@ export const ChartSection = memo(function ChartSection({
   onTimeframeChange,
   scrubIndex,
   scrubProgress,
+  livePrice,
 }: ChartSectionProps) {
   const [chartType, setChartType] = useState<ChartType>("candles");
   const drawProgress = useSharedValue(0);
@@ -46,6 +48,7 @@ export const ChartSection = memo(function ChartSection({
         scrubIndex={scrubIndex}
         scrubProgress={scrubProgress}
         drawProgress={drawProgress}
+        livePrice={livePrice}
       />
       <View className="flex-row items-center px-4">
         <TimeframeSelector
