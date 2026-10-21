@@ -2,44 +2,34 @@ import { BlurTargetView } from "expo-blur";
 import {
   startTransition,
   useCallback,
-  useMemo,
   useRef,
   useState,
   type ComponentRef,
 } from "react";
 import { Share, View, type FlatList, type ListRenderItem } from "react-native";
 import Animated, {
-  Extrapolation,
-  interpolate,
   useAnimatedScrollHandler,
-  useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
 
+import { AssetOverview } from "../components/AssetOverview";
 import { AboutSection } from "../components/about/AboutSection";
-import { ChartSection } from "../components/chart/ChartSection";
-import { ScrubDetails } from "../components/chart/ScrubDetails";
-import { FeedFilters } from "../components/feed/FeedFilters";
 import { ScrollToTopButton } from "../components/feed/ScrollToTopButton";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
 import { HoldersSection } from "../components/holders/HoldersSection";
 import { HeaderFade } from "../components/header/HeaderFade";
-import { PriceSection } from "../components/price/PriceSection";
-import { TabBar } from "../components/tabs/TabBar";
 import {
   TRADE_BAR_HEIGHT,
   TradeBar,
   useTradeBarInset,
 } from "../components/trade/TradeBar";
 import { Toast } from "../components/ui/Toast";
-import { candlesByTimeframe } from "../data/candles";
 import { solPerpMarket } from "../data/market";
-import { traderPosts } from "../data/traderPosts";
+import { useFeed } from "../hooks/useFeed";
 import { useLivePrice } from "../hooks/useLivePrice";
 import { useToast } from "../hooks/useToast";
 import { feedReorderLayout } from "../theme/animations";
-import type { Timeframe } from "../types/candle";
 import type { TraderPost } from "../types/traderPost";
 import { formatUsd } from "../utils/format";
 
@@ -59,47 +49,19 @@ export function AssetDetailScreen() {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
-  const [timeframe, setTimeframe] = useState<Timeframe>("1D");
-  const candles = candlesByTimeframe[timeframe];
   // Shared with the chart so the scrub panel can replace the price block without re-renders.
   const scrubIndex = useSharedValue(0);
   const scrubProgress = useSharedValue(0);
-  const priceFadeStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(
-      scrubProgress.value,
-      [0, 0.5],
-      [1, 0],
-      Extrapolation.CLAMP,
-    ),
-  }));
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const activeTab = assetTabs[activeTabIndex];
-  const [isFollowingOnly, setIsFollowingOnly] = useState(true);
-  const [isLargestFirst, setIsLargestFirst] = useState(true);
-  const [posts, setPosts] = useState(traderPosts);
-
-  const sortedPosts = useMemo(() => {
-    return [...posts].sort((a, b) =>
-      isLargestFirst
-        ? b.positionValue - a.positionValue
-        : a.positionValue - b.positionValue,
-    );
-  }, [posts, isLargestFirst]);
-
-  // Only the tapped post gets a new object, so only its memoized card re-renders.
-  const handleLikePress = useCallback((postId: string) => {
-    setPosts((currentPosts) =>
-      currentPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              isLiked: !post.isLiked,
-              likes: post.likes + (post.isLiked ? -1 : 1),
-            }
-          : post,
-      ),
-    );
-  }, []);
+  const {
+    sortedPosts,
+    handleLikePress,
+    isFollowingOnly,
+    setIsFollowingOnly,
+    isLargestFirst,
+    toggleSort,
+  } = useFeed();
 
   const renderPost: ListRenderItem<TraderPost> = useCallback(
     ({ item }) => (
@@ -133,10 +95,6 @@ export function AssetDetailScreen() {
     startTransition(() => {
       setActiveTabIndex(index);
     });
-  };
-
-  const handleSortPress = () => {
-    setIsLargestFirst(!isLargestFirst);
   };
 
   const handleGoLong = () => {
@@ -196,47 +154,19 @@ export function AssetDetailScreen() {
               )
             }
             ListHeaderComponent={
-              <View className="gap-6 pb-4 pt-3">
-                <View>
-                  <Animated.View style={priceFadeStyle}>
-                    <PriceSection
-                      livePrice={livePrice}
-                      openPrice={candles[0].open}
-                      timeframe={timeframe}
-                      metrics={market.metrics}
-                    />
-                  </Animated.View>
-                  <ScrubDetails
-                    candles={candles}
-                    timeframe={timeframe}
-                    scrubIndex={scrubIndex}
-                    scrubProgress={scrubProgress}
-                  />
-                </View>
-                <ChartSection
-                  candles={candles}
-                  timeframe={timeframe}
-                  onTimeframeChange={setTimeframe}
-                  scrubIndex={scrubIndex}
-                  scrubProgress={scrubProgress}
-                  livePrice={livePrice}
-                />
-                <View className="gap-4">
-                  <TabBar
-                    tabs={assetTabs}
-                    activeIndex={activeTabIndex}
-                    onChange={handleTabChange}
-                  />
-                  {activeTab === "Feed" && (
-                    <FeedFilters
-                      isFollowingOnly={isFollowingOnly}
-                      onFollowingOnlyChange={setIsFollowingOnly}
-                      isLargestFirst={isLargestFirst}
-                      onSortPress={handleSortPress}
-                    />
-                  )}
-                </View>
-              </View>
+              <AssetOverview
+                market={market}
+                livePrice={livePrice}
+                scrubIndex={scrubIndex}
+                scrubProgress={scrubProgress}
+                tabs={assetTabs}
+                activeTabIndex={activeTabIndex}
+                onTabChange={handleTabChange}
+                isFollowingOnly={isFollowingOnly}
+                onFollowingOnlyChange={setIsFollowingOnly}
+                isLargestFirst={isLargestFirst}
+                onSortPress={toggleSort}
+              />
             }
           />
         </BlurTargetView>
