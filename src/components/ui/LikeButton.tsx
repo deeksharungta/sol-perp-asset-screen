@@ -56,7 +56,7 @@ export function LikeButton({
 }: LikeButtonProps) {
   const heartScale = useSharedValue(1);
   const burstProgress = useSharedValue(0);
-  const burst = useSharedValue(createBurst());
+  const burst = useSharedValue<BurstDotShape[]>([]);
   const [isBursting, setIsBursting] = useState(false);
 
   const handlePress = () => {

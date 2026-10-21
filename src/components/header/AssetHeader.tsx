@@ -1,3 +1,4 @@
+import { memo } from "react";
 import {
   Image,
   Pressable,
@@ -42,7 +43,7 @@ type AssetHeaderProps = {
   onNotify: () => void;
 };
 
-export function AssetHeader({
+export const AssetHeader = memo(function AssetHeader({
   symbol,
   assetName,
   assetIcon,
@@ -147,4 +148,4 @@ export function AssetHeader({
       </View>
     </View>
   );
-}
+});

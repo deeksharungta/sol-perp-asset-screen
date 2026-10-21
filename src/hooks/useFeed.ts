@@ -33,15 +33,15 @@ export function useFeed() {
     );
   }, []);
 
-  const changeFollowingOnly = (value: boolean) => {
+  const changeFollowingOnly = useCallback((value: boolean) => {
     startTransition(() => {
       setIsFollowingOnly(value);
     });
-  };
+  }, []);
 
-  const toggleSort = () => {
-    setIsLargestFirst(!isLargestFirst);
-  };
+  const toggleSort = useCallback(() => {
+    setIsLargestFirst((value) => !value);
+  }, []);
 
   return {
     visiblePosts,

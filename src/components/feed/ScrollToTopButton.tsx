@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { View } from "react-native";
 import Animated, {
   useAnimatedReaction,
@@ -20,7 +20,7 @@ type ScrollToTopButtonProps = {
   onPress: () => void;
 };
 
-export function ScrollToTopButton({
+export const ScrollToTopButton = memo(function ScrollToTopButton({
   scrollY,
   bottom,
   onPress,
@@ -59,4 +59,4 @@ export function ScrollToTopButton({
       />
     </Animated.View>
   );
-}
+});

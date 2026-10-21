@@ -2,6 +2,7 @@ import { BlurTargetView } from "expo-blur";
 import {
   startTransition,
   useCallback,
+  useMemo,
   useRef,
   useState,
   type ComponentRef,
@@ -72,37 +73,42 @@ export function AssetDetailScreen() {
     [handleLikePress],
   );
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     showToast("Back navigation is coming soon");
-  };
+  }, [showToast]);
 
-  const handleShare = () => {
+  const handleShare = useCallback(() => {
     Share.share({
       message: `${market.symbol} is trading at ${formatUsd(market.price)}`,
     });
-  };
+  }, [market]);
 
-  const handleNotify = () => {
+  const handleNotify = useCallback(() => {
     showToast("Price alerts are coming soon");
-  };
+  }, [showToast]);
 
-  const handleTabChange = (index: number) => {
+  const handleTabChange = useCallback((index: number) => {
     startTransition(() => {
       setActiveTabIndex(index);
     });
-  };
+  }, []);
 
-  const handleGoLong = () => {
+  const handleGoLong = useCallback(() => {
     showToast("Long orders are coming soon");
-  };
+  }, [showToast]);
 
-  const handleGoShort = () => {
+  const handleGoShort = useCallback(() => {
     showToast("Short orders are coming soon");
-  };
+  }, [showToast]);
 
-  const handleScrollToTop = () => {
+  const handleScrollToTop = useCallback(() => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
-  };
+  }, []);
+
+  const listContentStyle = useMemo(
+    () => ({ paddingBottom: tradeBarInset + TRADE_BAR_HEIGHT }),
+    [tradeBarInset],
+  );
 
   return (
     <View className="flex-1 bg-background">
@@ -126,9 +132,7 @@ export function AssetDetailScreen() {
         <BlurTargetView ref={blurTargetRef} className="flex-1 bg-background">
           <Animated.FlatList
             ref={listRef}
-            contentContainerStyle={{
-              paddingBottom: tradeBarInset + TRADE_BAR_HEIGHT,
-            }}
+            contentContainerStyle={listContentStyle}
             data={activeTab === "Feed" ? visiblePosts : []}
             keyExtractor={keyExtractor}
             renderItem={renderPost}
@@ -136,7 +140,6 @@ export function AssetDetailScreen() {
             initialNumToRender={3}
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
-            scrollEventThrottle={16}
             ListFooterComponent={
               activeTab === "Feed" ? undefined : (
                 <View className="px-4">

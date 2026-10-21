@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { View } from "react-native";
 import Animated, {
   Extrapolation,
@@ -30,7 +30,7 @@ type AssetOverviewProps = {
   onSortPress: () => void;
 };
 
-export function AssetOverview({
+export const AssetOverview = memo(function AssetOverview({
   market,
   livePrice,
   scrubIndex,
@@ -98,4 +98,4 @@ export function AssetOverview({
       </View>
     </View>
   );
-}
+});
