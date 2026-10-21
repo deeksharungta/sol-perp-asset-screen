@@ -1,9 +1,7 @@
-import { Modal, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, View } from "react-native";
 
-import { typography } from "../../theme/typography";
 import type { Metric } from "../../types/metric";
-import { formatCompactUsd } from "../../utils/format";
-import { SwitchIcon } from "../icons/SwitchIcon";
+import { MetricValue } from "./MetricValue";
 
 type MetricSheetProps = {
   visible: boolean;
@@ -45,18 +43,7 @@ export function MetricSheet({
             accessibilityRole="button"
             className="items-end"
           >
-            <Text
-              style={typography.tabularNums}
-              className="font-sans text-base font-semibold leading-5 text-text-primary"
-            >
-              {formatCompactUsd(metric.value)}
-            </Text>
-            <View className="flex-row items-center gap-1">
-              <SwitchIcon />
-              <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
-                {metric.label}
-              </Text>
-            </View>
+            <MetricValue metric={metric} />
           </Pressable>
         ))}
       </View>

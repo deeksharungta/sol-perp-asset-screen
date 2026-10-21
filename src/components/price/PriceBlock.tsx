@@ -14,14 +14,10 @@ import { priceFlashTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 import type { Metric } from "../../types/metric";
-import {
-  formatCompactUsd,
-  formatPrice,
-  formatPriceChange,
-} from "../../utils/format";
-import { SwitchIcon } from "../icons/SwitchIcon";
+import { formatPrice, formatPriceChange } from "../../utils/format";
 import { AnimatedText } from "../ui/AnimatedText";
 import { AnimatedPriceChange } from "./AnimatedPriceChange";
+import { MetricValue } from "./MetricValue";
 
 type PriceBlockProps = {
   livePrice: SharedValue<number>;
@@ -100,18 +96,7 @@ export function PriceBlock({
         hitSlop={8}
         className="items-end"
       >
-        <Text
-          style={typography.tabularNums}
-          className="font-sans text-base font-semibold leading-5 text-text-primary"
-        >
-          {formatCompactUsd(metric.value)}
-        </Text>
-        <View className="flex-row items-center gap-1">
-          <SwitchIcon />
-          <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
-            {metric.label}
-          </Text>
-        </View>
+        <MetricValue metric={metric} />
       </Pressable>
     </View>
   );
