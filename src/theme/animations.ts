@@ -34,10 +34,6 @@ export const pressSpring: WithSpringConfig = {
   stiffness: 400,
 };
 
-export const expandLayout = LinearTransition.duration(250).easing(
-  Easing.out(Easing.cubic),
-);
-
 export const feedReorderLayout = LinearTransition.duration(450).easing(
   Easing.inOut(Easing.cubic),
 );

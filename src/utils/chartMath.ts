@@ -82,7 +82,7 @@ export function getPriceRange(candles: Candle[]) {
     high = Math.max(high, candle.high);
   }
   const padding = (high - low) * PRICE_PADDING;
-  low -= padding;
+  low = Math.max(0, low - padding);
   high += padding;
 
   const step = niceStep(high - low);
