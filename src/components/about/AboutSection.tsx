@@ -33,9 +33,14 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
   );
   const isUp = useDerivedValue(() => livePrice.value >= market.openPrice);
 
-  const stats: { label: string; value: ReactNode }[] = [
+  const stats: {
+    label: string;
+    value: ReactNode;
+    accessibilityLabel?: string;
+  }[] = [
     {
       label: "Mark price",
+      accessibilityLabel: `${market.symbol} live mark price`,
       value: (
         <AnimatedText
           text={priceText}
@@ -46,6 +51,7 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
     },
     {
       label: "24h change",
+      accessibilityLabel: `${market.symbol} live 24h change`,
       value: <AnimatedPriceChange isUp={isUp} text={changeText} />,
     },
     ...market.metrics.map((metric) => ({
@@ -85,7 +91,11 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
         {stats.map((stat, index) => (
           <Fragment key={stat.label}>
             {index > 0 && <Divider />}
-            <View className="flex-row items-center justify-between py-3">
+            <View
+              accessible={!!stat.accessibilityLabel}
+              accessibilityLabel={stat.accessibilityLabel}
+              className="flex-row items-center justify-between py-3"
+            >
               <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
                 {stat.label}
               </Text>

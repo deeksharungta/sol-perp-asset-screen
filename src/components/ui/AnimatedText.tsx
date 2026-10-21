@@ -23,6 +23,8 @@ export function AnimatedText({ text, className, style }: AnimatedTextProps) {
   return (
     <AnimatedTextInput
       editable={false}
+      maxFontSizeMultiplier={1.2}
+      importantForAccessibility="no"
       animatedProps={animatedProps}
       className={`pointer-events-none p-0 ${className ?? ""}`}
       style={[typography.tabularNums, style]}

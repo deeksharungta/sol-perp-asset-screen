@@ -71,9 +71,13 @@ export function TimeframeSelector({
               onPress={() => handlePress(index)}
               accessibilityRole="button"
               accessibilityState={{ selected: isSelected }}
+              hitSlop={{ top: 10, bottom: 10, left: 6, right: 6 }}
               className="h-6 flex-1 items-center justify-center"
             >
               <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                maxFontSizeMultiplier={1.3}
                 className={`font-sans text-xs font-bold leading-4 ${isSelected ? "text-text-primary" : "text-text-secondary"}`}
               >
                 {timeframe}

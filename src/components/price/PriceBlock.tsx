@@ -76,7 +76,11 @@ export function PriceBlock({
 
   return (
     <View className="flex-row items-end justify-between px-4">
-      <View className="gap-1">
+      <View
+        accessible
+        accessibilityLabel={`Live price and ${timeframe} change`}
+        className="gap-1"
+      >
         <AnimatedText
           text={priceText}
           className="h-6 font-sans text-xl font-semibold"

@@ -49,7 +49,10 @@ export function FeedFilters({
         className="h-6 flex-row items-center gap-1 rounded-full px-2"
         style={surfaces.pill}
       >
-        <Text className="font-sans text-xs font-bold leading-4 text-text-secondary">
+        <Text
+          maxFontSizeMultiplier={1.3}
+          className="font-sans text-xs font-bold leading-4 text-text-secondary"
+        >
           Size
         </Text>
         <Animated.View style={arrowStyle}>

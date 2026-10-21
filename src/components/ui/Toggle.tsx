@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useState } from "react";
 import { Pressable, StyleSheet } from "react-native";
 import Animated, {
   interpolateColor,
@@ -28,14 +28,14 @@ export function Toggle({
   accessibilityLabel,
 }: ToggleProps) {
   const progress = useSharedValue(value ? 1 : 0);
-  const nextValue = useRef(value);
+  const [isOn, setIsOn] = useState(value);
 
   const handlePress = () => {
-    const isOn = !nextValue.current;
-    nextValue.current = isOn;
-    progress.value = withTiming(isOn ? 1 : 0, slideTiming, (finished) => {
+    const nextIsOn = !isOn;
+    setIsOn(nextIsOn);
+    progress.value = withTiming(nextIsOn ? 1 : 0, slideTiming, (finished) => {
       if (finished) {
-        scheduleOnRN(onValueChange, isOn);
+        scheduleOnRN(onValueChange, nextIsOn);
       }
     });
   };
@@ -56,7 +56,7 @@ export function Toggle({
     <Pressable
       onPress={handlePress}
       accessibilityRole="switch"
-      accessibilityState={{ checked: value }}
+      accessibilityState={{ checked: isOn }}
       accessibilityLabel={accessibilityLabel}
       hitSlop={8}
     >

@@ -14,8 +14,6 @@ export function Toast({ message, bottom }: ToastProps) {
     <Animated.View
       entering={toastEntering}
       exiting={toastExiting}
-      accessibilityRole="alert"
-      accessibilityLiveRegion="polite"
       className="pointer-events-none absolute self-center rounded-full px-4 py-2"
       style={[surfaces.floating, { bottom }]}
     >

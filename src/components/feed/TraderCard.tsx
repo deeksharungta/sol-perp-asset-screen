@@ -72,8 +72,15 @@ export const TraderCard = memo(function TraderCard({
               onPress={() => onLikePress(post.id)}
             />
 
-            <View className="h-6 flex-row items-center gap-1 rounded-full bg-pill pl-2 pr-1.5">
-              <Text className="font-sans text-xs font-bold leading-4 text-text-tertiary">
+            <View
+              accessible
+              accessibilityLabel={`${post.commentCount} comments`}
+              className="h-6 flex-row items-center gap-1 rounded-full bg-pill pl-2 pr-1.5"
+            >
+              <Text
+                maxFontSizeMultiplier={1.3}
+                className="font-sans text-xs font-bold leading-4 text-text-tertiary"
+              >
                 {post.commentCount}
               </Text>
               <CommentIcon />
