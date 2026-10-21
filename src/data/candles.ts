@@ -2,7 +2,7 @@ import type { Candle, Timeframe } from "../types/candle";
 import { solPerpMarket } from "./market";
 
 const CANDLE_COUNT = 40;
-const NOW = Date.UTC(2026, 9, 21, 12);
+const NOW = Date.now();
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;

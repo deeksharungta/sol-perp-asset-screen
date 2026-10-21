@@ -166,7 +166,7 @@ export function CandleChart({
   const previousPaths = useDerivedValue(() =>
     buildChartPaths(
       zoomProgress.value < 1 ? previousCandles : [],
-      previousLastClose,
+      chartPrice.value,
       { ...sizes.value, zoom: Math.exp(-logRatio * zoomProgress.value) },
       { draw: 1, line: lineProgress.value },
     ),

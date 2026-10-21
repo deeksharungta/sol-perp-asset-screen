@@ -6,9 +6,9 @@ import Animated, {
 } from "react-native-reanimated";
 
 import {
-  expandLayout,
   feedCardEntering,
   feedCardExiting,
+  feedReorderLayout,
   slideTiming,
 } from "../../theme/animations";
 import type { TraderPost } from "../../types/traderPost";
@@ -44,7 +44,7 @@ export const TraderCard = memo(function TraderCard({
 
   return (
     <Card
-      layout={expandLayout}
+      layout={feedReorderLayout}
       entering={feedCardEntering}
       exiting={feedCardExiting}
       className="gap-3 p-4"
