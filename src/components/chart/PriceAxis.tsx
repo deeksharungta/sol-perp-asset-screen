@@ -5,6 +5,7 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 
+import { typography } from "../../theme/typography";
 import { clamp, priceToY } from "../../utils/chartMath";
 import { formatPrice } from "../../utils/format";
 import { AnimatedText } from "../ui/AnimatedText";
@@ -12,7 +13,6 @@ import { AnimatedText } from "../ui/AnimatedText";
 const LABEL_HEIGHT = 13;
 const TAG_WIDTH = 52;
 const TAG_HEIGHT = 20;
-const TAG_TEXT_LINE_HEIGHT = 12;
 const EDGE_ROOM = 8;
 
 type PriceAxisProps = {
@@ -86,7 +86,7 @@ export function PriceAxis({
         <AnimatedText
           text={tagText}
           className="text-center font-sans text-2xs font-bold text-text-on-color"
-          style={{ lineHeight: TAG_TEXT_LINE_HEIGHT }}
+          style={typography.animatedText2xs}
         />
       </Animated.View>
     </View>

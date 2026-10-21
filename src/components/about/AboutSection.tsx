@@ -1,12 +1,21 @@
 import { Fragment, type ReactNode } from "react";
 import { Image, Text, View } from "react-native";
-import Animated from "react-native-reanimated";
+import Animated, {
+  useDerivedValue,
+  type SharedValue,
+} from "react-native-reanimated";
 
 import { fadeInEntering } from "../../theme/animations";
 import { surfaces } from "../../theme/surfaces";
+import { typography } from "../../theme/typography";
 import type { Market } from "../../types/market";
-import { formatCompactUsd, formatPercent, formatUsd } from "../../utils/format";
-import { PriceChange } from "../price/PriceChange";
+import {
+  formatCompactUsd,
+  formatPrice,
+  formatPriceChange,
+} from "../../utils/format";
+import { AnimatedPriceChange } from "../price/AnimatedPriceChange";
+import { AnimatedText } from "../ui/AnimatedText";
 import { Divider } from "../ui/Divider";
 
 const statValueClassName =
@@ -14,22 +23,30 @@ const statValueClassName =
 
 type AboutSectionProps = {
   market: Market;
+  livePrice: SharedValue<number>;
 };
 
-export function AboutSection({ market }: AboutSectionProps) {
-  const change = market.price - market.openPrice;
-  const changePercent = (change / market.openPrice) * 100;
+export function AboutSection({ market, livePrice }: AboutSectionProps) {
+  const priceText = useDerivedValue(() => formatPrice(livePrice.value));
+  const changeText = useDerivedValue(() =>
+    formatPriceChange(livePrice.value, market.openPrice),
+  );
+  const isUp = useDerivedValue(() => livePrice.value >= market.openPrice);
 
   const stats: { label: string; value: ReactNode }[] = [
-    { label: "Mark price", value: formatUsd(market.price) },
+    {
+      label: "Mark price",
+      value: (
+        <AnimatedText
+          text={priceText}
+          className="font-sans text-xs font-semibold text-text-primary"
+          style={[typography.tabularNums, typography.animatedTextXs]}
+        />
+      ),
+    },
     {
       label: "24h change",
-      value: (
-        <PriceChange isPositive={change >= 0}>
-          {formatUsd(Math.abs(change))} (
-          {formatPercent(Math.abs(changePercent))})
-        </PriceChange>
-      ),
+      value: <AnimatedPriceChange isUp={isUp} text={changeText} />,
     },
     ...market.metrics.map((metric) => ({
       label: metric.label,

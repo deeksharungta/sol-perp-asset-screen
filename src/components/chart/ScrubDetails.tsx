@@ -9,9 +9,14 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { colors } from "../../theme/colors";
+import { typography } from "../../theme/typography";
 import type { Candle, Timeframe } from "../../types/candle";
-import { formatCandleTime, formatPrice } from "../../utils/format";
-import { TriangleIcon } from "../icons/TriangleIcon";
+import {
+  formatCandleTime,
+  formatPrice,
+  formatPriceChange,
+} from "../../utils/format";
+import { AnimatedPriceChange } from "../price/AnimatedPriceChange";
 import { AnimatedText } from "../ui/AnimatedText";
 
 type ScrubDetailsProps = {
@@ -38,11 +43,9 @@ export const ScrubDetails = memo(function ScrubDetails({
   const isUp = useDerivedValue(() => candle.value.close >= openPrice);
 
   const close = useDerivedValue(() => formatPrice(candle.value.close));
-  const change = useDerivedValue(() => {
-    const difference = candle.value.close - openPrice;
-    const percent = (difference / openPrice) * 100;
-    return `${formatPrice(Math.abs(difference))} (${Math.abs(percent).toFixed(2)}%)`;
-  });
+  const change = useDerivedValue(() =>
+    formatPriceChange(candle.value.close, openPrice),
+  );
   const time = useDerivedValue(() => timeLabels[scrubIndex.value]);
   const open = useDerivedValue(() => formatPrice(candle.value.open));
   const high = useDerivedValue(() => formatPrice(candle.value.high));
@@ -56,15 +59,6 @@ export const ScrubDetails = memo(function ScrubDetails({
       Extrapolation.CLAMP,
     ),
   }));
-  const changeColorStyle = useAnimatedStyle(() => ({
-    color: isUp.value ? colors.textGreen : colors.textRed,
-  }));
-  const upTriangleStyle = useAnimatedStyle(() => ({
-    opacity: isUp.value ? 1 : 0,
-  }));
-  const downTriangleStyle = useAnimatedStyle(() => ({
-    opacity: isUp.value ? 0 : 1,
-  }));
   const candleColorStyle = useAnimatedStyle(() => ({
     color:
       candle.value.close >= candle.value.open
@@ -77,29 +71,16 @@ export const ScrubDetails = memo(function ScrubDetails({
       className="pointer-events-none absolute inset-x-0 top-0 flex-row justify-between px-4"
       style={fadeStyle}
     >
-      <View>
+      <View className="gap-1">
         <AnimatedText
           text={close}
           className="h-6 w-32 font-sans text-xl font-semibold tabular-nums text-text-primary"
         />
-        <View className="h-4 flex-row items-center gap-0.5">
-          <View className="h-1.5 w-1.5">
-            <Animated.View className="absolute" style={upTriangleStyle}>
-              <TriangleIcon direction="up" color={colors.textGreen} />
-            </Animated.View>
-            <Animated.View className="absolute" style={downTriangleStyle}>
-              <TriangleIcon direction="down" color={colors.textRed} />
-            </Animated.View>
-          </View>
-          <AnimatedText
-            text={change}
-            className="w-32 font-sans text-xs font-semibold tabular-nums"
-            style={changeColorStyle}
-          />
-        </View>
+        <AnimatedPriceChange isUp={isUp} text={change} />
         <AnimatedText
           text={time}
-          className="h-4 w-32 font-sans text-xs font-semibold tabular-nums text-text-tertiary"
+          className="h-4 w-32 font-sans text-xs font-semibold text-text-tertiary"
+          style={[typography.tabularNums, typography.animatedTextXs]}
         />
       </View>
 
@@ -131,8 +112,8 @@ function OhlcValue({ label, value, colorStyle }: OhlcValueProps) {
       </Text>
       <AnimatedText
         text={value}
-        className="w-14 font-sans text-xs font-semibold tabular-nums text-text-primary"
-        style={colorStyle}
+        className="w-14 font-sans text-xs font-semibold text-text-primary"
+        style={[typography.tabularNums, typography.animatedTextXs, colorStyle]}
       />
     </View>
   );

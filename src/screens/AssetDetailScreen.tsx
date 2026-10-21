@@ -58,8 +58,6 @@ export function AssetDetailScreen() {
   });
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const candles = candlesByTimeframe[timeframe];
-  const dayChangePercent =
-    ((market.price - market.openPrice) / market.openPrice) * 100;
   // Shared with the chart so the scrub panel can replace the price block without re-renders.
   const scrubIndex = useSharedValue(0);
   const scrubProgress = useSharedValue(0);
@@ -142,8 +140,8 @@ export function AssetDetailScreen() {
           assetName={market.assetName}
           assetIcon={market.assetIcon}
           exchangeIcon={market.exchangeIcon}
-          price={market.price}
-          changePercent={dayChangePercent}
+          livePrice={livePrice}
+          openPrice={market.openPrice}
           scrollY={scrollY}
           onTitlePress={handleScrollToTop}
           onBack={handleBack}
@@ -173,7 +171,7 @@ export function AssetDetailScreen() {
                   {activeTab === "Holders" ? (
                     <HoldersSection />
                   ) : (
-                    <AboutSection market={market} />
+                    <AboutSection market={market} livePrice={livePrice} />
                   )}
                 </View>
               )
@@ -183,7 +181,7 @@ export function AssetDetailScreen() {
                 <View>
                   <Animated.View style={priceFadeStyle}>
                     <PriceSection
-                      price={market.price}
+                      livePrice={livePrice}
                       openPrice={candles[0].open}
                       timeframe={timeframe}
                       metrics={market.metrics}

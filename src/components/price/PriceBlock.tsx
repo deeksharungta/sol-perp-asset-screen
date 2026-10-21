@@ -1,31 +1,69 @@
 import { useRef, type ComponentRef } from "react";
 import { Pressable, Text, View } from "react-native";
+import {
+  interpolateColor,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+  type SharedValue,
+} from "react-native-reanimated";
 
+import { priceFlashTiming } from "../../theme/animations";
+import { colors } from "../../theme/colors";
+import { typography } from "../../theme/typography";
 import type { Metric } from "../../types/metric";
-import { formatCompactUsd, formatPercent, formatUsd } from "../../utils/format";
+import {
+  formatCompactUsd,
+  formatPrice,
+  formatPriceChange,
+} from "../../utils/format";
 import { SwitchIcon } from "../icons/SwitchIcon";
-import { PriceChange } from "./PriceChange";
+import { AnimatedText } from "../ui/AnimatedText";
+import { AnimatedPriceChange } from "./AnimatedPriceChange";
 
 type PriceBlockProps = {
-  price: number;
-  change: number;
-  changePercent: number;
+  livePrice: SharedValue<number>;
+  openPrice: number;
   timeframe: string;
   metric: Metric;
   onOpenMetrics: (anchorY: number) => void;
 };
 
 export function PriceBlock({
-  price,
-  change,
-  changePercent,
+  livePrice,
+  openPrice,
   timeframe,
   metric,
   onOpenMetrics,
 }: PriceBlockProps) {
   const metricRef = useRef<ComponentRef<typeof View>>(null);
-  const isPositive = change >= 0;
-  const changeText = `${formatUsd(Math.abs(change))} (${formatPercent(Math.abs(changePercent))})`;
+  const priceText = useDerivedValue(() => formatPrice(livePrice.value));
+  const priceFlash = useSharedValue(0);
+
+  useAnimatedReaction(
+    () => livePrice.value,
+    (current, previous) => {
+      if (previous === null || current === previous) {
+        return;
+      }
+      priceFlash.value = current > previous ? 1 : -1;
+      priceFlash.value = withTiming(0, priceFlashTiming);
+    },
+  );
+
+  const priceFlashStyle = useAnimatedStyle(() => ({
+    color: interpolateColor(
+      priceFlash.value,
+      [-1, 0, 1],
+      [colors.textRed, colors.textPrimary, colors.textGreen],
+    ),
+  }));
+  const changeText = useDerivedValue(() =>
+    formatPriceChange(livePrice.value, openPrice),
+  );
+  const isUp = useDerivedValue(() => livePrice.value >= openPrice);
 
   const handleOpenMetrics = () => {
     metricRef.current?.measureInWindow((_x, y, _width, height) => {
@@ -35,13 +73,17 @@ export function PriceBlock({
 
   return (
     <View className="flex-row items-end justify-between px-4">
-      <View>
-        <Text className="font-sans text-xl font-semibold tabular-nums leading-6 text-text-primary">
-          {formatUsd(price)}
-        </Text>
-        <PriceChange isPositive={isPositive}>
-          {changeText} <Text className="text-text-secondary">{timeframe}</Text>
-        </PriceChange>
+      <View className="gap-1">
+        <AnimatedText
+          text={priceText}
+          className="h-6 font-sans text-xl font-semibold"
+          style={[typography.tabularNums, priceFlashStyle]}
+        />
+        <AnimatedPriceChange isUp={isUp} text={changeText}>
+          <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
+            {timeframe}
+          </Text>
+        </AnimatedPriceChange>
       </View>
 
       <Pressable

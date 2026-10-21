@@ -14,11 +14,13 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { formatPercent, formatUsd } from "../../utils/format";
+import { typography } from "../../theme/typography";
+import { formatPercent, formatPrice } from "../../utils/format";
 import { BackIcon } from "../icons/BackIcon";
 import { BellIcon } from "../icons/BellIcon";
 import { ShareIcon } from "../icons/ShareIcon";
-import { PriceChange } from "../price/PriceChange";
+import { AnimatedPriceChange } from "../price/AnimatedPriceChange";
+import { AnimatedText } from "../ui/AnimatedText";
 import { IconButton } from "../ui/IconButton";
 
 const PRICE_PEEK_START = 320;
@@ -30,8 +32,8 @@ type AssetHeaderProps = {
   assetName: string;
   assetIcon: ImageSourcePropType;
   exchangeIcon: ImageSourcePropType;
-  price: number;
-  changePercent: number;
+  livePrice: SharedValue<number>;
+  openPrice: number;
   scrollY: SharedValue<number>;
   onTitlePress: () => void;
   onBack: () => void;
@@ -44,8 +46,8 @@ export function AssetHeader({
   assetName,
   assetIcon,
   exchangeIcon,
-  price,
-  changePercent,
+  livePrice,
+  openPrice,
   scrollY,
   onTitlePress,
   onBack,
@@ -54,6 +56,11 @@ export function AssetHeader({
 }: AssetHeaderProps) {
   const insets = useSafeAreaInsets();
 
+  const priceText = useDerivedValue(() => formatPrice(livePrice.value));
+  const changeText = useDerivedValue(() =>
+    formatPercent(Math.abs(((livePrice.value - openPrice) / openPrice) * 100)),
+  );
+  const isUp = useDerivedValue(() => livePrice.value >= openPrice);
   const peekProgress = useDerivedValue(() =>
     interpolate(
       scrollY.value,
@@ -112,12 +119,12 @@ export function AssetHeader({
                 className="absolute left-0 top-0 flex-row items-center gap-1"
                 style={priceStyle}
               >
-                <Text className="font-sans text-xs font-semibold tabular-nums leading-4 text-text-secondary">
-                  {formatUsd(price)}
-                </Text>
-                <PriceChange isPositive={changePercent >= 0}>
-                  {formatPercent(Math.abs(changePercent))}
-                </PriceChange>
+                <AnimatedText
+                  text={priceText}
+                  className="font-sans text-xs font-semibold text-text-secondary"
+                  style={[typography.tabularNums, typography.animatedTextXs]}
+                />
+                <AnimatedPriceChange isUp={isUp} text={changeText} />
               </Animated.View>
             </View>
           </View>

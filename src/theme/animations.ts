@@ -16,6 +16,11 @@ export const priceTickTiming: WithTimingConfig = {
   duration: 300,
 };
 
+export const priceFlashTiming: WithTimingConfig = {
+  duration: 300,
+  easing: Easing.out(Easing.quad),
+};
+
 export const likePopTiming: WithTimingConfig = {
   duration: 120,
   easing: Easing.out(Easing.quad),

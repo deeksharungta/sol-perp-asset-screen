@@ -17,6 +17,13 @@ export function formatPrice(price: number) {
   return `$${price.toFixed(2)}`;
 }
 
+export function formatPriceChange(price: number, basePrice: number) {
+  "worklet";
+  const difference = price - basePrice;
+  const percent = (difference / basePrice) * 100;
+  return `${formatPrice(Math.abs(difference))} (${Math.abs(percent).toFixed(2)}%)`;
+}
+
 const timeFormatter = new Intl.DateTimeFormat("en-US", {
   hour: "2-digit",
   minute: "2-digit",
@@ -56,6 +63,7 @@ export function formatCandleTime(time: number, timeframe: Timeframe) {
 }
 
 export function formatPercent(value: number) {
+  "worklet";
   return `${value.toFixed(2)}%`;
 }
 

@@ -1,11 +1,12 @@
 import { useState } from "react";
+import type { SharedValue } from "react-native-reanimated";
 
 import type { Metric } from "../../types/metric";
 import { MetricSheet } from "./MetricSheet";
 import { PriceBlock } from "./PriceBlock";
 
 type PriceSectionProps = {
-  price: number;
+  livePrice: SharedValue<number>;
   openPrice: number;
   timeframe: string;
   metrics: Metric[];
@@ -13,7 +14,7 @@ type PriceSectionProps = {
 };
 
 export function PriceSection({
-  price,
+  livePrice,
   openPrice,
   timeframe,
   metrics,
@@ -22,9 +23,6 @@ export function PriceSection({
   const [selectedMetric, setSelectedMetric] = useState(initialMetric);
   const [isMetricSheetOpen, setIsMetricSheetOpen] = useState(false);
   const [metricSheetAnchorY, setMetricSheetAnchorY] = useState(0);
-
-  const change = price - openPrice;
-  const changePercent = (change / openPrice) * 100;
 
   const handleOpenMetrics = (anchorY: number) => {
     setMetricSheetAnchorY(anchorY);
@@ -43,9 +41,8 @@ export function PriceSection({
   return (
     <>
       <PriceBlock
-        price={price}
-        change={change}
-        changePercent={changePercent}
+        livePrice={livePrice}
+        openPrice={openPrice}
         timeframe={timeframe}
         metric={selectedMetric}
         onOpenMetrics={handleOpenMetrics}
