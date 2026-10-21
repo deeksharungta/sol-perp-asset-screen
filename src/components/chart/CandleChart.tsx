@@ -21,18 +21,22 @@ import Animated, {
   useDerivedValue,
   useSharedValue,
   type SharedValue,
+  withRepeat,
   withTiming,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 
 import {
+  chartMorphTiming,
   drawInTiming,
+  livePulseTiming,
   scrubFadeTiming,
-  slideTiming,
+  scrubGlideTiming,
 } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import type { Candle, ChartType, Timeframe } from "../../types/candle";
 import {
+  addSmoothLine,
   clamp,
   getPriceRange,
   indexToX,
@@ -50,7 +54,8 @@ const WICK_WIDTH = 1;
 const LINE_WIDTH = 2;
 const AREA_OPACITY = 0.24;
 const END_DOT_RADIUS = 3;
-const END_HALO_RADIUS = 7;
+const LIVE_PULSE_RADIUS = 14;
+const LIVE_PULSE_OPACITY = 0.3;
 const DASH_INTERVALS = [4, 4];
 const DRAW_IN_SPREAD = 10;
 const SCRUB_ACTIVATION_DISTANCE = 8;
@@ -86,14 +91,25 @@ export const CandleChart = memo(function CandleChart({
   const lastCloseY = priceToY(lastClose, minPrice, maxPrice, PLOT_HEIGHT);
 
   const lineProgress = useSharedValue(chartType === "line" ? 1 : 0);
+  const livePulse = useSharedValue(0);
+  const scrubX = useSharedValue(0);
+  const scrubPrice = useSharedValue(lastClose);
 
   useEffect(() => {
     drawProgress.value = withTiming(1, drawInTiming);
   }, [candles, drawProgress]);
 
   useEffect(() => {
-    lineProgress.value = withTiming(chartType === "line" ? 1 : 0, slideTiming);
+    lineProgress.value = withTiming(
+      chartType === "line" ? 1 : 0,
+      chartMorphTiming,
+    );
   }, [chartType, lineProgress]);
+
+  useEffect(() => {
+    livePulse.value =
+      chartType === "line" ? withRepeat(withTiming(1, livePulseTiming), -1) : 0;
+  }, [chartType, livePulse]);
 
   const candleStep = useDerivedValue(
     () => (canvasSize.value.width - AXIS_WIDTH) / candleCount,
@@ -103,14 +119,19 @@ export const CandleChart = memo(function CandleChart({
     activeOffsetX: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
     failOffsetY: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
     onActivate: (event) => {
-      scrubIndex.value = xToIndex(event.x, candleStep.value, candleCount);
+      const index = xToIndex(event.x, candleStep.value, candleCount);
+      scrubX.value = clamp(event.x, 0, canvasSize.value.width - AXIS_WIDTH);
+      scrubIndex.value = index;
+      scrubPrice.value = candles[index].close;
       scrubProgress.value = withTiming(1, scrubFadeTiming);
       scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Light);
     },
     onUpdate: (event) => {
+      scrubX.value = clamp(event.x, 0, canvasSize.value.width - AXIS_WIDTH);
       const index = xToIndex(event.x, candleStep.value, candleCount);
       if (index !== scrubIndex.value) {
         scrubIndex.value = index;
+        scrubPrice.value = withTiming(candles[index].close, scrubGlideTiming);
         scheduleOnRN(Haptics.selectionAsync);
       }
     },
@@ -124,7 +145,7 @@ export const CandleChart = memo(function CandleChart({
 
     const greenCandles = Skia.PathBuilder.Make();
     const redCandles = Skia.PathBuilder.Make();
-    const closeLine = Skia.PathBuilder.Make();
+    const closePoints: { x: number; y: number }[] = [];
 
     candles.forEach((candle, index) => {
       const x = indexToX(index, candleStep.value);
@@ -133,12 +154,7 @@ export const CandleChart = memo(function CandleChart({
       const high = isLiveCandle ? Math.max(candle.high, close) : candle.high;
       const low = isLiveCandle ? Math.min(candle.low, close) : candle.low;
       const closeY = priceToY(close, minPrice, maxPrice, PLOT_HEIGHT);
-
-      if (index === 0) {
-        closeLine.moveTo(x, closeY);
-      } else {
-        closeLine.lineTo(x, closeY);
-      }
+      closePoints.push({ x, y: closeY });
 
       const reveal =
         clamp(
@@ -150,11 +166,14 @@ export const CandleChart = memo(function CandleChart({
         return;
       }
 
-      const highY = priceToY(high, minPrice, maxPrice, PLOT_HEIGHT);
-      const lowY = priceToY(low, minPrice, maxPrice, PLOT_HEIGHT);
+      const collapse = (y: number) => y + (closeY - y) * lineProgress.value;
+      const highY = collapse(priceToY(high, minPrice, maxPrice, PLOT_HEIGHT));
+      const lowY = collapse(priceToY(low, minPrice, maxPrice, PLOT_HEIGHT));
       const middleY = (highY + lowY) / 2;
       const grow = (y: number) => middleY + (y - middleY) * reveal;
-      const openY = priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT);
+      const openY = collapse(
+        priceToY(candle.open, minPrice, maxPrice, PLOT_HEIGHT),
+      );
 
       const path = close >= candle.open ? greenCandles : redCandles;
       path.addRect({
@@ -171,6 +190,8 @@ export const CandleChart = memo(function CandleChart({
       });
     });
 
+    const closeLine = Skia.PathBuilder.Make();
+    addSmoothLine(closeLine, closePoints);
     const closeLinePath = closeLine.detach();
     const closeArea = Skia.PathBuilder.MakeFromPath(closeLinePath)
       .lineTo(indexToX(candleCount - 1, candleStep.value), PLOT_HEIGHT)
@@ -196,11 +217,18 @@ export const CandleChart = memo(function CandleChart({
   const livePriceY = useDerivedValue(() =>
     priceToY(livePrice.value, minPrice, maxPrice, PLOT_HEIGHT),
   );
+  const livePulseRadius = useDerivedValue(
+    () =>
+      END_DOT_RADIUS + (LIVE_PULSE_RADIUS - END_DOT_RADIUS) * livePulse.value,
+  );
+  const livePulseOpacity = useDerivedValue(
+    () => LIVE_PULSE_OPACITY * (1 - livePulse.value),
+  );
   const tagPrice = useDerivedValue(() =>
     interpolate(
       scrubProgress.value,
       [0, 1],
-      [livePrice.value, candles[scrubIndex.value].close],
+      [livePrice.value, scrubPrice.value],
     ),
   );
   const tagY = useDerivedValue(() =>
@@ -224,7 +252,26 @@ export const CandleChart = memo(function CandleChart({
     vec(canvasSize.value.width - AXIS_RIGHT_INSET, tagY.value),
   );
 
-  const candlesOpacity = useDerivedValue(() => 1 - lineProgress.value);
+  const greenCandleColor = useDerivedValue(() =>
+    interpolateColor(
+      lineProgress.value,
+      [0, 1],
+      [colors.priceLineGreen, priceColor],
+    ),
+  );
+  const redCandleColor = useDerivedValue(() =>
+    interpolateColor(
+      lineProgress.value,
+      [0, 1],
+      [colors.priceLineRed, priceColor],
+    ),
+  );
+  const candlesOpacity = useDerivedValue(() =>
+    interpolate(lineProgress.value, [0.7, 1], [1, 0], Extrapolation.CLAMP),
+  );
+  const lineOpacity = useDerivedValue(() =>
+    interpolate(lineProgress.value, [0, 0.6], [0, 1], Extrapolation.CLAMP),
+  );
   const axisOpacity = useDerivedValue(() =>
     interpolate(drawProgress.value, [0.6, 1], [0, 1], Extrapolation.CLAMP),
   );
@@ -232,19 +279,19 @@ export const CandleChart = memo(function CandleChart({
     opacity: axisOpacity.value,
   }));
 
-  const crosshairX = useDerivedValue(() =>
+  const selectedX = useDerivedValue(() =>
     indexToX(scrubIndex.value, candleStep.value),
   );
   const crosshair = useDerivedValue(() =>
     Skia.PathBuilder.Make()
-      .moveTo(crosshairX.value, 0)
-      .lineTo(crosshairX.value, PLOT_HEIGHT)
+      .moveTo(scrubX.value, 0)
+      .lineTo(scrubX.value, PLOT_HEIGHT)
       .detach(),
   );
   // Covers everything except the selected candle's slot.
   const dimmedArea = useDerivedValue(() => {
-    const slotLeft = crosshairX.value - candleStep.value / 2;
-    const slotRight = crosshairX.value + candleStep.value / 2;
+    const slotLeft = selectedX.value - candleStep.value / 2;
+    const slotRight = selectedX.value + candleStep.value / 2;
     const plotRight = canvasSize.value.width - AXIS_WIDTH;
     return Skia.PathBuilder.Make()
       .addRect(Skia.XYWHRect(0, 0, slotLeft, PLOT_HEIGHT))
@@ -262,10 +309,10 @@ export const CandleChart = memo(function CandleChart({
         <View style={{ height: PLOT_HEIGHT }}>
           <Canvas style={StyleSheet.absoluteFill} onSize={canvasSize}>
             <Group opacity={candlesOpacity}>
-              <Path path={greenCandles} color={colors.priceLineGreen} />
-              <Path path={redCandles} color={colors.priceLineRed} />
+              <Path path={greenCandles} color={greenCandleColor} />
+              <Path path={redCandles} color={redCandleColor} />
             </Group>
-            <Group opacity={lineProgress}>
+            <Group opacity={lineOpacity}>
               <Group opacity={axisOpacity}>
                 <Path path={closeArea} opacity={AREA_OPACITY}>
                   <LinearGradient
@@ -288,9 +335,9 @@ export const CandleChart = memo(function CandleChart({
                 <Circle
                   cx={lastPointX}
                   cy={livePriceY}
-                  r={END_HALO_RADIUS}
+                  r={livePulseRadius}
                   color={priceColor}
-                  opacity={AREA_OPACITY}
+                  opacity={livePulseOpacity}
                 />
                 <Circle
                   cx={lastPointX}
