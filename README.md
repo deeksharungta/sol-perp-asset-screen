@@ -2,8 +2,8 @@
 
 My take-home for Miracle: the SOL-PERP asset detail screen rebuilt from the Figma in React Native.
 
-**Recording:** _link to come_
-**Android APK:** _link to come_
+**Recording:** <recording link>
+**Android APK:** <APK link>
 
 ## Run it
 
@@ -18,11 +18,13 @@ Then press `i` for the iOS simulator, or scan the QR code with Expo Go on a phon
 
 **Font in Expo Go on Android:** Android gets SF Pro Rounded from font files that the expo-font config plugin bundles at build time. Expo Go can't run config plugins, so on Android in Expo Go the text falls back to the system font. iOS uses the system's own rounded font, so it looks right everywhere. To see the real font on Android, use the APK or a dev build (`npx expo run:android`).
 
-To build the APK yourself (the `preview` profile in `eas.json` outputs an `.apk`):
+**Android build:** the APK link above is the easy route. To build a release APK locally (needs the Android SDK):
 
 ```bash
-npx eas-cli@latest build --platform android --profile preview
+npx expo run:android --variant release
 ```
+
+The `preview` profile in `eas.json` also builds an APK on EAS, but `app.json` points at my Expo account, so you'd need to set your own `owner` and `extra.eas.projectId` first.
 
 Other scripts: `npm run lint` and `npm run typecheck`.
 
@@ -31,7 +33,7 @@ Other scripts: `npm run lint` and `npm run typecheck`.
 - **Header:** back, asset icon with the exchange badge, share (native share sheet) and notifications. Once the chart scrolls away, "Solana" switches to the live price and its 24h change. Tapping the title scrolls back to the top.
 - **Price block:** the live price, the change over the selected timeframe, and the Open interest / 24h volume switcher.
 - **Chart:** candlestick and line charts with y-axis labels, the dashed current-price line, the price tag and 8 timeframes. The toggle morphs between them: candles collapse onto the line and grow back out of it. The line is drawn as smooth curves, and its live end dot pulses.
-- **Scrub:** drag sideways and the crosshair follows your finger in either mode. The price block turns into an O/H/L/C readout for the nearest candle, and the price tag and dashed line glide to its close.
+- **Scrub:** drag sideways and the crosshair follows your finger in either mode. The price block turns into an O/H/L/C readout for the nearest candle, and the price tag and dashed line glide to its close. On the last candle they follow the live price.
 - **Tabs:** Feed / Holders / About, plus the "People you follow" filter and the Size sort.
 - **Trader cards:** stats, likes with a small burst, comments and the "older" expander.
 - **Long / Short:** two buttons pinned to the bottom (details below).
@@ -52,7 +54,7 @@ src/
     feed/       trader cards, filters, likes, older posts
     holders/, about/, tabs/, trade/, icons/
     ui/         small shared pieces: AnimatedText, Card, Toggle, Toast, MaskedBlur…
-  hooks/        useLivePrice, useChartScrub, useLivePulse, useFeed, useToast
+  hooks/        useLivePrice, useChartScrub, useFeed, useToast
   theme/        palette.json (shared with Tailwind), colours, surfaces, typography, animation timings
   utils/        chart maths and number/date formatting
   data/         mock market, price history, posts and holders
@@ -65,9 +67,11 @@ src/
 
 - the canvas size changes,
 - the draw-in, the candles/line morph or the timeframe zoom is running,
-- or the live price moves by at least half a pixel. The chart snaps the live price to the nearest half pixel first, so ticks too small to see don't redraw anything.
+- or the live price moves by at least half a pixel. The chart snaps the live price to the nearest half pixel first, and the paths, the live dot, the dashed line and the tag all follow that snapped price, so ticks too small to see don't redraw anything. Only the tag's text shows the exact price.
 
 In candle mode the line isn't built, and in line mode the candles aren't. Scrubbing never rebuilds them: the crosshair and the dimming are their own small paths.
+
+**Axis labels under the tag.** Each y-axis label hides itself while the price tag sits on top of it, and checks against the tag's live position, so the right label hides as the price moves and as you scrub.
 
 **Gestures stay on the UI thread.** The scrub is one pan gesture. A vertical swipe fails it, so the page still scrolls when you start on the chart.
 
@@ -105,7 +109,7 @@ Nothing else buzzes, so the haptics keep meaning something.
 
 - **Real filtering:** "People you follow" changes the list's data rather than hiding cards.
 - **Toggle timing:** the toggle reports the change only after its knob has finished sliding, so cards mounting or unmounting don't stutter the knob. Rapid taps still end on the right value.
-- **Animations:** cards fade in and out, and the Size sort animates the reorder.
+- **Animations:** cards fade in and out, and the Size sort animates the reorder. The "older" expander uses the same layout transition as the list, so the cards below move with it instead of sliding over the new rows.
 - **Re-renders:** cards are memoized, and liking a post creates a new object for that post only, so only that card re-renders. The screen's top-level pieces (overview, header, trade bar, fades) are memoized too, and every handler they get is a stable `useCallback`, so a toast or a tab switch doesn't re-render the chart.
 - **Holders and About:** they're short, so they render as the list footer instead of their own lists.
 
@@ -113,7 +117,7 @@ Nothing else buzzes, so the haptics keep meaning something.
 
 - **Long history:** a log-price random walk in 6-hour steps over about five years (1,800 days), bent to hit three pinned prices: $18.20 at the start, $163.77 24 hours ago and $171.20 now.
 - **Recent detail:** the last 30 days are filled in with 30-second steps (a Brownian bridge between each pair of 6-hour points). Short timeframes get real-looking detail and still join up with the long history.
-- **Candles:** each timeframe splits its span into 40 equal buckets and reads each bucket's open, high, low and close.
+- **Candles:** each timeframe splits its span into 40 equal buckets and reads each bucket's open, high, low and close. The history ends at the real "now", so the scrub readout's times match the clock.
 - **Everything else:** posts, holders and market stats are static mock data.
 
 **Motion.**
@@ -127,7 +131,7 @@ Nothing else buzzes, so the haptics keep meaning something.
 
 **Safe areas.** The header and the trade bar use the safe-area insets. On phones without a home indicator (iPhone SE), the bar still keeps 12pt from the bottom edge.
 
-**Theme.** Colours come from the Figma variables. `theme/palette.json` is the single source, read by both the Tailwind config and `theme/colors.ts`. The font is SF Pro Rounded: iOS uses the system copy through the `ui-rounded` family, and Android bundles the font files through expo-font. Apple's licence only covers Apple platforms, so a production app would switch Android to a licensed rounded font.
+**Theme.** Colours come from the Figma variables. `theme/palette.json` holds the Figma colours and is shared with the Tailwind config. `theme/colors.ts` reads it and adds the gradient, glass and shadow colours that only JS uses. The font is SF Pro Rounded: iOS uses the system copy through the `ui-rounded` family, and Android bundles the font files through expo-font. Apple's licence only covers Apple platforms, so a production app would switch Android to a licensed rounded font.
 
 ### Trade-offs and notes on the Figma
 
