@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { Text, View } from "react-native";
 
 import type { TraderPost } from "../../types/traderPost";
@@ -10,6 +11,12 @@ type TraderSummaryProps = {
 };
 
 export function TraderSummary({ post }: TraderSummaryProps) {
+  const stats = [
+    `Top ${post.rank}`,
+    `${post.winRate}% WR`,
+    formatCompactUsd(post.accountValue),
+  ];
+
   return (
     <View className="flex-row items-center justify-between">
       <View className="flex-row items-center gap-3">
@@ -20,17 +27,16 @@ export function TraderSummary({ post }: TraderSummaryProps) {
             {post.traderName}
           </Text>
           <View className="flex-row items-center gap-1">
-            <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
-              Top {post.rank}
-            </Text>
-            <View className="h-0.5 w-0.5 rounded-full bg-black/25" />
-            <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
-              {post.winRate}% WR
-            </Text>
-            <View className="h-0.5 w-0.5 rounded-full bg-black/25" />
-            <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
-              {formatCompactUsd(post.accountValue)}
-            </Text>
+            {stats.map((stat, index) => (
+              <Fragment key={stat}>
+                {index > 0 && (
+                  <View className="h-0.5 w-0.5 rounded-full bg-black/25" />
+                )}
+                <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
+                  {stat}
+                </Text>
+              </Fragment>
+            ))}
           </View>
         </View>
       </View>
