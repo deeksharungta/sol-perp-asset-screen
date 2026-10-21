@@ -1,5 +1,6 @@
 import { BlurTargetView } from "expo-blur";
 import {
+  startTransition,
   useCallback,
   useMemo,
   useRef,
@@ -123,6 +124,12 @@ export function AssetDetailScreen() {
 
   const handleNotify = () => {};
 
+  const handleTabChange = (index: number) => {
+    startTransition(() => {
+      setActiveTabIndex(index);
+    });
+  };
+
   const handleSortPress = () => {
     setIsLargestFirst(!isLargestFirst);
   };
@@ -165,6 +172,7 @@ export function AssetDetailScreen() {
             renderItem={renderPost}
             ItemSeparatorComponent={CardSeparator}
             itemLayoutAnimation={feedReorderLayout}
+            initialNumToRender={3}
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
             scrollEventThrottle={16}
@@ -210,7 +218,7 @@ export function AssetDetailScreen() {
                   <TabBar
                     tabs={assetTabs}
                     activeIndex={activeTabIndex}
-                    onChange={setActiveTabIndex}
+                    onChange={handleTabChange}
                   />
                   {activeTab === "Feed" && (
                     <FeedFilters
