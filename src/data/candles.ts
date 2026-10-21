@@ -1,19 +1,21 @@
 import type { Candle, Timeframe } from "../types/candle";
 import { solPerpMarket } from "./market";
-import { solDailyCloses } from "./priceHistory";
 
 const CANDLE_COUNT = 40;
 const NOW = Date.UTC(2026, 9, 21, 12);
-const MINUTE = 60_000;
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-type CandleOptions = {
-  startPrice: number;
-  interval: number;
-  volatility: number;
-  seed: number;
-};
+const LONG_STEP = 6 * HOUR;
+const FINE_STEP = 30 * SECOND;
+const HISTORY_SPAN = 1800 * DAY;
+const DETAIL_SPAN = 30 * DAY;
+const START_PRICE = 18.2;
+const LONG_VOLATILITY = 0.015;
+const LONG_SEED = 20;
+const FINE_SEED = 2;
 
 // Park–Miller: a tiny seeded random generator, so the mock chart looks the same on every launch.
 function createRandom(seed: number) {
@@ -24,125 +26,105 @@ function createRandom(seed: number) {
   };
 }
 
+// Standard normal noise from two uniform draws (Box–Muller).
+function createGaussian(random: () => number) {
+  return () =>
+    Math.sqrt(-2 * Math.log(random())) * Math.cos(2 * Math.PI * random());
+}
+
 function roundPrice(price: number) {
   return Math.round(price * 100) / 100;
 }
 
-function randomWalk(
-  startPrice: number,
-  endPrice: number,
-  volatility: number,
-  random: () => number,
-) {
-  const prices = [startPrice];
-  for (let i = 1; i <= CANDLE_COUNT; i++) {
-    const previous = prices[i - 1];
-    prices.push(previous + previous * (random() - 0.5) * 2 * volatility);
+// A log-price walk in 6-hour steps, bent linearly between pins so it hits each pinned price exactly.
+function buildLongHistory() {
+  const gaussian = createGaussian(createRandom(LONG_SEED));
+  const stepCount = HISTORY_SPAN / LONG_STEP;
+  const logPrices = [Math.log(START_PRICE)];
+  for (let i = 1; i <= stepCount; i++) {
+    logPrices.push(logPrices[i - 1] + gaussian() * LONG_VOLATILITY);
   }
 
-  // Shift the walk linearly so it still starts on startPrice but ends exactly on endPrice.
-  const offset = endPrice - prices[CANDLE_COUNT];
-  return prices.map((price, i) => price + (offset * i) / CANDLE_COUNT);
-}
-
-function buildCandles(
-  prices: number[],
-  interval: number,
-  volatility: number,
-  random: () => number,
-) {
-  const candles: Candle[] = [];
-  for (let i = 1; i <= CANDLE_COUNT; i++) {
-    const open = prices[i - 1];
-    const close = prices[i];
-    const wickSize = volatility * 0.6 * close;
-    candles.push({
-      time: NOW - (CANDLE_COUNT - i) * interval,
-      open: roundPrice(open),
-      high: roundPrice(Math.max(open, close) + random() * wickSize),
-      low: roundPrice(Math.min(open, close) - random() * wickSize),
-      close: roundPrice(close),
-    });
-  }
-  return candles;
-}
-
-function generateCandles({
-  startPrice,
-  interval,
-  volatility,
-  seed,
-}: CandleOptions) {
-  const random = createRandom(seed);
-  const prices = randomWalk(
-    startPrice,
-    solPerpMarket.price,
-    volatility,
-    random,
-  );
-
-  return buildCandles(prices, interval, volatility, random);
-}
-
-// 40 candles of about 18h each follow the 30 daily closes,
-// so the month view agrees with the post page chart.
-function generateMonthCandles() {
-  const random = createRandom(4);
-  const volatility = 0.015;
-  const days = solDailyCloses.length - 1;
-  const prices = Array.from({ length: CANDLE_COUNT + 1 }, (_, i) => {
-    const day = (i * days) / CANDLE_COUNT;
-    const before = solDailyCloses[Math.floor(day)];
-    const after = solDailyCloses[Math.ceil(day)];
-    const price = before + (after - before) * (day - Math.floor(day));
-    return i === CANDLE_COUNT ? price : price + (random() - 0.5) * 0.01 * price;
+  const pins = [
+    { index: 0, price: START_PRICE },
+    { index: stepCount - DAY / LONG_STEP, price: solPerpMarket.openPrice },
+    { index: stepCount, price: solPerpMarket.price },
+  ];
+  const offsets = pins.map((pin) => Math.log(pin.price) - logPrices[pin.index]);
+  return logPrices.map((logPrice, i) => {
+    const end = Math.max(
+      1,
+      pins.findIndex((pin) => pin.index >= i),
+    );
+    const start = end - 1;
+    const t = (i - pins[start].index) / (pins[end].index - pins[start].index);
+    return Math.exp(
+      logPrice + offsets[start] + (offsets[end] - offsets[start]) * t,
+    );
   });
-
-  return buildCandles(prices, (days * DAY) / CANDLE_COUNT, volatility, random);
 }
 
-export const candlesByTimeframe: Record<Timeframe, Candle[]> = {
-  "1H": generateCandles({
-    startPrice: 170.4,
-    interval: 1.5 * MINUTE,
-    volatility: 0.0015,
-    seed: 1,
-  }),
-  "1D": generateCandles({
-    startPrice: solPerpMarket.openPrice,
-    interval: 36 * MINUTE,
-    volatility: 0.008,
-    seed: 32,
-  }),
-  "1W": generateCandles({
-    startPrice: 158.6,
-    interval: 252 * MINUTE,
-    volatility: 0.012,
-    seed: 3,
-  }),
-  "1M": generateMonthCandles(),
-  "3M": generateCandles({
-    startPrice: 196.3,
-    interval: 54 * HOUR,
-    volatility: 0.03,
-    seed: 5,
-  }),
-  "6M": generateCandles({
-    startPrice: 142.8,
-    interval: 4.5 * DAY,
-    volatility: 0.04,
-    seed: 6,
-  }),
-  "1Y": generateCandles({
-    startPrice: 94.5,
-    interval: 9 * DAY,
-    volatility: 0.05,
-    seed: 7,
-  }),
-  All: generateCandles({
-    startPrice: 18.2,
-    interval: 45 * DAY,
-    volatility: 0.12,
-    seed: 8,
-  }),
-};
+// Fills the last 30 days with 30-second steps, a Brownian bridge between each pair of 6-hour points.
+function buildFineHistory(longHistory: number[]) {
+  const gaussian = createGaussian(createRandom(FINE_SEED));
+  const stepsPerGap = LONG_STEP / FINE_STEP;
+  const stepVolatility = LONG_VOLATILITY / Math.sqrt(stepsPerGap);
+  const firstGap = longHistory.length - 1 - DETAIL_SPAN / LONG_STEP;
+
+  const prices = [longHistory[firstGap]];
+  for (let gap = firstGap; gap < longHistory.length - 1; gap++) {
+    const startLog = Math.log(longHistory[gap]);
+    const endLog = Math.log(longHistory[gap + 1]);
+    const walk = [0];
+    for (let k = 1; k <= stepsPerGap; k++) {
+      walk.push(walk[k - 1] + gaussian() * stepVolatility);
+    }
+    for (let k = 1; k < stepsPerGap; k++) {
+      const t = k / stepsPerGap;
+      const bridge = walk[k] - t * walk[stepsPerGap];
+      prices.push(Math.exp(startLog + (endLog - startLog) * t + bridge));
+    }
+    prices.push(longHistory[gap + 1]);
+  }
+  return prices;
+}
+
+// Splits the latest span of a series into 40 equal buckets and reads each bucket's OHLC.
+function buildCandles(series: number[], step: number, span: number) {
+  const stepsPerCandle = span / step / CANDLE_COUNT;
+  const first = series.length - 1 - span / step;
+  return Array.from({ length: CANDLE_COUNT }, (_, i): Candle => {
+    const start = first + i * stepsPerCandle;
+    const bucket = series.slice(start, start + stepsPerCandle + 1);
+    return {
+      time: NOW - (CANDLE_COUNT - 1 - i) * stepsPerCandle * step,
+      open: roundPrice(bucket[0]),
+      high: roundPrice(Math.max(...bucket)),
+      low: roundPrice(Math.min(...bucket)),
+      close: roundPrice(bucket[bucket.length - 1]),
+    };
+  });
+}
+
+// Every timeframe is the latest part of the same history, from the 30-second series up to 30 days.
+function buildCandlesByTimeframe(): Record<Timeframe, Candle[]> {
+  const longHistory = buildLongHistory();
+  const fineHistory = buildFineHistory(longHistory);
+  const candlesFor = (span: number) =>
+    span <= DETAIL_SPAN
+      ? buildCandles(fineHistory, FINE_STEP, span)
+      : buildCandles(longHistory, LONG_STEP, span);
+
+  return {
+    "1H": candlesFor(HOUR),
+    "1D": candlesFor(DAY),
+    "1W": candlesFor(7 * DAY),
+    "1M": candlesFor(30 * DAY),
+    "3M": candlesFor(90 * DAY),
+    "6M": candlesFor(180 * DAY),
+    "1Y": candlesFor(360 * DAY),
+    All: candlesFor(1800 * DAY),
+  };
+}
+
+export const candlesByTimeframe = buildCandlesByTimeframe();
