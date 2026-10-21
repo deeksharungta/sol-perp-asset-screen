@@ -89,15 +89,17 @@ function buildFineHistory(longHistory: number[]) {
   return prices;
 }
 
-// Splits the latest span of a series into 40 equal buckets and reads each bucket's OHLC.
-function buildCandles(series: number[], step: number, span: number) {
-  const stepsPerCandle = span / step / CANDLE_COUNT;
-  const first = series.length - 1 - span / step;
+// Splits the latest span into 40 equal buckets and reads each bucket's OHLC.
+function buildCandles(
+  pricesBetween: (start: number, end: number) => number[],
+  span: number,
+) {
+  const bucketSpan = span / CANDLE_COUNT;
   return Array.from({ length: CANDLE_COUNT }, (_, i): Candle => {
-    const start = first + i * stepsPerCandle;
-    const bucket = series.slice(start, start + stepsPerCandle + 1);
+    const end = NOW - (CANDLE_COUNT - 1 - i) * bucketSpan;
+    const bucket = pricesBetween(end - bucketSpan, end);
     return {
-      time: NOW - (CANDLE_COUNT - 1 - i) * stepsPerCandle * step,
+      time: end,
       open: roundPrice(bucket[0]),
       high: roundPrice(Math.max(...bucket)),
       low: roundPrice(Math.min(...bucket)),
@@ -106,14 +108,21 @@ function buildCandles(series: number[], step: number, span: number) {
   });
 }
 
-// Every timeframe is the latest part of the same history, from the 30-second series up to 30 days.
+// Every timeframe is the latest part of the same history, read from the 30-second series wherever it covers.
 function buildCandlesByTimeframe(): Record<Timeframe, Candle[]> {
   const longHistory = buildLongHistory();
   const fineHistory = buildFineHistory(longHistory);
-  const candlesFor = (span: number) =>
-    span <= DETAIL_SPAN
-      ? buildCandles(fineHistory, FINE_STEP, span)
-      : buildCandles(longHistory, LONG_STEP, span);
+  const pricesBetween = (start: number, end: number) => {
+    const isRecent = start >= NOW - DETAIL_SPAN;
+    const series = isRecent ? fineHistory : longHistory;
+    const step = isRecent ? FINE_STEP : LONG_STEP;
+    const last = series.length - 1;
+    return series.slice(
+      last - (NOW - start) / step,
+      last - (NOW - end) / step + 1,
+    );
+  };
+  const candlesFor = (span: number) => buildCandles(pricesBetween, span);
 
   return {
     "1H": candlesFor(HOUR),

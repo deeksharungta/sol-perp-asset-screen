@@ -71,6 +71,8 @@ function niceStep(range: number) {
   return factor * magnitude;
 }
 
+export type PriceRange = ReturnType<typeof getPriceRange>;
+
 export function getPriceRange(candles: Candle[]) {
   "worklet";
   let low = Infinity;
@@ -96,6 +98,7 @@ type ChartSizes = {
   plotHeight: number;
   minPrice: number;
   maxPrice: number;
+  zoom: number;
 };
 
 type ChartProgress = {
@@ -106,19 +109,22 @@ type ChartProgress = {
 export function buildChartPaths(
   candles: Candle[],
   livePrice: number,
-  { candleStep, plotHeight, minPrice, maxPrice }: ChartSizes,
+  { candleStep, plotHeight, minPrice, maxPrice, zoom }: ChartSizes,
   progress: ChartProgress,
 ) {
   "worklet";
   const candleCount = candles.length;
-  const bodyWidth = candleStep - CANDLE_GAP;
+  const bodyWidth = candleStep * Math.min(zoom, 1) - CANDLE_GAP;
+  const lastX = indexToX(candleCount - 1, candleStep);
+  const toX = (index: number) =>
+    lastX - (lastX - indexToX(index, candleStep)) * zoom;
 
   const greenCandles = Skia.PathBuilder.Make();
   const redCandles = Skia.PathBuilder.Make();
   const closePoints: Point[] = [];
 
   candles.forEach((candle, index) => {
-    const x = indexToX(index, candleStep);
+    const x = toX(index);
     const isLiveCandle = index === candleCount - 1;
     const close = isLiveCandle ? livePrice : candle.close;
     const high = isLiveCandle ? Math.max(candle.high, close) : candle.high;
@@ -164,8 +170,8 @@ export function buildChartPaths(
   addSmoothLine(closeLine, closePoints);
   const closeLinePath = closeLine.detach();
   const closeArea = Skia.PathBuilder.MakeFromPath(closeLinePath)
-    .lineTo(indexToX(candleCount - 1, candleStep), plotHeight)
-    .lineTo(indexToX(0, candleStep), plotHeight)
+    .lineTo(lastX, plotHeight)
+    .lineTo(toX(0), plotHeight)
     .close()
     .detach();
 
@@ -176,3 +182,5 @@ export function buildChartPaths(
     closeArea,
   };
 }
+
+export type ChartPaths = ReturnType<typeof buildChartPaths>;

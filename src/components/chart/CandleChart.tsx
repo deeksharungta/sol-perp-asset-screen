@@ -4,12 +4,11 @@ import {
   DashPathEffect,
   Group,
   Line,
-  LinearGradient,
   Path,
   Skia,
   vec,
 } from "@shopify/react-native-skia";
-import { memo, useEffect } from "react";
+import { memo, useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import Animated, {
@@ -25,7 +24,11 @@ import Animated, {
 
 import { useChartScrub } from "../../hooks/useChartScrub";
 import { useLivePulse } from "../../hooks/useLivePulse";
-import { chartMorphTiming, drawInTiming } from "../../theme/animations";
+import {
+  chartMorphTiming,
+  drawInTiming,
+  timeframeZoomTiming,
+} from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import type { Candle, ChartType, Timeframe } from "../../types/candle";
 import {
@@ -35,13 +38,12 @@ import {
   priceToY,
 } from "../../utils/chartMath";
 import { formatUsd } from "../../utils/format";
+import { ChartLayer } from "./ChartLayer";
 import { PriceAxis } from "./PriceAxis";
 
 const PLOT_HEIGHT = 176;
 const AXIS_WIDTH = 70;
 const AXIS_RIGHT_INSET = 12;
-const LINE_WIDTH = 2;
-const AREA_OPACITY = 0.24;
 const END_DOT_RADIUS = 3;
 const LIVE_PULSE_RADIUS = 14;
 const LIVE_PULSE_OPACITY = 0.3;
@@ -67,18 +69,39 @@ export const CandleChart = memo(function CandleChart({
   livePrice,
 }: CandleChartProps) {
   const canvasSize = useSharedValue({ width: 0, height: 0 });
-  const { minPrice, maxPrice, step } = getPriceRange(candles);
+  const [layers, setLayers] = useState({
+    candles,
+    previousCandles: candles,
+  });
+  if (layers.candles !== candles) {
+    setLayers({ candles, previousCandles: layers.candles });
+  }
+  const { previousCandles } = layers;
+
+  const range = getPriceRange(candles);
+  const previousRange = getPriceRange(previousCandles);
   const candleCount = candles.length;
   const lastClose = candles[candleCount - 1].close;
   const isUp = lastClose >= candles[0].open;
+  const isPreviousUp =
+    previousCandles[candleCount - 1].close >= previousCandles[0].open;
+  const logRatio = Math.log(
+    (candles[candleCount - 1].time - candles[0].time) /
+      (previousCandles[candleCount - 1].time - previousCandles[0].time),
+  );
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
-  const priceFadeColor = isUp
-    ? colors.priceLineGreenTransparent
-    : colors.priceLineRedTransparent;
-  const lastCloseY = priceToY(lastClose, minPrice, maxPrice, PLOT_HEIGHT);
 
   const lineProgress = useSharedValue(chartType === "line" ? 1 : 0);
+  const zoomProgress = useSharedValue(1);
   const livePulse = useLivePulse(chartType);
+
+  useEffect(() => {
+    if (previousCandles === candles) {
+      return;
+    }
+    zoomProgress.value = 0;
+    zoomProgress.value = withTiming(1, timeframeZoomTiming);
+  }, [candles, previousCandles, zoomProgress]);
 
   useEffect(() => {
     drawProgress.value = withTiming(1, drawInTiming);
@@ -93,6 +116,20 @@ export const CandleChart = memo(function CandleChart({
 
   const plotWidth = useDerivedValue(() => canvasSize.value.width - AXIS_WIDTH);
   const candleStep = useDerivedValue(() => plotWidth.value / candleCount);
+  const minPrice = useDerivedValue(() =>
+    interpolate(
+      zoomProgress.value,
+      [0, 1],
+      [previousRange.minPrice, range.minPrice],
+    ),
+  );
+  const maxPrice = useDerivedValue(() =>
+    interpolate(
+      zoomProgress.value,
+      [0, 1],
+      [previousRange.maxPrice, range.maxPrice],
+    ),
+  );
 
   const { scrubGesture, scrubX, scrubPrice } = useChartScrub({
     candles,
@@ -109,22 +146,34 @@ export const CandleChart = memo(function CandleChart({
       {
         candleStep: candleStep.value,
         plotHeight: PLOT_HEIGHT,
-        minPrice,
-        maxPrice,
+        minPrice: minPrice.value,
+        maxPrice: maxPrice.value,
+        zoom: Math.exp(logRatio * (1 - zoomProgress.value)),
       },
       { draw: drawProgress.value, line: lineProgress.value },
     ),
   );
+  const previousPaths = useDerivedValue(() =>
+    buildChartPaths(
+      zoomProgress.value < 1 ? previousCandles : [],
+      livePrice.value,
+      {
+        candleStep: candleStep.value,
+        plotHeight: PLOT_HEIGHT,
+        minPrice: minPrice.value,
+        maxPrice: maxPrice.value,
+        zoom: Math.exp(-logRatio * zoomProgress.value),
+      },
+      { draw: 1, line: lineProgress.value },
+    ),
+  );
+  const previousOpacity = useDerivedValue(() => 1 - zoomProgress.value);
 
-  const greenCandles = useDerivedValue(() => paths.value.greenCandles);
-  const redCandles = useDerivedValue(() => paths.value.redCandles);
-  const closeLine = useDerivedValue(() => paths.value.closeLine);
-  const closeArea = useDerivedValue(() => paths.value.closeArea);
   const lastPointX = useDerivedValue(() =>
     indexToX(candleCount - 1, candleStep.value),
   );
   const livePriceY = useDerivedValue(() =>
-    priceToY(livePrice.value, minPrice, maxPrice, PLOT_HEIGHT),
+    priceToY(livePrice.value, minPrice.value, maxPrice.value, PLOT_HEIGHT),
   );
   const livePulseRadius = useDerivedValue(
     () =>
@@ -141,7 +190,7 @@ export const CandleChart = memo(function CandleChart({
     ),
   );
   const tagY = useDerivedValue(() =>
-    priceToY(tagPrice.value, minPrice, maxPrice, PLOT_HEIGHT),
+    priceToY(tagPrice.value, minPrice.value, maxPrice.value, PLOT_HEIGHT),
   );
   const tagColor = useDerivedValue(() => {
     const candle = candles[scrubIndex.value];
@@ -161,23 +210,6 @@ export const CandleChart = memo(function CandleChart({
     vec(canvasSize.value.width - AXIS_RIGHT_INSET, tagY.value),
   );
 
-  const greenCandleColor = useDerivedValue(() =>
-    interpolateColor(
-      lineProgress.value,
-      [0, 1],
-      [colors.priceLineGreen, priceColor],
-    ),
-  );
-  const redCandleColor = useDerivedValue(() =>
-    interpolateColor(
-      lineProgress.value,
-      [0, 1],
-      [colors.priceLineRed, priceColor],
-    ),
-  );
-  const candlesOpacity = useDerivedValue(() =>
-    interpolate(lineProgress.value, [0.7, 1], [1, 0], Extrapolation.CLAMP),
-  );
   const lineOpacity = useDerivedValue(() =>
     interpolate(lineProgress.value, [0, 0.6], [0, 1], Extrapolation.CLAMP),
   );
@@ -217,29 +249,25 @@ export const CandleChart = memo(function CandleChart({
       <GestureDetector gesture={scrubGesture}>
         <View style={{ height: PLOT_HEIGHT }}>
           <Canvas style={StyleSheet.absoluteFill} onSize={canvasSize}>
-            <Group opacity={candlesOpacity}>
-              <Path path={greenCandles} color={greenCandleColor} />
-              <Path path={redCandles} color={redCandleColor} />
-            </Group>
+            <ChartLayer
+              paths={previousPaths}
+              isUp={isPreviousUp}
+              opacity={previousOpacity}
+              lineProgress={lineProgress}
+              drawProgress={drawProgress}
+              axisOpacity={axisOpacity}
+              plotHeight={PLOT_HEIGHT}
+            />
+            <ChartLayer
+              paths={paths}
+              isUp={isUp}
+              opacity={zoomProgress}
+              lineProgress={lineProgress}
+              drawProgress={drawProgress}
+              axisOpacity={axisOpacity}
+              plotHeight={PLOT_HEIGHT}
+            />
             <Group opacity={lineOpacity}>
-              <Group opacity={axisOpacity}>
-                <Path path={closeArea} opacity={AREA_OPACITY}>
-                  <LinearGradient
-                    start={vec(0, 0)}
-                    end={vec(0, PLOT_HEIGHT)}
-                    colors={[priceColor, priceFadeColor]}
-                  />
-                </Path>
-              </Group>
-              <Path
-                path={closeLine}
-                color={priceColor}
-                style="stroke"
-                strokeWidth={LINE_WIDTH}
-                strokeJoin="round"
-                strokeCap="round"
-                end={drawProgress}
-              />
               <Group opacity={axisOpacity}>
                 <Circle
                   cx={lastPointX}
@@ -285,11 +313,13 @@ export const CandleChart = memo(function CandleChart({
             style={axisFadeStyle}
           >
             <PriceAxis
+              range={range}
+              previousRange={previousRange}
+              zoomProgress={zoomProgress}
               minPrice={minPrice}
               maxPrice={maxPrice}
-              step={step}
+              lastClose={lastClose}
               tagPrice={tagPrice}
-              lastCloseY={lastCloseY}
               tagColor={tagColor}
               height={PLOT_HEIGHT}
             />
