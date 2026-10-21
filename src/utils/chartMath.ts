@@ -58,7 +58,7 @@ export function addSmoothLine(path: SkPathBuilder, points: Point[]) {
 }
 
 // Rounds the step up to 1, 2 or 5 × 10^n, so labels read like $160, $165, $170.
-export function niceStep(range: number) {
+function niceStep(range: number) {
   "worklet";
   const roughStep = range / TARGET_LABEL_STEPS;
   const magnitude = 10 ** Math.floor(Math.log10(roughStep));
