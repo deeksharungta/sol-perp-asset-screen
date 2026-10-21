@@ -138,7 +138,7 @@ export function buildChartPaths(
         0,
         DRAW_IN_SPREAD,
       ) / DRAW_IN_SPREAD;
-    if (reveal === 0) {
+    if (reveal === 0 || progress.line === 1) {
       return;
     }
 
@@ -167,19 +167,18 @@ export function buildChartPaths(
   });
 
   const closeLine = Skia.PathBuilder.Make();
-  addSmoothLine(closeLine, closePoints);
-  const closeLinePath = closeLine.detach();
-  const closeArea = Skia.PathBuilder.MakeFromPath(closeLinePath)
-    .lineTo(lastX, plotHeight)
-    .lineTo(toX(0), plotHeight)
-    .close()
-    .detach();
+  const closeArea = Skia.PathBuilder.Make();
+  if (progress.line > 0) {
+    addSmoothLine(closeLine, closePoints);
+    addSmoothLine(closeArea, closePoints);
+    closeArea.lineTo(lastX, plotHeight).lineTo(toX(0), plotHeight).close();
+  }
 
   return {
     greenCandles: greenCandles.detach(),
     redCandles: redCandles.detach(),
-    closeLine: closeLinePath,
-    closeArea,
+    closeLine: closeLine.detach(),
+    closeArea: closeArea.detach(),
   };
 }
 

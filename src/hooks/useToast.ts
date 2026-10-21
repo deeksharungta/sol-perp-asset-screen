@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const TOAST_VISIBLE_DURATION = 1600;
 
@@ -8,14 +8,14 @@ export function useToast() {
 
   useEffect(() => () => clearTimeout(hideTimeout.current), []);
 
-  const showToast = (message: string) => {
+  const showToast = useCallback((message: string) => {
     clearTimeout(hideTimeout.current);
     setToastMessage(message);
     hideTimeout.current = setTimeout(
       () => setToastMessage(null),
       TOAST_VISIBLE_DURATION,
     );
-  };
+  }, []);
 
   return { toastMessage, showToast };
 }

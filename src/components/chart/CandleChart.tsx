@@ -83,8 +83,8 @@ export const CandleChart = memo(function CandleChart({
   const candleCount = candles.length;
   const lastClose = candles[candleCount - 1].close;
   const isUp = lastClose >= candles[0].open;
-  const isPreviousUp =
-    previousCandles[candleCount - 1].close >= previousCandles[0].open;
+  const previousLastClose = previousCandles[candleCount - 1].close;
+  const isPreviousUp = previousLastClose >= previousCandles[0].open;
   const logRatio = Math.log(
     (candles[candleCount - 1].time - candles[0].time) /
       (previousCandles[candleCount - 1].time - previousCandles[0].time),
@@ -139,10 +139,16 @@ export const CandleChart = memo(function CandleChart({
     scrubProgress,
   });
 
+  // Snaps the live price to half a pixel, so ticks too small to see don't rebuild the paths.
+  const chartPrice = useDerivedValue(() => {
+    const step = (0.5 * (maxPrice.value - minPrice.value)) / PLOT_HEIGHT;
+    return Math.round(livePrice.value / step) * step;
+  });
+
   const paths = useDerivedValue(() =>
     buildChartPaths(
       candles,
-      livePrice.value,
+      chartPrice.value,
       {
         candleStep: candleStep.value,
         plotHeight: PLOT_HEIGHT,
@@ -156,7 +162,7 @@ export const CandleChart = memo(function CandleChart({
   const previousPaths = useDerivedValue(() =>
     buildChartPaths(
       zoomProgress.value < 1 ? previousCandles : [],
-      livePrice.value,
+      previousLastClose,
       {
         candleStep: candleStep.value,
         plotHeight: PLOT_HEIGHT,
@@ -173,7 +179,7 @@ export const CandleChart = memo(function CandleChart({
     indexToX(candleCount - 1, candleStep.value),
   );
   const livePriceY = useDerivedValue(() =>
-    priceToY(livePrice.value, minPrice.value, maxPrice.value, PLOT_HEIGHT),
+    priceToY(chartPrice.value, minPrice.value, maxPrice.value, PLOT_HEIGHT),
   );
   const livePulseRadius = useDerivedValue(
     () =>

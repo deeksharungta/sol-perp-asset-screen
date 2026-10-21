@@ -1,4 +1,4 @@
-import type { ComponentRef, RefObject } from "react";
+import { memo, type ComponentRef, type RefObject } from "react";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -21,7 +21,11 @@ type TradeBarProps = {
   onGoShort: () => void;
 };
 
-export function TradeBar({ blurTarget, onGoLong, onGoShort }: TradeBarProps) {
+export const TradeBar = memo(function TradeBar({
+  blurTarget,
+  onGoLong,
+  onGoShort,
+}: TradeBarProps) {
   const bottomInset = useTradeBarInset();
 
   return (
@@ -36,7 +40,7 @@ export function TradeBar({ blurTarget, onGoLong, onGoShort }: TradeBarProps) {
       <TradeButton side="short" onPress={onGoShort} />
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   passThrough: {
