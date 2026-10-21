@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AccessibilityInfo } from "react-native";
 
 const TOAST_VISIBLE_DURATION = 1600;
 
@@ -11,6 +12,7 @@ export function useToast() {
   const showToast = useCallback((message: string) => {
     clearTimeout(hideTimeout.current);
     setToastMessage(message);
+    AccessibilityInfo.announceForAccessibility(message);
     hideTimeout.current = setTimeout(
       () => setToastMessage(null),
       TOAST_VISIBLE_DURATION,
