@@ -71,6 +71,7 @@ export const AssetOverview = memo(function AssetOverview({
           timeframe={timeframe}
           scrubIndex={scrubIndex}
           scrubProgress={scrubProgress}
+          livePrice={livePrice}
         />
       </View>
       <ChartSection

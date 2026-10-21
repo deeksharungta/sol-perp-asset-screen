@@ -90,6 +90,9 @@ export function CandleChart({
       (previousCandles[previousLastIndex].time - previousCandles[0].time),
   );
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
+  const previousPriceColor = isPreviousUp
+    ? colors.priceLineGreen
+    : colors.priceLineRed;
 
   const drawProgress = useSharedValue(0);
   const lineProgress = useSharedValue(chartType === "line" ? 1 : 0);
@@ -141,6 +144,8 @@ export function CandleChart({
     plotWidth,
     scrubIndex,
     scrubProgress,
+    livePrice,
+    enabled: candles === latestCandles,
   });
 
   // Snaps the live price to half a pixel, so ticks too small to see don't rebuild the paths.
@@ -187,7 +192,23 @@ export function CandleChart({
     ),
   );
   const tagY = useDerivedValue(() =>
-    priceToY(tagPrice.value, minPrice.value, maxPrice.value, PLOT_HEIGHT),
+    priceToY(
+      interpolate(
+        scrubProgress.value,
+        [0, 1],
+        [chartPrice.value, scrubPrice.value],
+      ),
+      minPrice.value,
+      maxPrice.value,
+      PLOT_HEIGHT,
+    ),
+  );
+  const baseColor = useDerivedValue(() =>
+    interpolateColor(
+      zoomProgress.value,
+      [0, 1],
+      [previousPriceColor, priceColor],
+    ),
   );
   const tagColor = useDerivedValue(() => {
     const candle = candles[scrubIndex.value];
@@ -195,7 +216,7 @@ export function CandleChart({
       scrubProgress.value,
       [0, 1],
       [
-        priceColor,
+        baseColor.value,
         candle.close >= candle.open
           ? colors.priceLineGreen
           : colors.priceLineRed,
@@ -251,7 +272,7 @@ export function CandleChart({
                 <LiveDot
                   x={lastPointX}
                   y={livePriceY}
-                  color={priceColor}
+                  color={baseColor}
                   chartType={chartType}
                 />
               </Group>
@@ -285,9 +306,7 @@ export function CandleChart({
               range={range}
               previousRange={previousRange}
               zoomProgress={zoomProgress}
-              minPrice={minPrice}
-              maxPrice={maxPrice}
-              lastClose={lastClose}
+              tagY={tagY}
               tagPrice={tagPrice}
               tagColor={tagColor}
               height={PLOT_HEIGHT}

@@ -24,6 +24,7 @@ type ScrubDetailsProps = {
   timeframe: Timeframe;
   scrubIndex: SharedValue<number>;
   scrubProgress: SharedValue<number>;
+  livePrice: SharedValue<number>;
 };
 
 // Takes the price block's place while scrubbing, in the same layout.
@@ -32,6 +33,7 @@ export const ScrubDetails = memo(function ScrubDetails({
   timeframe,
   scrubIndex,
   scrubProgress,
+  livePrice,
 }: ScrubDetailsProps) {
   const openPrice = candles[0].open;
   const timeLabels = useMemo(
@@ -39,7 +41,19 @@ export const ScrubDetails = memo(function ScrubDetails({
     [candles, timeframe],
   );
 
-  const candle = useDerivedValue(() => candles[scrubIndex.value]);
+  const candle = useDerivedValue(() => {
+    const item = candles[scrubIndex.value];
+    if (scrubIndex.value < candles.length - 1) {
+      return item;
+    }
+    const price = livePrice.value;
+    return {
+      ...item,
+      close: price,
+      high: Math.max(item.high, price),
+      low: Math.min(item.low, price),
+    };
+  });
   const isUp = useDerivedValue(() => candle.value.close >= openPrice);
 
   const close = useDerivedValue(() => formatPrice(candle.value.close));

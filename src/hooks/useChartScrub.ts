@@ -1,6 +1,7 @@
 import * as Haptics from "expo-haptics";
 import { usePanGesture } from "react-native-gesture-handler";
 import {
+  useAnimatedReaction,
   useSharedValue,
   withTiming,
   type SharedValue,
@@ -19,6 +20,8 @@ type ChartScrubOptions = {
   plotWidth: SharedValue<number>;
   scrubIndex: SharedValue<number>;
   scrubProgress: SharedValue<number>;
+  livePrice: SharedValue<number>;
+  enabled: boolean;
 };
 
 export function useChartScrub({
@@ -27,19 +30,37 @@ export function useChartScrub({
   plotWidth,
   scrubIndex,
   scrubProgress,
+  livePrice,
+  enabled,
 }: ChartScrubOptions) {
   const candleCount = candles.length;
+  const lastIndex = candleCount - 1;
   const scrubX = useSharedValue(0);
-  const scrubPrice = useSharedValue(candles[candleCount - 1].close);
+  const scrubPrice = useSharedValue(candles[lastIndex].close);
+
+  const closeAt = (index: number) => {
+    "worklet";
+    return index === lastIndex ? livePrice.value : candles[index].close;
+  };
+
+  useAnimatedReaction(
+    () => (scrubIndex.value === lastIndex ? livePrice.value : null),
+    (price) => {
+      if (price !== null && scrubProgress.value > 0) {
+        scrubPrice.set(withTiming(price, scrubGlideTiming));
+      }
+    },
+  );
 
   const scrubGesture = usePanGesture({
+    enabled,
     activeOffsetX: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
     failOffsetY: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
     onActivate: (event) => {
       const index = xToIndex(event.x, candleStep.value, candleCount);
       scrubX.set(clamp(event.x, 0, plotWidth.value));
       scrubIndex.set(index);
-      scrubPrice.set(candles[index].close);
+      scrubPrice.set(closeAt(index));
       scrubProgress.set(withTiming(1, scrubFadeTiming));
       scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Light);
     },
@@ -48,7 +69,7 @@ export function useChartScrub({
       const index = xToIndex(event.x, candleStep.value, candleCount);
       if (index !== scrubIndex.value) {
         scrubIndex.set(index);
-        scrubPrice.set(withTiming(candles[index].close, scrubGlideTiming));
+        scrubPrice.set(withTiming(closeAt(index), scrubGlideTiming));
         scheduleOnRN(Haptics.selectionAsync);
       }
     },

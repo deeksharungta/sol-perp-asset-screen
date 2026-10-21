@@ -11,7 +11,7 @@ const LIVE_PULSE_OPACITY = 0.3;
 type LiveDotProps = {
   x: SharedValue<number>;
   y: SharedValue<number>;
-  color: string;
+  color: SharedValue<string>;
   chartType: ChartType;
 };
 
