@@ -6,7 +6,7 @@ import type {
   ReactElement,
   RefObject,
 } from "react";
-import { StyleSheet, View, type ViewProps } from "react-native";
+import { Platform, StyleSheet, View, type ViewProps } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors } from "../../theme/colors";
@@ -41,17 +41,19 @@ export function TradeBar({ blurTarget, onGoLong, onGoShort }: TradeBarProps) {
       className="absolute bottom-0 left-0 right-0 flex-row gap-1 px-4 pt-6"
       style={[styles.passThrough, { paddingBottom: bottomInset }]}
     >
-      <MaskedView
-        style={styles.layer}
-        maskElement={<View style={[styles.fill, styles.blurMask]} />}
-      >
-        <BlurView
-          blurTarget={blurTarget}
-          blurMethod="dimezisBlurViewSdk31Plus"
-          intensity={BLUR_INTENSITY}
-          style={styles.fill}
-        />
-      </MaskedView>
+      {Platform.OS === "ios" && (
+        <MaskedView
+          style={styles.layer}
+          maskElement={<View style={[styles.fill, styles.blurMask]} />}
+        >
+          <BlurView
+            blurTarget={blurTarget}
+            blurMethod="dimezisBlurViewSdk31Plus"
+            intensity={BLUR_INTENSITY}
+            style={styles.fill}
+          />
+        </MaskedView>
+      )}
       <View style={[styles.layer, styles.fade]} />
 
       <TradeButton side="long" onPress={onGoLong} />
