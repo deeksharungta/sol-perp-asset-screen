@@ -40,7 +40,7 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
         <AnimatedText
           text={priceText}
           className="font-sans text-xs font-semibold text-text-primary"
-          style={[typography.tabularNums, typography.animatedTextXs]}
+          style={typography.animatedTextXs}
         />
       ),
     },

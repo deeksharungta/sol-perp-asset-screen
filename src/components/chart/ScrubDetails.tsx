@@ -75,13 +75,12 @@ export const ScrubDetails = memo(function ScrubDetails({
         <AnimatedText
           text={close}
           className="h-6 w-32 font-sans text-xl font-semibold text-text-primary"
-          style={typography.tabularNums}
         />
         <AnimatedPriceChange isUp={isUp} text={change} />
         <AnimatedText
           text={time}
           className="h-4 w-32 font-sans text-xs font-semibold text-text-tertiary"
-          style={[typography.tabularNums, typography.animatedTextXs]}
+          style={typography.animatedTextXs}
         />
       </View>
 
@@ -114,7 +113,7 @@ function OhlcValue({ label, value, colorStyle }: OhlcValueProps) {
       <AnimatedText
         text={value}
         className="w-14 font-sans text-xs font-semibold text-text-primary"
-        style={[typography.tabularNums, typography.animatedTextXs, colorStyle]}
+        style={[typography.animatedTextXs, colorStyle]}
       />
     </View>
   );

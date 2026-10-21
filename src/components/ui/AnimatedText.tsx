@@ -5,6 +5,8 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 
+import { typography } from "../../theme/typography";
+
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 type AnimatedTextProps = {
@@ -23,7 +25,7 @@ export function AnimatedText({ text, className, style }: AnimatedTextProps) {
       editable={false}
       animatedProps={animatedProps}
       className={`pointer-events-none p-0 ${className ?? ""}`}
-      style={style}
+      style={[typography.tabularNums, style]}
     />
   );
 }
