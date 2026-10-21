@@ -12,6 +12,11 @@ export const slideTiming: WithTimingConfig = {
   easing: Easing.out(Easing.cubic),
 };
 
+export const likePopTiming: WithTimingConfig = {
+  duration: 120,
+  easing: Easing.out(Easing.quad),
+};
+
 export const pressSpring: WithSpringConfig = {
   damping: 20,
   stiffness: 400,

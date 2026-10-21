@@ -1,5 +1,11 @@
 import { BlurTargetView } from "expo-blur";
-import { useCallback, useRef, useState, type ComponentRef } from "react";
+import {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  type ComponentRef,
+} from "react";
 import { Share, View, type FlatList, type ListRenderItem } from "react-native";
 import Animated, {
   Extrapolation,
@@ -66,7 +72,19 @@ export function AssetDetailScreen() {
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const activeTab = assetTabs[activeTabIndex];
   const [isFollowingOnly, setIsFollowingOnly] = useState(true);
+  const [isLargestFirst, setIsLargestFirst] = useState(true);
   const [posts, setPosts] = useState(traderPosts);
+
+  const visiblePosts = useMemo(() => {
+    const shownPosts = isFollowingOnly
+      ? posts.filter((post) => post.isFollowed)
+      : posts;
+    return [...shownPosts].sort((a, b) =>
+      isLargestFirst
+        ? b.positionValue - a.positionValue
+        : a.positionValue - b.positionValue,
+    );
+  }, [posts, isFollowingOnly, isLargestFirst]);
 
   // Only the tapped post gets a new object, so only its memoized card re-renders.
   const handleLikePress = useCallback((postId: string) => {
@@ -102,7 +120,9 @@ export function AssetDetailScreen() {
 
   const handleNotify = () => {};
 
-  const handleSortPress = () => {};
+  const handleSortPress = () => {
+    setIsLargestFirst(!isLargestFirst);
+  };
 
   const handleGoLong = () => {};
 
@@ -137,7 +157,7 @@ export function AssetDetailScreen() {
             contentContainerStyle={{
               paddingBottom: insets.bottom + TRADE_BAR_HEIGHT,
             }}
-            data={activeTab === "Feed" ? posts : []}
+            data={activeTab === "Feed" ? visiblePosts : []}
             keyExtractor={keyExtractor}
             renderItem={renderPost}
             ItemSeparatorComponent={CardSeparator}
@@ -192,6 +212,7 @@ export function AssetDetailScreen() {
                     <FeedFilters
                       isFollowingOnly={isFollowingOnly}
                       onFollowingOnlyChange={setIsFollowingOnly}
+                      isLargestFirst={isLargestFirst}
                       onSortPress={handleSortPress}
                     />
                   )}
