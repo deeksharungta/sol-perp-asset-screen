@@ -127,6 +127,7 @@ Nothing else buzzes, so the haptics keep meaning something.
 - **Chart:**
   - The candles/line morph takes 450ms, the timeframe zoom 500ms, both ease-in-out.
   - Candles grow in from left to right over 700ms on first load.
+- **Pinned tabs:** the tab row pins under the header. It's an overlay copy that shares the indicator with the real row and appears exactly when the real row reaches the top, so the swap can't be seen.
 - **Reduce Motion:** Reanimated's default `ReduceMotion.System` turns all of this off when Reduce Motion is on.
 
 **Safe areas.** The header and the trade bar use the safe-area insets. On phones without a home indicator (iPhone SE), the bar still keeps 12pt from the bottom edge.
@@ -138,6 +139,7 @@ Nothing else buzzes, so the haptics keep meaning something.
 - The Figma has a green text colour but no red one, so I added `#D9323B` with the same weight as the green.
 - The avatars are illustrations rather than the photos in the Figma.
 - Android uses a plain fade instead of a blur under the header and the trade buttons (see Long / Short above).
+- A drag that starts on the pinned tab row doesn't scroll the list, because the row is an overlay. A real sticky list cell would fix that, but it means restructuring the list.
 - There are no tests yet.
 
 ## What I'd do next
