@@ -1,4 +1,4 @@
-import { memo, type ComponentRef, type RefObject } from "react";
+import { memo } from "react";
 import { StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -19,13 +19,11 @@ export function useTradeBarHeight() {
 }
 
 type TradeBarProps = {
-  blurTarget: RefObject<ComponentRef<typeof View> | null>;
   onGoLong: () => void;
   onGoShort: () => void;
 };
 
 export const TradeBar = memo(function TradeBar({
-  blurTarget,
   onGoLong,
   onGoShort,
 }: TradeBarProps) {
@@ -36,7 +34,7 @@ export const TradeBar = memo(function TradeBar({
       className="absolute bottom-0 left-0 right-0 flex-row gap-1 px-4 pt-6"
       style={[styles.passThrough, { paddingBottom: bottomInset }]}
     >
-      <MaskedBlur blurTarget={blurTarget} maskStyle={styles.blurMask} />
+      <MaskedBlur maskStyle={styles.blurMask} />
       <View style={[styles.layer, styles.fade]} />
 
       <TradeButton side="long" onPress={onGoLong} />

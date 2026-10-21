@@ -1,12 +1,6 @@
 import MaskedViewBase from "@react-native-masked-view/masked-view";
 import { BlurView } from "expo-blur";
-import type {
-  ComponentProps,
-  ComponentRef,
-  ComponentType,
-  ReactElement,
-  RefObject,
-} from "react";
+import type { ComponentProps, ComponentType, ReactElement } from "react";
 import {
   Platform,
   StyleSheet,
@@ -27,16 +21,11 @@ const MaskedView = MaskedViewBase as unknown as ComponentType<
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 
 type MaskedBlurProps = {
-  blurTarget: RefObject<ComponentRef<typeof View> | null>;
   maskStyle: StyleProp<ViewStyle>;
   animatedProps?: ComponentProps<typeof AnimatedBlurView>["animatedProps"];
 };
 
-export function MaskedBlur({
-  blurTarget,
-  maskStyle,
-  animatedProps,
-}: MaskedBlurProps) {
+export function MaskedBlur({ maskStyle, animatedProps }: MaskedBlurProps) {
   if (Platform.OS !== "ios") {
     return null;
   }
@@ -47,8 +36,6 @@ export function MaskedBlur({
       maskElement={<View style={[styles.layer, maskStyle]} />}
     >
       <AnimatedBlurView
-        blurTarget={blurTarget}
-        blurMethod="dimezisBlurViewSdk31Plus"
         intensity={BLUR_INTENSITY}
         animatedProps={animatedProps}
         style={styles.layer}
