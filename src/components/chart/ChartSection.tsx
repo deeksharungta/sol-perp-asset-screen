@@ -31,7 +31,6 @@ export const ChartSection = memo(function ChartSection({
     if (next === timeframe) {
       return;
     }
-    drawProgress.value = 0;
     onTimeframeChange(next);
   };
 

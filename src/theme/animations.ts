@@ -54,6 +54,11 @@ export const fadeInEntering = FadeIn.duration(250);
 
 export const fadeOutExiting = FadeOut.duration(150);
 
+export const timeframeZoomTiming: WithTimingConfig = {
+  duration: 500,
+  easing: Easing.inOut(Easing.cubic),
+};
+
 export const drawInTiming: WithTimingConfig = {
   duration: 700,
   easing: Easing.out(Easing.cubic),
