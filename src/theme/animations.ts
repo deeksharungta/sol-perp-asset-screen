@@ -26,6 +26,11 @@ export const likePopTiming: WithTimingConfig = {
   easing: Easing.out(Easing.quad),
 };
 
+export const likeBurstTiming: WithTimingConfig = {
+  duration: 450,
+  easing: Easing.out(Easing.quad),
+};
+
 export const pressSpring: WithSpringConfig = {
   damping: 20,
   stiffness: 400,
