@@ -3,10 +3,10 @@ import { Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 
 import { fadeInEntering, fadeOutExiting } from "../../theme/animations";
-import { typography } from "../../theme/typography";
 import type { OlderPost } from "../../types/traderPost";
-import { formatShortDate, formatSignedUsd } from "../../utils/format";
+import { formatShortDate } from "../../utils/format";
 import { Divider } from "../ui/Divider";
+import { PnlText } from "../ui/PnlText";
 import { SideLabel } from "../ui/SideLabel";
 
 type OlderPostsProps = {
@@ -31,8 +31,6 @@ type OlderPostRowProps = {
 };
 
 function OlderPostRow({ post }: OlderPostRowProps) {
-  const isLoss = post.pnl < 0;
-
   return (
     <View className="gap-1 py-2">
       <View className="flex-row items-center gap-2">
@@ -40,12 +38,7 @@ function OlderPostRow({ post }: OlderPostRowProps) {
         <Text className="flex-1 font-sans text-xs font-semibold leading-4 text-text-tertiary">
           {formatShortDate(post.closedAt)}
         </Text>
-        <Text
-          style={typography.tabularNums}
-          className={`font-sans text-xs font-semibold leading-4 ${isLoss ? "text-text-red" : "text-text-green"}`}
-        >
-          {formatSignedUsd(post.pnl)}
-        </Text>
+        <PnlText value={post.pnl} />
       </View>
       <Text
         numberOfLines={1}
