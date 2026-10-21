@@ -1,14 +1,15 @@
 import { useState } from "react";
 import type { SharedValue } from "react-native-reanimated";
 
-import type { Metric } from "../../types/metric";
+import type { Timeframe } from "../../types/candle";
+import type { Metric } from "../../types/market";
 import { MetricSheet } from "./MetricSheet";
 import { PriceBlock } from "./PriceBlock";
 
 type PriceSectionProps = {
   livePrice: SharedValue<number>;
   openPrice: number;
-  timeframe: string;
+  timeframe: Timeframe;
   metrics: Metric[];
 };
 

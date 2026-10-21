@@ -12,16 +12,17 @@ import {
 
 import { priceFlashTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
-import type { Metric } from "../../types/metric";
+import type { Timeframe } from "../../types/candle";
+import type { Metric } from "../../types/market";
 import { formatPrice, formatPriceChange } from "../../utils/format";
+import { AnimatedPriceChange } from "../ui/AnimatedPriceChange";
 import { AnimatedText } from "../ui/AnimatedText";
-import { AnimatedPriceChange } from "./AnimatedPriceChange";
 import { MetricValue } from "./MetricValue";
 
 type PriceBlockProps = {
   livePrice: SharedValue<number>;
   openPrice: number;
-  timeframe: string;
+  timeframe: Timeframe;
   metric: Metric;
   onOpenMetrics: (anchorY: number) => void;
 };

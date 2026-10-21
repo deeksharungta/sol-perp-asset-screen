@@ -2,7 +2,6 @@ import { memo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
-  useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 
@@ -16,7 +15,7 @@ import type { TraderPost } from "../../types/traderPost";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon";
 import { CommentIcon } from "../icons/CommentIcon";
 import { Card } from "../ui/Card";
-import { LikeButton } from "../ui/LikeButton";
+import { LikeButton } from "./LikeButton";
 import { OlderPosts } from "./OlderPosts";
 import { PositionStats } from "./PositionStats";
 import { TraderSummary } from "./TraderSummary";
@@ -31,16 +30,16 @@ export const TraderCard = memo(function TraderCard({
   onLikePress,
 }: TraderCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const chevronRotation = useSharedValue(0);
   const olderPosts = post.olderPosts ?? [];
 
   const handleOlderPress = () => {
-    chevronRotation.value = withTiming(isExpanded ? 0 : 180, slideTiming);
     setIsExpanded(!isExpanded);
   };
 
   const chevronStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${chevronRotation.value}deg` }],
+    transform: [
+      { rotate: withTiming(isExpanded ? "180deg" : "0deg", slideTiming) },
+    ],
   }));
 
   return (

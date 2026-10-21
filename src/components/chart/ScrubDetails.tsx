@@ -16,7 +16,7 @@ import {
   formatPrice,
   formatPriceChange,
 } from "../../utils/format";
-import { AnimatedPriceChange } from "../price/AnimatedPriceChange";
+import { AnimatedPriceChange } from "../ui/AnimatedPriceChange";
 import { AnimatedText } from "../ui/AnimatedText";
 
 type ScrubDetailsProps = {

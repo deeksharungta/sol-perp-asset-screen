@@ -39,7 +39,7 @@ export function xToIndex(x: number, candleStep: number, candleCount: number) {
 }
 
 // Catmull-Rom curve through every point, drawn as cubic Béziers, so the line bends instead of zig-zagging.
-export function addSmoothLine(path: SkPathBuilder, points: Point[]) {
+function addSmoothLine(path: SkPathBuilder, points: Point[]) {
   "worklet";
   points.forEach((point, index) => {
     if (index === 0) {

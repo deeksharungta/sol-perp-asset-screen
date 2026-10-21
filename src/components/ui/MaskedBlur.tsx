@@ -19,6 +19,7 @@ import Animated from "react-native-reanimated";
 
 export const BLUR_INTENSITY = 30;
 
+// masked-view ships class component typings that fail React 19's JSX check, so it's retyped here.
 const MaskedView = MaskedViewBase as unknown as ComponentType<
   ViewProps & { maskElement: ReactElement }
 >;

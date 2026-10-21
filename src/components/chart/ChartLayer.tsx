@@ -18,6 +18,7 @@ type ChartLayerProps = {
   isUp: boolean;
   opacity: SharedValue<number>;
   lineProgress: SharedValue<number>;
+  lineOpacity: SharedValue<number>;
   drawProgress: SharedValue<number>;
   axisOpacity: SharedValue<number>;
   plotHeight: number;
@@ -28,6 +29,7 @@ export function ChartLayer({
   isUp,
   opacity,
   lineProgress,
+  lineOpacity,
   drawProgress,
   axisOpacity,
   plotHeight,
@@ -58,9 +60,6 @@ export function ChartLayer({
   );
   const candlesOpacity = useDerivedValue(() =>
     interpolate(lineProgress.value, [0.7, 1], [1, 0], Extrapolation.CLAMP),
-  );
-  const lineOpacity = useDerivedValue(() =>
-    interpolate(lineProgress.value, [0, 0.6], [0, 1], Extrapolation.CLAMP),
   );
 
   return (

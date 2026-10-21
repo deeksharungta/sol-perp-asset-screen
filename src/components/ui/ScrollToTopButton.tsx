@@ -10,7 +10,7 @@ import { fadeInEntering, fadeOutExiting } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import { surfaces } from "../../theme/surfaces";
 import { ArrowDownIcon } from "../icons/ArrowDownIcon";
-import { IconButton } from "../ui/IconButton";
+import { IconButton } from "./IconButton";
 
 const SHOW_AFTER_OFFSET = 400;
 

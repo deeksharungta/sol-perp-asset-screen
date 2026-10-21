@@ -12,7 +12,7 @@ import { slideTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 
 type TabBarProps = {
-  tabs: string[];
+  tabs: readonly string[];
   activeIndex: number;
   onChange: (index: number) => void;
 };
@@ -58,7 +58,7 @@ export function TabBar({ tabs, activeIndex, onChange }: TabBarProps) {
           </Pressable>
         ))}
       </View>
-      <View onLayout={handleLayout} className="h-0.5 bg-black/10">
+      <View onLayout={handleLayout} className="h-0.5 bg-divider">
         <Animated.View className="h-full bg-accent" style={indicatorStyle} />
       </View>
     </View>

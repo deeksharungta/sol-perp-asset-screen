@@ -2,6 +2,8 @@
   "background": "#E9EEF6",
   "surface": "#FFFFFF",
   "pill": "#22242A0A",
+  "divider": "#0000001A",
+  "separator": "#00000040",
   "text-primary": "#22242A",
   "text-secondary": "#22242AA3",
   "text-tertiary": "#22242A7A",

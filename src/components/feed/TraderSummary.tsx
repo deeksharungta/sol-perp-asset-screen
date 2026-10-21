@@ -30,7 +30,7 @@ export function TraderSummary({ post }: TraderSummaryProps) {
             {stats.map((stat, index) => (
               <Fragment key={stat}>
                 {index > 0 && (
-                  <View className="h-0.5 w-0.5 rounded-full bg-black/25" />
+                  <View className="h-0.5 w-0.5 rounded-full bg-separator" />
                 )}
                 <Text className="font-sans text-xs font-semibold leading-4 text-text-secondary">
                   {stat}

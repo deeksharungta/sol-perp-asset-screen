@@ -8,7 +8,7 @@ import Animated, {
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 import { TriangleIcon } from "../icons/TriangleIcon";
-import { AnimatedText } from "../ui/AnimatedText";
+import { AnimatedText } from "./AnimatedText";
 
 type AnimatedPriceChangeProps = {
   isUp: SharedValue<boolean>;

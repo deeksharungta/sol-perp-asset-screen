@@ -1,8 +1,6 @@
-import { useEffect } from "react";
 import { Pressable, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
-  useSharedValue,
   withTiming,
 } from "react-native-reanimated";
 
@@ -24,14 +22,10 @@ export function FeedFilters({
   isLargestFirst,
   onSortPress,
 }: FeedFiltersProps) {
-  const arrowRotation = useSharedValue(isLargestFirst ? 0 : 180);
-
-  useEffect(() => {
-    arrowRotation.value = withTiming(isLargestFirst ? 0 : 180, slideTiming);
-  }, [isLargestFirst, arrowRotation]);
-
   const arrowStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${arrowRotation.value}deg` }],
+    transform: [
+      { rotate: withTiming(isLargestFirst ? "0deg" : "180deg", slideTiming) },
+    ],
   }));
 
   return (

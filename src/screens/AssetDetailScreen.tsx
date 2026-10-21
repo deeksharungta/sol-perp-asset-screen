@@ -15,16 +15,12 @@ import Animated, {
 
 import { AssetOverview } from "../components/AssetOverview";
 import { AboutSection } from "../components/about/AboutSection";
-import { ScrollToTopButton } from "../components/feed/ScrollToTopButton";
+import { ScrollToTopButton } from "../components/ui/ScrollToTopButton";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
 import { HoldersSection } from "../components/holders/HoldersSection";
 import { HeaderFade } from "../components/header/HeaderFade";
-import {
-  TRADE_BAR_HEIGHT,
-  TradeBar,
-  useTradeBarInset,
-} from "../components/trade/TradeBar";
+import { TradeBar, useTradeBarHeight } from "../components/trade/TradeBar";
 import { Toast } from "../components/ui/Toast";
 import { solPerpMarket } from "../data/market";
 import { useFeed } from "../hooks/useFeed";
@@ -34,13 +30,13 @@ import { feedReorderLayout } from "../theme/animations";
 import type { TraderPost } from "../types/traderPost";
 import { formatUsd } from "../utils/format";
 
-const assetTabs = ["Feed", "Holders", "About"];
+const assetTabs = ["Feed", "Holders", "About"] as const;
 
 const keyExtractor = (post: TraderPost) => post.id;
 
 export function AssetDetailScreen() {
   const market = solPerpMarket;
-  const tradeBarInset = useTradeBarInset();
+  const tradeBarHeight = useTradeBarHeight();
   const livePrice = useLivePrice(market.price);
   const { toastMessage, showToast } = useToast();
   const blurTargetRef = useRef<ComponentRef<typeof View>>(null);
@@ -50,14 +46,11 @@ export function AssetDetailScreen() {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
-  // Shared with the chart so the scrub panel can replace the price block without re-renders.
-  const scrubIndex = useSharedValue(0);
-  const scrubProgress = useSharedValue(0);
   const [activeTabIndex, setActiveTabIndex] = useState(0);
   const activeTab = assetTabs[activeTabIndex];
   const {
     visiblePosts,
-    handleLikePress,
+    toggleLike,
     isFollowingOnly,
     changeFollowingOnly,
     isLargestFirst,
@@ -67,10 +60,10 @@ export function AssetDetailScreen() {
   const renderPost: ListRenderItem<TraderPost> = useCallback(
     ({ item }) => (
       <View className="px-4 pb-2">
-        <TraderCard post={item} onLikePress={handleLikePress} />
+        <TraderCard post={item} onLikePress={toggleLike} />
       </View>
     ),
-    [handleLikePress],
+    [toggleLike],
   );
 
   const handleBack = useCallback(() => {
@@ -106,20 +99,16 @@ export function AssetDetailScreen() {
   }, []);
 
   const listContentStyle = useMemo(
-    () => ({ paddingBottom: tradeBarInset + TRADE_BAR_HEIGHT }),
-    [tradeBarInset],
+    () => ({ paddingBottom: tradeBarHeight }),
+    [tradeBarHeight],
   );
 
   return (
     <View className="flex-1 bg-background">
       <View className="pb-3">
         <AssetHeader
-          symbol={market.symbol}
-          assetName={market.assetName}
-          assetIcon={market.assetIcon}
-          exchangeIcon={market.exchangeIcon}
+          market={market}
           livePrice={livePrice}
-          openPrice={market.openPrice}
           scrollY={scrollY}
           onTitlePress={handleScrollToTop}
           onBack={handleBack}
@@ -141,22 +130,17 @@ export function AssetDetailScreen() {
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
             ListFooterComponent={
-              activeTab === "Feed" ? undefined : (
-                <View className="px-4">
-                  {activeTab === "Holders" ? (
-                    <HoldersSection />
-                  ) : (
-                    <AboutSection market={market} livePrice={livePrice} />
-                  )}
-                </View>
-              )
+              <View className="px-4">
+                {activeTab === "Holders" && <HoldersSection />}
+                {activeTab === "About" && (
+                  <AboutSection market={market} livePrice={livePrice} />
+                )}
+              </View>
             }
             ListHeaderComponent={
               <AssetOverview
                 market={market}
                 livePrice={livePrice}
-                scrubIndex={scrubIndex}
-                scrubProgress={scrubProgress}
                 tabs={assetTabs}
                 activeTabIndex={activeTabIndex}
                 onTabChange={handleTabChange}
@@ -171,7 +155,7 @@ export function AssetDetailScreen() {
         <HeaderFade blurTarget={blurTargetRef} scrollY={scrollY} />
         <ScrollToTopButton
           scrollY={scrollY}
-          bottom={tradeBarInset + TRADE_BAR_HEIGHT}
+          bottom={tradeBarHeight}
           onPress={handleScrollToTop}
         />
       </View>
@@ -181,12 +165,7 @@ export function AssetDetailScreen() {
         onGoLong={handleGoLong}
         onGoShort={handleGoShort}
       />
-      {toastMessage && (
-        <Toast
-          message={toastMessage}
-          bottom={tradeBarInset + TRADE_BAR_HEIGHT}
-        />
-      )}
+      {toastMessage && <Toast message={toastMessage} bottom={tradeBarHeight} />}
     </View>
   );
 }
