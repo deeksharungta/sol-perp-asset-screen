@@ -35,6 +35,14 @@ export const expandLayout = LinearTransition.duration(250).easing(
   Easing.out(Easing.cubic),
 );
 
+export const feedReorderLayout = LinearTransition.duration(450).easing(
+  Easing.inOut(Easing.cubic),
+);
+
+export const feedCardEntering = FadeIn.duration(300);
+
+export const feedCardExiting = FadeOut.duration(200);
+
 export const fadeInEntering = FadeIn.duration(250);
 
 export const fadeOutExiting = FadeOut.duration(150);

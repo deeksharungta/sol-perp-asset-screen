@@ -35,7 +35,7 @@ import { candlesByTimeframe } from "../data/candles";
 import { solPerpMarket } from "../data/market";
 import { traderPosts } from "../data/traderPosts";
 import { useLivePrice } from "../hooks/useLivePrice";
-import { expandLayout } from "../theme/animations";
+import { feedReorderLayout } from "../theme/animations";
 import type { Timeframe } from "../types/candle";
 import type { TraderPost } from "../types/traderPost";
 import { formatUsd } from "../utils/format";
@@ -164,7 +164,7 @@ export function AssetDetailScreen() {
             keyExtractor={keyExtractor}
             renderItem={renderPost}
             ItemSeparatorComponent={CardSeparator}
-            itemLayoutAnimation={expandLayout}
+            itemLayoutAnimation={feedReorderLayout}
             showsVerticalScrollIndicator={false}
             onScroll={handleScroll}
             scrollEventThrottle={16}

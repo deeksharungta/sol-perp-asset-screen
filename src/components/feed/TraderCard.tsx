@@ -6,7 +6,12 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-import { expandLayout, slideTiming } from "../../theme/animations";
+import {
+  expandLayout,
+  feedCardEntering,
+  feedCardExiting,
+  slideTiming,
+} from "../../theme/animations";
 import { surfaces } from "../../theme/surfaces";
 import type { TraderPost } from "../../types/traderPost";
 import { ChevronDownIcon } from "../icons/ChevronDownIcon";
@@ -41,6 +46,8 @@ export const TraderCard = memo(function TraderCard({
   return (
     <Animated.View
       layout={expandLayout}
+      entering={feedCardEntering}
+      exiting={feedCardExiting}
       className="gap-3 rounded-3xl bg-surface p-4"
       style={surfaces.card}
     >
