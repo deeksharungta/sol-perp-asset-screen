@@ -14,12 +14,17 @@ import { colors } from "../../theme/colors";
 type TabBarProps = {
   tabs: readonly string[];
   activeIndex: number;
+  indicatorIndex: SharedValue<number>;
   onChange: (index: number) => void;
 };
 
-export function TabBar({ tabs, activeIndex, onChange }: TabBarProps) {
+export function TabBar({
+  tabs,
+  activeIndex,
+  indicatorIndex,
+  onChange,
+}: TabBarProps) {
   const tabWidth = useSharedValue(0);
-  const indicatorIndex = useSharedValue(activeIndex);
 
   const handleLayout = (event: LayoutChangeEvent) => {
     tabWidth.value = event.nativeEvent.layout.width / tabs.length;
@@ -30,7 +35,7 @@ export function TabBar({ tabs, activeIndex, onChange }: TabBarProps) {
       return;
     }
     Haptics.selectionAsync();
-    indicatorIndex.value = withTiming(index, slideTiming);
+    indicatorIndex.set(withTiming(index, slideTiming));
     onChange(index);
   };
 

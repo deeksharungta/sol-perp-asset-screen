@@ -9,20 +9,22 @@ import Animated, {
 import { colors } from "../../theme/colors";
 import { BLUR_INTENSITY, MaskedBlur } from "../ui/MaskedBlur";
 
+export const HEADER_FADE_HEIGHT = 24;
+
 type HeaderFadeProps = {
-  scrollY: SharedValue<number>;
+  isVisible: SharedValue<boolean>;
 };
 
 export const HeaderFade = memo(function HeaderFade({
-  scrollY,
+  isVisible,
 }: HeaderFadeProps) {
   // iOS blur ignores parent opacity, so the blur strength itself is turned off at the top.
   const blurProps = useAnimatedProps(() => ({
-    intensity: scrollY.value > 0 ? BLUR_INTENSITY : 0,
+    intensity: isVisible.value ? BLUR_INTENSITY : 0,
   }));
 
   const fadeStyle = useAnimatedStyle(() => ({
-    opacity: scrollY.value > 0 ? 1 : 0,
+    opacity: isVisible.value ? 1 : 0,
   }));
 
   return (

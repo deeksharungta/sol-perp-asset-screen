@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { View } from "react-native";
+import { View, type LayoutChangeEvent } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -23,6 +23,8 @@ type AssetOverviewProps = {
   tabs: readonly AssetTab[];
   activeTabIndex: number;
   onTabChange: (index: number) => void;
+  tabIndicator: SharedValue<number>;
+  tabRowY: SharedValue<number>;
   showFeedFilters: boolean;
   isFollowingOnly: boolean;
   onFollowingOnlyChange: (value: boolean) => void;
@@ -36,6 +38,8 @@ export const AssetOverview = memo(function AssetOverview({
   tabs,
   activeTabIndex,
   onTabChange,
+  tabIndicator,
+  tabRowY,
   showFeedFilters,
   isFollowingOnly,
   onFollowingOnlyChange,
@@ -47,6 +51,10 @@ export const AssetOverview = memo(function AssetOverview({
   // Shared with the chart so the scrub panel can replace the price block without re-renders.
   const scrubIndex = useSharedValue(0);
   const scrubProgress = useSharedValue(0);
+
+  const handleTabRowLayout = (event: LayoutChangeEvent) => {
+    tabRowY.set(event.nativeEvent.layout.y);
+  };
 
   const priceFadeStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -84,10 +92,11 @@ export const AssetOverview = memo(function AssetOverview({
         scrubProgress={scrubProgress}
         livePrice={livePrice}
       />
-      <View className="gap-4">
+      <View onLayout={handleTabRowLayout} className="gap-4">
         <TabBar
           tabs={tabs}
           activeIndex={activeTabIndex}
+          indicatorIndex={tabIndicator}
           onChange={onTabChange}
         />
         {showFeedFilters && (
