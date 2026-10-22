@@ -18,9 +18,6 @@ import { AnimatedText } from "../ui/AnimatedText";
 import { Card } from "../ui/Card";
 import { Divider } from "../ui/Divider";
 
-const statValueClassName =
-  "font-sans text-xs font-semibold leading-4 text-text-primary";
-
 type AboutSectionProps = {
   market: Market;
   livePrice: SharedValue<number>;
@@ -68,7 +65,7 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
             source={market.exchangeIcon}
             className="h-4 w-4 rounded-full"
           />
-          <Text className={statValueClassName} style={typography.tabularNums}>
+          <Text className="font-sans text-xs font-semibold leading-4 text-text-primary">
             {market.exchangeName}
           </Text>
         </View>
@@ -101,7 +98,7 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
               </Text>
               {typeof stat.value === "string" ? (
                 <Text
-                  className={statValueClassName}
+                  className="font-sans text-xs font-semibold leading-4 text-text-primary"
                   style={typography.tabularNums}
                 >
                   {stat.value}

@@ -38,12 +38,11 @@ import {
 import { formatUsd } from "../../utils/format";
 import { ChartLayer } from "./ChartLayer";
 import { LiveDot } from "./LiveDot";
-import { PriceAxis } from "./PriceAxis";
+import { AXIS_RIGHT_INSET, PriceAxis } from "./PriceAxis";
 import { ScrubOverlay } from "./ScrubOverlay";
 
 const PLOT_HEIGHT = 176;
 const AXIS_WIDTH = 70;
-const AXIS_RIGHT_INSET = 12;
 const PRICE_LINE_OPACITY = 0.5;
 const DASH_INTERVALS = [4, 4];
 

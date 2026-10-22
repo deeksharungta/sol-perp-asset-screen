@@ -28,9 +28,9 @@ type AssetHeaderProps = {
   livePrice: SharedValue<number>;
   isPastChart: SharedValue<boolean>;
   onTitlePress: () => void;
-  onBack: () => void;
-  onShare: () => void;
-  onNotify: () => void;
+  onBackPress: () => void;
+  onSharePress: () => void;
+  onNotifyPress: () => void;
 };
 
 export const AssetHeader = memo(function AssetHeader({
@@ -38,9 +38,9 @@ export const AssetHeader = memo(function AssetHeader({
   livePrice,
   isPastChart,
   onTitlePress,
-  onBack,
-  onShare,
-  onNotify,
+  onBackPress,
+  onSharePress,
+  onNotifyPress,
 }: AssetHeaderProps) {
   const insets = useSafeAreaInsets();
 
@@ -75,7 +75,7 @@ export const AssetHeader = memo(function AssetHeader({
       <View className="flex-row items-center gap-3">
         <IconButton
           icon={<BackIcon />}
-          onPress={onBack}
+          onPress={onBackPress}
           accessibilityLabel="Go back"
         />
 
@@ -123,12 +123,12 @@ export const AssetHeader = memo(function AssetHeader({
       <View className="flex-row items-center gap-2">
         <IconButton
           icon={<ShareIcon />}
-          onPress={onShare}
+          onPress={onSharePress}
           accessibilityLabel="Share"
         />
         <IconButton
           icon={<BellIcon />}
-          onPress={onNotify}
+          onPress={onNotifyPress}
           accessibilityLabel="Notifications"
         />
       </View>

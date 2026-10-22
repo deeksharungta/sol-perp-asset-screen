@@ -28,7 +28,10 @@ export const HeaderFade = memo(function HeaderFade({
   }));
 
   return (
-    <View className="pointer-events-none absolute left-0 right-0 top-0 h-6">
+    <View
+      className="pointer-events-none absolute left-0 right-0 top-0"
+      style={{ height: HEADER_FADE_HEIGHT }}
+    >
       <MaskedBlur maskStyle={styles.blurMask} animatedProps={blurProps} />
       <Animated.View
         className="absolute inset-0"

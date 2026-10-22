@@ -23,7 +23,7 @@ type AssetOverviewProps = {
   tabs: readonly AssetTab[];
   activeTabIndex: number;
   onTabChange: (index: number) => void;
-  tabIndicator: SharedValue<number>;
+  indicatorIndex: SharedValue<number>;
   tabRowY: SharedValue<number>;
   showFeedFilters: boolean;
   isFollowingOnly: boolean;
@@ -38,7 +38,7 @@ export const AssetOverview = memo(function AssetOverview({
   tabs,
   activeTabIndex,
   onTabChange,
-  tabIndicator,
+  indicatorIndex,
   tabRowY,
   showFeedFilters,
   isFollowingOnly,
@@ -53,7 +53,7 @@ export const AssetOverview = memo(function AssetOverview({
   const scrubProgress = useSharedValue(0);
 
   const handleTabRowLayout = (event: LayoutChangeEvent) => {
-    tabRowY.set(event.nativeEvent.layout.y);
+    tabRowY.value = event.nativeEvent.layout.y;
   };
 
   const priceFadeStyle = useAnimatedStyle(() => ({
@@ -71,7 +71,7 @@ export const AssetOverview = memo(function AssetOverview({
         <Animated.View style={priceFadeStyle}>
           <PriceSection
             livePrice={livePrice}
-            openPrice={candles[0].open}
+            timeframeOpen={candles[0].open}
             timeframe={timeframe}
             metrics={market.metrics}
           />
@@ -96,7 +96,7 @@ export const AssetOverview = memo(function AssetOverview({
         <TabBar
           tabs={tabs}
           activeIndex={activeTabIndex}
-          indicatorIndex={tabIndicator}
+          indicatorIndex={indicatorIndex}
           onChange={onTabChange}
         />
         {showFeedFilters && (

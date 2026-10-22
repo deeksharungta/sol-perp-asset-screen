@@ -1,10 +1,11 @@
 import { memo, useMemo } from "react";
-import { Text, View } from "react-native";
+import { Text, View, type StyleProp, type TextStyle } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
   useDerivedValue,
+  type AnimatedStyle,
   type SharedValue,
 } from "react-native-reanimated";
 
@@ -36,28 +37,28 @@ export const ScrubDetails = memo(function ScrubDetails({
   scrubProgress,
   livePrice,
 }: ScrubDetailsProps) {
-  const openPrice = candles[0].open;
+  const timeframeOpen = candles[0].open;
   const timeLabels = useMemo(
-    () => candles.map((item) => formatCandleTime(item.time, timeframe)),
+    () => candles.map((candle) => formatCandleTime(candle.time, timeframe)),
     [candles, timeframe],
   );
 
-  const candle = useDerivedValue(() => {
-    const item = candles[scrubIndex.value];
+  const scrubCandle = useDerivedValue(() => {
+    const candle = candles[scrubIndex.value];
     return scrubIndex.value === candles.length - 1
-      ? withLivePrice(item, livePrice.value)
-      : item;
+      ? withLivePrice(candle, livePrice.value)
+      : candle;
   });
-  const isUp = useDerivedValue(() => candle.value.close >= openPrice);
+  const isUp = useDerivedValue(() => scrubCandle.value.close >= timeframeOpen);
 
-  const close = useDerivedValue(() => formatPrice(candle.value.close));
+  const close = useDerivedValue(() => formatPrice(scrubCandle.value.close));
   const change = useDerivedValue(() =>
-    formatPriceChange(candle.value.close, openPrice),
+    formatPriceChange(scrubCandle.value.close, timeframeOpen),
   );
   const time = useDerivedValue(() => timeLabels[scrubIndex.value]);
-  const open = useDerivedValue(() => formatPrice(candle.value.open));
-  const high = useDerivedValue(() => formatPrice(candle.value.high));
-  const low = useDerivedValue(() => formatPrice(candle.value.low));
+  const open = useDerivedValue(() => formatPrice(scrubCandle.value.open));
+  const high = useDerivedValue(() => formatPrice(scrubCandle.value.high));
+  const low = useDerivedValue(() => formatPrice(scrubCandle.value.low));
 
   const fadeStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -69,7 +70,7 @@ export const ScrubDetails = memo(function ScrubDetails({
   }));
   const candleColorStyle = useAnimatedStyle(() => ({
     color:
-      candle.value.close >= candle.value.open
+      scrubCandle.value.close >= scrubCandle.value.open
         ? colors.textGreen
         : colors.textRed,
   }));
@@ -111,7 +112,7 @@ export const ScrubDetails = memo(function ScrubDetails({
 type OhlcValueProps = {
   label: string;
   value: SharedValue<string>;
-  colorStyle?: ReturnType<typeof useAnimatedStyle>;
+  colorStyle?: StyleProp<AnimatedStyle<TextStyle>>;
 };
 
 function OhlcValue({ label, value, colorStyle }: OhlcValueProps) {

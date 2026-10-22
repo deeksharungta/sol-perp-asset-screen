@@ -47,7 +47,11 @@ export function TimeframeSelector({
 
   return (
     <View className="flex-1 pl-2 pr-4">
-      <View onLayout={handleLayout} className="flex-row items-center gap-3">
+      <View
+        onLayout={handleLayout}
+        className="flex-row items-center"
+        style={{ gap: OPTION_GAP }}
+      >
         <Animated.View
           className="absolute left-0 h-6 rounded-full"
           style={[surfaces.pill, pillStyle]}

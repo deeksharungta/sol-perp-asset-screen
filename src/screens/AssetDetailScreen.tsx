@@ -44,7 +44,7 @@ export function AssetDetailScreen() {
   const { toastMessage, showToast } = useToast();
   const listRef = useRef<FlatList<TraderPost>>(null);
   const scrollY = useSharedValue(0);
-  const tabIndicator = useSharedValue(0);
+  const indicatorIndex = useSharedValue(0);
   const tabRowY = useSharedValue(0);
   const isHeaderFadeVisible = useDerivedValue(
     () =>
@@ -61,7 +61,7 @@ export function AssetDetailScreen() {
 
   useLayoutEffect(() => {
     listRef.current?.scrollToOffset({
-      offset: Math.min(scrollY.get(), tabRowY.get()),
+      offset: Math.min(scrollY.value, tabRowY.value),
       animated: false,
     });
   }, [activeTabIndex, scrollY, tabRowY]);
@@ -89,7 +89,7 @@ export function AssetDetailScreen() {
 
   const handleShare = useCallback(() => {
     Share.share({
-      message: `${market.symbol} is trading at ${formatUsd(livePrice.get())}`,
+      message: `${market.symbol} is trading at ${formatUsd(livePrice.value)}`,
     });
   }, [livePrice]);
 
@@ -121,9 +121,9 @@ export function AssetDetailScreen() {
           livePrice={livePrice}
           isPastChart={isPastChart}
           onTitlePress={handleScrollToTop}
-          onBack={handleBack}
-          onShare={handleShare}
-          onNotify={handleNotify}
+          onBackPress={handleBack}
+          onSharePress={handleShare}
+          onNotifyPress={handleNotify}
         />
       </View>
 
@@ -161,7 +161,7 @@ export function AssetDetailScreen() {
               tabs={assetTabs}
               activeTabIndex={activeTabIndex}
               onTabChange={setActiveTabIndex}
-              tabIndicator={tabIndicator}
+              indicatorIndex={indicatorIndex}
               tabRowY={tabRowY}
               showFeedFilters={activeTab === "Feed"}
               isFollowingOnly={isFollowingOnly}
@@ -177,7 +177,7 @@ export function AssetDetailScreen() {
           tabRowY={tabRowY}
           tabs={assetTabs}
           activeIndex={activeTabIndex}
-          indicatorIndex={tabIndicator}
+          indicatorIndex={indicatorIndex}
           onChange={setActiveTabIndex}
         />
         <ScrollToTopButton
