@@ -26,7 +26,7 @@ export function formatPercentChange(price: number, basePrice: number) {
 export function formatPriceChange(price: number, basePrice: number) {
   "worklet";
   const difference = Math.abs(price - basePrice);
-  return `${formatPrice(difference)} (${formatPercentChange(price, basePrice)})`;
+  return `${formatPrice(difference)} (${formatPercentChange(price, basePrice)})`;
 }
 
 const timeFormatter = new Intl.DateTimeFormat("en-US", {

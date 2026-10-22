@@ -74,7 +74,7 @@ export const TraderCard = memo(function TraderCard({
 
             <View
               accessible
-              accessibilityLabel={`${post.commentCount} comments`}
+              accessibilityLabel={`${post.commentCount} ${post.commentCount === 1 ? "comment" : "comments"}`}
               className="h-6 flex-row items-center gap-1 rounded-full bg-pill pl-2 pr-1.5"
             >
               <Text

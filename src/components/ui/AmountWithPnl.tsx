@@ -1,10 +1,11 @@
 import { Text, View } from "react-native";
 
 import { typography } from "../../theme/typography";
+import { formatUsd } from "../../utils/format";
 import { PnlText } from "./PnlText";
 
 type AmountWithPnlProps = {
-  amount: string;
+  amount: number;
   pnl: number;
 };
 
@@ -15,7 +16,7 @@ export function AmountWithPnl({ amount, pnl }: AmountWithPnlProps) {
         style={typography.tabularNums}
         className="font-sans text-base font-semibold leading-5 text-text-primary"
       >
-        {amount}
+        {formatUsd(amount)}
       </Text>
       <PnlText value={pnl} />
     </View>

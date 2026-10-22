@@ -48,10 +48,8 @@ export const PinnedTabBar = memo(function PinnedTabBar({
 
   return (
     <Animated.View
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
-      pointerEvents={isTouchable ? "auto" : "none"}
-      className="absolute left-0 right-0 top-0 bg-background"
+      aria-hidden
+      className={`absolute left-0 right-0 top-0 bg-background ${isTouchable ? "pointer-events-auto" : "pointer-events-none"}`}
       style={pinStyle}
     >
       <TabBar

@@ -106,7 +106,7 @@ export function getPriceRange(candles: Candle[]) {
   };
 }
 
-type ChartSizes = {
+type ChartScale = {
   candleStep: number;
   minPrice: number;
   maxPrice: number;
@@ -121,7 +121,7 @@ type ChartProgress = {
 export function buildChartPaths(
   candles: Candle[],
   livePrice: number,
-  { candleStep, minPrice, maxPrice, zoom }: ChartSizes,
+  { candleStep, minPrice, maxPrice, zoom }: ChartScale,
   progress: ChartProgress,
 ) {
   "worklet";

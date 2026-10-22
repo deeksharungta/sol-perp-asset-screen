@@ -46,6 +46,7 @@ export const AssetOverview = memo(function AssetOverview({
           <PriceBlock
             livePrice={livePrice}
             timeframeOpen={candles[0].open}
+            lastClose={candles[candles.length - 1].close}
             timeframe={timeframe}
             metrics={market.metrics}
           />
