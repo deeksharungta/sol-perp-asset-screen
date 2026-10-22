@@ -1,11 +1,4 @@
-import {
-  startTransition,
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
   Share,
   View,
@@ -32,7 +25,7 @@ import { PinnedTabBar } from "../components/tabs/PinnedTabBar";
 import { TradeBar, useTradeBarHeight } from "../components/trade/TradeBar";
 import { ScrollToTopButton } from "../components/ui/ScrollToTopButton";
 import { Toast } from "../components/ui/Toast";
-import { solPerpMarket } from "../data/market";
+import { solPerpMarket as market } from "../data/market";
 import { useFeed } from "../hooks/useFeed";
 import { useLivePrice } from "../hooks/useLivePrice";
 import { useToast } from "../hooks/useToast";
@@ -41,10 +34,11 @@ import { assetTabs } from "../types/market";
 import type { TraderPost } from "../types/traderPost";
 import { formatUsd } from "../utils/format";
 
+const PAST_CHART_OFFSET = 320;
+
 const keyExtractor = (post: TraderPost) => post.id;
 
 export function AssetDetailScreen() {
-  const market = solPerpMarket;
   const tradeBarHeight = useTradeBarHeight();
   const livePrice = useLivePrice(market.price);
   const { toastMessage, showToast } = useToast();
@@ -56,6 +50,7 @@ export function AssetDetailScreen() {
     () =>
       scrollY.value > 0 && scrollY.value < tabRowY.value - HEADER_FADE_HEIGHT,
   );
+  const isPastChart = useDerivedValue(() => scrollY.value > PAST_CHART_OFFSET);
 
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -74,7 +69,7 @@ export function AssetDetailScreen() {
     visiblePosts,
     toggleLike,
     isFollowingOnly,
-    changeFollowingOnly,
+    setFollowingOnly,
     isLargestFirst,
     toggleSort,
   } = useFeed();
@@ -96,17 +91,11 @@ export function AssetDetailScreen() {
     Share.share({
       message: `${market.symbol} is trading at ${formatUsd(livePrice.get())}`,
     });
-  }, [market, livePrice]);
+  }, [livePrice]);
 
   const handleNotify = useCallback(() => {
     showToast("Price alerts are coming soon");
   }, [showToast]);
-
-  const handleTabChange = useCallback((index: number) => {
-    startTransition(() => {
-      setActiveTabIndex(index);
-    });
-  }, []);
 
   const handleGoLong = useCallback(() => {
     showToast("Long orders are coming soon");
@@ -124,18 +113,13 @@ export function AssetDetailScreen() {
     setListHeight(event.nativeEvent.layout.height);
   };
 
-  const listContentStyle = useMemo(
-    () => ({ paddingBottom: tradeBarHeight }),
-    [tradeBarHeight],
-  );
-
   return (
     <View className="flex-1 bg-background">
       <View className="pb-3">
         <AssetHeader
           market={market}
           livePrice={livePrice}
-          scrollY={scrollY}
+          isPastChart={isPastChart}
           onTitlePress={handleScrollToTop}
           onBack={handleBack}
           onShare={handleShare}
@@ -146,7 +130,7 @@ export function AssetDetailScreen() {
       <View onLayout={handleListLayout} className="flex-1">
         <Animated.FlatList
           ref={listRef}
-          contentContainerStyle={listContentStyle}
+          contentContainerStyle={{ paddingBottom: tradeBarHeight }}
           data={activeTab === "Feed" ? visiblePosts : []}
           keyExtractor={keyExtractor}
           renderItem={renderPost}
@@ -176,12 +160,12 @@ export function AssetDetailScreen() {
               livePrice={livePrice}
               tabs={assetTabs}
               activeTabIndex={activeTabIndex}
-              onTabChange={handleTabChange}
+              onTabChange={setActiveTabIndex}
               tabIndicator={tabIndicator}
               tabRowY={tabRowY}
               showFeedFilters={activeTab === "Feed"}
               isFollowingOnly={isFollowingOnly}
-              onFollowingOnlyChange={changeFollowingOnly}
+              onFollowingOnlyChange={setFollowingOnly}
               isLargestFirst={isLargestFirst}
               onSortPress={toggleSort}
             />
@@ -194,7 +178,7 @@ export function AssetDetailScreen() {
           tabs={assetTabs}
           activeIndex={activeTabIndex}
           indicatorIndex={tabIndicator}
-          onChange={handleTabChange}
+          onChange={setActiveTabIndex}
         />
         <ScrollToTopButton
           scrollY={scrollY}
@@ -204,7 +188,7 @@ export function AssetDetailScreen() {
       </View>
 
       <TradeBar
-        scrollY={scrollY}
+        isPastChart={isPastChart}
         onGoLong={handleGoLong}
         onGoShort={handleGoShort}
       />

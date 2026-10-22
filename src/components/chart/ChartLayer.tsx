@@ -19,8 +19,6 @@ type ChartLayerProps = {
   opacity: SharedValue<number>;
   lineProgress: SharedValue<number>;
   lineOpacity: SharedValue<number>;
-  drawProgress: SharedValue<number>;
-  revealOpacity: SharedValue<number>;
   plotHeight: number;
 };
 
@@ -30,8 +28,6 @@ export function ChartLayer({
   opacity,
   lineProgress,
   lineOpacity,
-  drawProgress,
-  revealOpacity,
   plotHeight,
 }: ChartLayerProps) {
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
@@ -69,15 +65,13 @@ export function ChartLayer({
         <Path path={redCandles} color={redCandleColor} />
       </Group>
       <Group opacity={lineOpacity}>
-        <Group opacity={revealOpacity}>
-          <Path path={closeArea} opacity={AREA_OPACITY}>
-            <LinearGradient
-              start={vec(0, 0)}
-              end={vec(0, plotHeight)}
-              colors={[priceColor, priceFadeColor]}
-            />
-          </Path>
-        </Group>
+        <Path path={closeArea} opacity={AREA_OPACITY}>
+          <LinearGradient
+            start={vec(0, 0)}
+            end={vec(0, plotHeight)}
+            colors={[priceColor, priceFadeColor]}
+          />
+        </Path>
         <Path
           path={closeLine}
           color={priceColor}
@@ -85,7 +79,6 @@ export function ChartLayer({
           strokeWidth={LINE_WIDTH}
           strokeJoin="round"
           strokeCap="round"
-          end={drawProgress}
         />
       </Group>
     </Group>

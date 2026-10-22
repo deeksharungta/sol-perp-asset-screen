@@ -38,6 +38,16 @@ export function xToIndex(x: number, candleStep: number, candleCount: number) {
   return clamp(Math.floor(x / candleStep), 0, candleCount - 1);
 }
 
+export function withLivePrice(candle: Candle, price: number) {
+  "worklet";
+  return {
+    ...candle,
+    close: price,
+    high: Math.max(candle.high, price),
+    low: Math.min(candle.low, price),
+  };
+}
+
 // Catmull-Rom curve through every point, drawn as cubic Béziers, so the line bends instead of zig-zagging.
 function addSmoothLine(path: SkPathBuilder, points: Point[]) {
   "worklet";
@@ -124,9 +134,9 @@ export function buildChartPaths(
   candles.forEach((candle, index) => {
     const x = toX(index);
     const isLiveCandle = index === candleCount - 1;
-    const close = isLiveCandle ? livePrice : candle.close;
-    const high = isLiveCandle ? Math.max(candle.high, close) : candle.high;
-    const low = isLiveCandle ? Math.min(candle.low, close) : candle.low;
+    const { open, high, low, close } = isLiveCandle
+      ? withLivePrice(candle, livePrice)
+      : candle;
     const closeY = priceToY(close, minPrice, maxPrice, plotHeight);
     closePoints.push({ x, y: closeY });
 
@@ -145,11 +155,9 @@ export function buildChartPaths(
     const lowY = collapse(priceToY(low, minPrice, maxPrice, plotHeight));
     const middleY = (highY + lowY) / 2;
     const grow = (y: number) => middleY + (y - middleY) * reveal;
-    const openY = collapse(
-      priceToY(candle.open, minPrice, maxPrice, plotHeight),
-    );
+    const openY = collapse(priceToY(open, minPrice, maxPrice, plotHeight));
 
-    const path = close >= candle.open ? greenCandles : redCandles;
+    const path = close >= open ? greenCandles : redCandles;
     path.addRect({
       x: x - bodyWidth / 2,
       y: grow(Math.min(openY, closeY)),

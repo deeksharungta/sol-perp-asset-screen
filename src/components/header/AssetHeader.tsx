@@ -21,13 +21,12 @@ import { AnimatedPriceChange } from "../ui/AnimatedPriceChange";
 import { AnimatedText } from "../ui/AnimatedText";
 import { IconButton } from "../ui/IconButton";
 
-export const PRICE_PEEK_START = 320;
 const PRICE_PEEK_SLIDE = 4;
 
 type AssetHeaderProps = {
   market: Market;
   livePrice: SharedValue<number>;
-  scrollY: SharedValue<number>;
+  isPastChart: SharedValue<boolean>;
   onTitlePress: () => void;
   onBack: () => void;
   onShare: () => void;
@@ -37,7 +36,7 @@ type AssetHeaderProps = {
 export const AssetHeader = memo(function AssetHeader({
   market,
   livePrice,
-  scrollY,
+  isPastChart,
   onTitlePress,
   onBack,
   onShare,
@@ -52,7 +51,7 @@ export const AssetHeader = memo(function AssetHeader({
   const isUp = useDerivedValue(() => livePrice.value >= market.openPrice);
   const peekProgress = useSharedValue(0);
   useAnimatedReaction(
-    () => scrollY.value > PRICE_PEEK_START,
+    () => isPastChart.value,
     (isPeeking, wasPeeking) => {
       if (isPeeking !== wasPeeking) {
         peekProgress.value = withTiming(isPeeking ? 1 : 0, slideTiming);

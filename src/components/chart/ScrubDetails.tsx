@@ -11,6 +11,7 @@ import Animated, {
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 import type { Candle, Timeframe } from "../../types/candle";
+import { withLivePrice } from "../../utils/chartMath";
 import {
   formatCandleTime,
   formatPrice,
@@ -43,16 +44,9 @@ export const ScrubDetails = memo(function ScrubDetails({
 
   const candle = useDerivedValue(() => {
     const item = candles[scrubIndex.value];
-    if (scrubIndex.value < candles.length - 1) {
-      return item;
-    }
-    const price = livePrice.value;
-    return {
-      ...item,
-      close: price,
-      high: Math.max(item.high, price),
-      low: Math.min(item.low, price),
-    };
+    return scrubIndex.value === candles.length - 1
+      ? withLivePrice(item, livePrice.value)
+      : item;
   });
   const isUp = useDerivedValue(() => candle.value.close >= openPrice);
 

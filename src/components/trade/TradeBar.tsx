@@ -12,7 +12,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { slideTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
-import { PRICE_PEEK_START } from "../header/AssetHeader";
 import { MaskedBlur } from "../ui/MaskedBlur";
 import { TradeButton } from "./TradeButton";
 
@@ -30,13 +29,13 @@ export function useTradeBarHeight() {
 }
 
 type TradeBarProps = {
-  scrollY: SharedValue<number>;
+  isPastChart: SharedValue<boolean>;
   onGoLong: () => void;
   onGoShort: () => void;
 };
 
 export const TradeBar = memo(function TradeBar({
-  scrollY,
+  isPastChart,
   onGoLong,
   onGoShort,
 }: TradeBarProps) {
@@ -44,7 +43,7 @@ export const TradeBar = memo(function TradeBar({
   const compactProgress = useSharedValue(0);
   const isReducedMotion = useReducedMotion();
   useAnimatedReaction(
-    () => !isReducedMotion && scrollY.value > PRICE_PEEK_START,
+    () => !isReducedMotion && isPastChart.value,
     (isCompact, wasCompact) => {
       if (isCompact !== wasCompact) {
         compactProgress.value = withTiming(isCompact ? 1 : 0, slideTiming);

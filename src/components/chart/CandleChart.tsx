@@ -33,6 +33,7 @@ import {
   getPriceRange,
   indexToX,
   priceToY,
+  withLivePrice,
 } from "../../utils/chartMath";
 import { formatUsd } from "../../utils/format";
 import { ChartLayer } from "./ChartLayer";
@@ -45,6 +46,17 @@ const AXIS_WIDTH = 70;
 const AXIS_RIGHT_INSET = 12;
 const PRICE_LINE_OPACITY = 0.5;
 const DASH_INTERVALS = [4, 4];
+
+function describeCandles(candles: Candle[]) {
+  const first = candles[0];
+  const last = candles[candles.length - 1];
+  return {
+    range: getPriceRange(candles),
+    lastClose: last.close,
+    isUp: last.close >= first.open,
+    span: last.time - first.time,
+  };
+}
 
 type CandleChartProps = {
   candles: Candle[];
@@ -65,30 +77,29 @@ export function CandleChart({
 }: CandleChartProps) {
   const canvasSize = useSharedValue({ width: 0, height: 0 });
   // The last timeframe's candles stay drawn so the chart can zoom from them to the new ones.
-  const [layers, setLayers] = useState({
+  const [candleSets, setCandleSets] = useState({
     candles: latestCandles,
     previousCandles: latestCandles,
   });
   const [isZooming, setIsZooming] = useState(false);
-  if (!isZooming && layers.candles !== latestCandles) {
-    setLayers({ candles: latestCandles, previousCandles: layers.candles });
+  if (!isZooming && candleSets.candles !== latestCandles) {
+    setCandleSets({
+      candles: latestCandles,
+      previousCandles: candleSets.candles,
+    });
     setIsZooming(true);
   }
-  const { candles, previousCandles } = layers;
+  const { candles, previousCandles } = candleSets;
 
-  const range = getPriceRange(candles);
-  const previousRange = getPriceRange(previousCandles);
+  const { range, lastClose, isUp, span } = describeCandles(candles);
+  const {
+    range: previousRange,
+    isUp: isPreviousUp,
+    span: previousSpan,
+  } = describeCandles(previousCandles);
   const candleCount = candles.length;
-  const lastClose = candles[candleCount - 1].close;
-  const isUp = lastClose >= candles[0].open;
-  const previousLastIndex = previousCandles.length - 1;
-  const previousLastClose = previousCandles[previousLastIndex].close;
-  const isPreviousUp = previousLastClose >= previousCandles[0].open;
   // The zoom runs in log space, so every frame scales by the same factor instead of crawling and then snapping at the end.
-  const logRatio = Math.log(
-    (candles[candleCount - 1].time - candles[0].time) /
-      (previousCandles[previousLastIndex].time - previousCandles[0].time),
-  );
+  const logRatio = Math.log(span / previousSpan);
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
   const previousPriceColor = isPreviousUp
     ? colors.priceLineGreen
@@ -211,7 +222,11 @@ export function CandleChart({
     ),
   );
   const tagColor = useDerivedValue(() => {
-    const candle = candles[scrubIndex.value];
+    const index = scrubIndex.value;
+    const candle =
+      index === candleCount - 1
+        ? withLivePrice(candles[index], livePrice.value)
+        : candles[index];
     return interpolateColor(
       scrubProgress.value,
       [0, 1],
@@ -253,8 +268,6 @@ export function CandleChart({
               opacity={previousOpacity}
               lineProgress={lineProgress}
               lineOpacity={lineOpacity}
-              drawProgress={drawProgress}
-              revealOpacity={revealOpacity}
               plotHeight={PLOT_HEIGHT}
             />
             <ChartLayer
@@ -263,19 +276,15 @@ export function CandleChart({
               opacity={zoomProgress}
               lineProgress={lineProgress}
               lineOpacity={lineOpacity}
-              drawProgress={drawProgress}
-              revealOpacity={revealOpacity}
               plotHeight={PLOT_HEIGHT}
             />
             <Group opacity={lineOpacity}>
-              <Group opacity={revealOpacity}>
-                <LiveDot
-                  x={lastPointX}
-                  y={livePriceY}
-                  color={baseColor}
-                  chartType={chartType}
-                />
-              </Group>
+              <LiveDot
+                x={lastPointX}
+                y={livePriceY}
+                color={baseColor}
+                chartType={chartType}
+              />
             </Group>
             <ScrubOverlay
               scrubIndex={scrubIndex}
