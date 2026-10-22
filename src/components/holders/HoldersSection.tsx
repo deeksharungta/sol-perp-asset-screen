@@ -41,7 +41,10 @@ function HolderRow({ holder, rank }: HolderRowProps) {
       </Text>
       <Avatar source={holder.avatar} isVerified={holder.isVerified} />
       <View className="flex-1 gap-0.5">
-        <Text className="font-sans text-base font-semibold leading-5 text-text-primary">
+        <Text
+          numberOfLines={1}
+          className="font-sans text-base font-semibold leading-5 text-text-primary"
+        >
           {holder.name}
         </Text>
         <SideLabel side={holder.side} leverage={holder.leverage} />
