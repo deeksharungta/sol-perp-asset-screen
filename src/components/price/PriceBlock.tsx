@@ -14,7 +14,7 @@ import { priceFlashTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import type { Timeframe } from "../../types/candle";
 import type { Metric } from "../../types/market";
-import { formatPrice, formatPriceChange } from "../../utils/format";
+import { formatPrice, formatPriceChange, formatUsd } from "../../utils/format";
 import { AnimatedPriceChange } from "../ui/AnimatedPriceChange";
 import { AnimatedText } from "../ui/AnimatedText";
 import { MetricSheet } from "./MetricSheet";
@@ -23,6 +23,7 @@ import { MetricValue } from "./MetricValue";
 type PriceBlockProps = {
   livePrice: SharedValue<number>;
   timeframeOpen: number;
+  lastClose: number;
   timeframe: Timeframe;
   metrics: Metric[];
 };
@@ -30,6 +31,7 @@ type PriceBlockProps = {
 export function PriceBlock({
   livePrice,
   timeframeOpen,
+  lastClose,
   timeframe,
   metrics,
 }: PriceBlockProps) {
@@ -91,7 +93,7 @@ export function PriceBlock({
       <View className="flex-row items-end justify-between px-4">
         <View
           accessible
-          accessibilityLabel={`Live price and ${timeframe} change`}
+          accessibilityLabel={`Price ${formatUsd(lastClose)}, ${lastClose >= timeframeOpen ? "up" : "down"} ${formatPriceChange(lastClose, timeframeOpen)} over ${timeframe}`}
           className="gap-1"
         >
           <AnimatedText

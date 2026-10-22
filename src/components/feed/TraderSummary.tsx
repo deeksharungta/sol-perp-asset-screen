@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { Text, View } from "react-native";
 
 import type { TraderPost } from "../../types/traderPost";
-import { formatCompactUsd, formatUsd } from "../../utils/format";
+import { formatCompactUsd } from "../../utils/format";
 import { AmountWithPnl } from "../ui/AmountWithPnl";
 import { Avatar } from "../ui/Avatar";
 
@@ -47,7 +47,7 @@ export function TraderSummary({ post }: TraderSummaryProps) {
         </View>
       </View>
 
-      <AmountWithPnl amount={formatUsd(post.positionValue)} pnl={post.pnl} />
+      <AmountWithPnl amount={post.positionValue} pnl={post.pnl} />
     </View>
   );
 }

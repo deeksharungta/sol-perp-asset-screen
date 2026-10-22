@@ -5,7 +5,6 @@ import { holders } from "../../data/holders";
 import { fadeInEntering } from "../../theme/animations";
 import { typography } from "../../theme/typography";
 import type { Holder } from "../../types/holder";
-import { formatUsd } from "../../utils/format";
 import { AmountWithPnl } from "../ui/AmountWithPnl";
 import { Avatar } from "../ui/Avatar";
 import { Card } from "../ui/Card";
@@ -49,7 +48,7 @@ function HolderRow({ holder, rank }: HolderRowProps) {
         </Text>
         <SideLabel side={holder.side} leverage={holder.leverage} />
       </View>
-      <AmountWithPnl amount={formatUsd(holder.size)} pnl={holder.pnl} />
+      <AmountWithPnl amount={holder.size} pnl={holder.pnl} />
     </View>
   );
 }

@@ -43,10 +43,23 @@ const PAST_CHART_OFFSET = 320;
 const keyExtractor = (post: TraderPost) => post.id;
 
 export function AssetDetailScreen() {
-  const tradeBarHeight = useTradeBarHeight();
+  const {
+    visiblePosts,
+    toggleLike,
+    isFollowingOnly,
+    setIsFollowingOnly,
+    isLargestFirst,
+    toggleSort,
+  } = useFeed();
   const livePrice = useLivePrice(market.price);
   const { toastMessage, showToast } = useToast();
+  const tradeBarHeight = useTradeBarHeight();
+
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [listHeight, setListHeight] = useState(0);
   const listRef = useRef<FlatList<TraderPost>>(null);
+  const activeTab = assetTabs[activeTabIndex];
+
   const scrollY = useSharedValue(0);
   const indicatorIndex = useSharedValue(0);
   const tabRowY = useSharedValue(0);
@@ -67,25 +80,6 @@ export function AssetDetailScreen() {
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [listHeight, setListHeight] = useState(0);
-  const activeTab = assetTabs[activeTabIndex];
-
-  // Scrolls up to the tab row if needed, so the new tab starts at its top.
-  useLayoutEffect(() => {
-    listRef.current?.scrollToOffset({
-      offset: Math.min(scrollY.value, tabRowY.value),
-      animated: false,
-    });
-  }, [activeTabIndex, scrollY, tabRowY]);
-  const {
-    visiblePosts,
-    toggleLike,
-    isFollowingOnly,
-    setFollowingOnly,
-    isLargestFirst,
-    toggleSort,
-  } = useFeed();
 
   const renderPost: ListRenderItem<TraderPost> = useCallback(
     ({ item }) => (
@@ -129,6 +123,14 @@ export function AssetDetailScreen() {
   const handleTabRowLayout = (event: LayoutChangeEvent) => {
     tabRowY.set(event.nativeEvent.layout.y);
   };
+
+  // Scrolls up to the tab row if needed, so the new tab starts at its top.
+  useLayoutEffect(() => {
+    listRef.current?.scrollToOffset({
+      offset: Math.min(scrollY.value, tabRowY.value),
+      animated: false,
+    });
+  }, [activeTabIndex, scrollY, tabRowY]);
 
   return (
     <View className="flex-1 bg-background">
@@ -184,7 +186,7 @@ export function AssetDetailScreen() {
                 {activeTab === "Feed" && (
                   <FeedFilters
                     isFollowingOnly={isFollowingOnly}
-                    onFollowingOnlyChange={setFollowingOnly}
+                    onFollowingOnlyChange={setIsFollowingOnly}
                     isLargestFirst={isLargestFirst}
                     onSortPress={toggleSort}
                   />

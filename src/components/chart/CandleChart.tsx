@@ -46,7 +46,7 @@ const AXIS_WIDTH = 70;
 const PRICE_LINE_OPACITY = 0.5;
 const DASH_INTERVALS = [4, 4];
 
-function describeCandles(candles: Candle[]) {
+function getCandleStats(candles: Candle[]) {
   const first = candles[0];
   const last = candles[candles.length - 1];
   return {
@@ -90,12 +90,12 @@ export function CandleChart({
   }
   const { candles, previousCandles } = candleSets;
 
-  const { range, lastClose, isUp, span } = describeCandles(candles);
+  const { range, lastClose, isUp, span } = getCandleStats(candles);
   const {
     range: previousRange,
     isUp: isPreviousUp,
     span: previousSpan,
-  } = describeCandles(previousCandles);
+  } = getCandleStats(previousCandles);
   const candleCount = candles.length;
   // The zoom runs in log space, so every frame scales by the same factor instead of crawling and then snapping at the end.
   const logRatio = Math.log(span / previousSpan);
@@ -164,7 +164,7 @@ export function CandleChart({
     return Math.round(livePrice.value / step) * step;
   });
 
-  const sizes = useDerivedValue(() => ({
+  const chartScale = useDerivedValue(() => ({
     candleStep: candleStep.value,
     minPrice: minPrice.value,
     maxPrice: maxPrice.value,
@@ -173,7 +173,10 @@ export function CandleChart({
     buildChartPaths(
       candles,
       chartPrice.value,
-      { ...sizes.value, zoom: Math.exp(logRatio * (1 - zoomProgress.value)) },
+      {
+        ...chartScale.value,
+        zoom: Math.exp(logRatio * (1 - zoomProgress.value)),
+      },
       { draw: drawProgress.value, line: lineProgress.value },
     ),
   );
@@ -181,7 +184,7 @@ export function CandleChart({
     buildChartPaths(
       zoomProgress.value < 1 ? previousCandles : [],
       chartPrice.value,
-      { ...sizes.value, zoom: Math.exp(-logRatio * zoomProgress.value) },
+      { ...chartScale.value, zoom: Math.exp(-logRatio * zoomProgress.value) },
       { draw: 1, line: lineProgress.value },
     ),
   );

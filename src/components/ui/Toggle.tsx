@@ -61,7 +61,7 @@ export function Toggle({
       hitSlop={8}
     >
       <Animated.View
-        className="h-6 justify-center rounded-full"
+        className="justify-center rounded-full"
         style={[styles.track, trackStyle]}
       >
         <Animated.View
@@ -76,6 +76,7 @@ export function Toggle({
 const styles = StyleSheet.create({
   track: {
     width: TRACK_WIDTH,
+    height: KNOB_SIZE + KNOB_INSET * 2,
     paddingHorizontal: KNOB_INSET,
   },
   knob: {

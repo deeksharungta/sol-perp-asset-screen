@@ -46,14 +46,14 @@ export const ScrubDetails = memo(function ScrubDetails({
   );
   const isUp = useDerivedValue(() => scrubCandle.value.close >= timeframeOpen);
 
-  const close = useDerivedValue(() => formatPrice(scrubCandle.value.close));
-  const change = useDerivedValue(() =>
+  const closeText = useDerivedValue(() => formatPrice(scrubCandle.value.close));
+  const changeText = useDerivedValue(() =>
     formatPriceChange(scrubCandle.value.close, timeframeOpen),
   );
-  const time = useDerivedValue(() => timeLabels[scrubIndex.value]);
-  const open = useDerivedValue(() => formatPrice(scrubCandle.value.open));
-  const high = useDerivedValue(() => formatPrice(scrubCandle.value.high));
-  const low = useDerivedValue(() => formatPrice(scrubCandle.value.low));
+  const timeText = useDerivedValue(() => timeLabels[scrubIndex.value]);
+  const openText = useDerivedValue(() => formatPrice(scrubCandle.value.open));
+  const highText = useDerivedValue(() => formatPrice(scrubCandle.value.high));
+  const lowText = useDerivedValue(() => formatPrice(scrubCandle.value.low));
 
   const fadeStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -74,17 +74,16 @@ export const ScrubDetails = memo(function ScrubDetails({
     <Animated.View
       className="pointer-events-none absolute inset-x-0 top-0 flex-row justify-between px-4"
       style={fadeStyle}
-      accessibilityElementsHidden
-      importantForAccessibility="no-hide-descendants"
+      aria-hidden
     >
       <View className="gap-1">
         <AnimatedText
-          text={close}
+          text={closeText}
           className="h-6 w-32 font-sans text-xl font-semibold text-text-primary"
         />
-        <AnimatedPriceChange isUp={isUp} text={change} />
+        <AnimatedPriceChange isUp={isUp} text={changeText} />
         <AnimatedText
-          text={time}
+          text={timeText}
           className="h-4 w-32 font-sans text-xs font-semibold text-text-tertiary"
           style={typography.animatedTextXs}
         />
@@ -92,12 +91,16 @@ export const ScrubDetails = memo(function ScrubDetails({
 
       <View className="flex-row gap-3">
         <View>
-          <OhlcValue label="O" value={open} />
-          <OhlcValue label="C" value={close} colorStyle={candleColorStyle} />
+          <OhlcValue label="O" value={openText} />
+          <OhlcValue
+            label="C"
+            value={closeText}
+            colorStyle={candleColorStyle}
+          />
         </View>
         <View>
-          <OhlcValue label="H" value={high} />
-          <OhlcValue label="L" value={low} />
+          <OhlcValue label="H" value={highText} />
+          <OhlcValue label="L" value={lowText} />
         </View>
       </View>
     </Animated.View>

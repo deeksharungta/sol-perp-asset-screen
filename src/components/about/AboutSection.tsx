@@ -12,6 +12,7 @@ import {
   formatCompactUsd,
   formatPrice,
   formatPriceChange,
+  formatUsd,
 } from "../../utils/format";
 import { AnimatedPriceChange } from "../ui/AnimatedPriceChange";
 import { AnimatedText } from "../ui/AnimatedText";
@@ -37,7 +38,7 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
   }[] = [
     {
       label: "Mark price",
-      accessibilityLabel: `${market.symbol} live mark price`,
+      accessibilityLabel: `${market.symbol} mark price ${formatUsd(market.price)}`,
       value: (
         <AnimatedText
           text={priceText}
@@ -48,7 +49,7 @@ export function AboutSection({ market, livePrice }: AboutSectionProps) {
     },
     {
       label: "24h change",
-      accessibilityLabel: `${market.symbol} live 24h change`,
+      accessibilityLabel: `${market.symbol} 24h change ${market.price >= market.openPrice ? "up" : "down"} ${formatPriceChange(market.price, market.openPrice)}`,
       value: <AnimatedPriceChange isUp={isUp} text={changeText} />,
     },
     ...market.metrics.map((metric) => ({

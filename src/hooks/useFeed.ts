@@ -4,7 +4,7 @@ import { traderPosts } from "../data/traderPosts";
 
 export function useFeed() {
   const [posts, setPosts] = useState(traderPosts);
-  const [isFollowingOnly, setFollowingOnly] = useState(true);
+  const [isFollowingOnly, setIsFollowingOnly] = useState(true);
   const [isLargestFirst, setIsLargestFirst] = useState(true);
 
   const visiblePosts = useMemo(() => {
@@ -41,7 +41,7 @@ export function useFeed() {
     visiblePosts,
     toggleLike,
     isFollowingOnly,
-    setFollowingOnly,
+    setIsFollowingOnly,
     isLargestFirst,
     toggleSort,
   };
