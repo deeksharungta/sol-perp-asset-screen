@@ -1,6 +1,7 @@
 import type { Candle, Timeframe } from "../types/candle";
 import { solPerpMarket } from "./market";
 
+// Has to divide 120: 1H is 120 thirty-second steps, so every bucket holds whole steps.
 const CANDLE_COUNT = 40;
 const NOW = Date.now();
 const SECOND = 1000;
@@ -89,7 +90,6 @@ function buildFineHistory(longHistory: number[]) {
   return prices;
 }
 
-// Splits the latest span into CANDLE_COUNT equal buckets and reads each bucket's OHLC.
 function buildCandles(
   pricesBetween: (start: number, end: number) => number[],
   span: number,
@@ -108,7 +108,6 @@ function buildCandles(
   });
 }
 
-// Every timeframe is the latest part of the same history, read from the 30-second series wherever it covers.
 function buildCandlesByTimeframe(): Record<Timeframe, Candle[]> {
   const longHistory = buildLongHistory();
   const fineHistory = buildFineHistory(longHistory);

@@ -29,7 +29,6 @@ type ScrubDetailsProps = {
   livePrice: SharedValue<number>;
 };
 
-// Takes the price block's place while scrubbing, in the same layout.
 export const ScrubDetails = memo(function ScrubDetails({
   candles,
   timeframe,

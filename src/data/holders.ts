@@ -11,7 +11,7 @@ const orderflow: Holder = {
   side: "short",
   leverage: 3,
   size: 312_500,
-  pnl: 9_212.02,
+  pnl: 7_486.31,
 };
 
 export const holders: Holder[] = [

@@ -59,6 +59,7 @@ export function AssetDetailScreen() {
   const [listHeight, setListHeight] = useState(0);
   const activeTab = assetTabs[activeTabIndex];
 
+  // Scrolls up to the tab row if needed, so the new tab starts at its top.
   useLayoutEffect(() => {
     listRef.current?.scrollToOffset({
       offset: Math.min(scrollY.value, tabRowY.value),

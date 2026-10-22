@@ -9,7 +9,7 @@ export const solPerpMarket: Market = {
   exchangeIcon: hyperliquidIcon,
   exchangeName: "Hyperliquid",
   description:
-    "Solana is a high-throughput layer 1 blockchain built for fast, low-cost transactions. SOL is its native token, used for fees and staking. This perpetual tracks the SOL price with up to 20x leverage.",
+    "SOL is the token of the Solana blockchain. This perpetual tracks its price on Hyperliquid, with up to 20x leverage.",
   price: 171.2,
   openPrice: 163.77,
   metrics: [
