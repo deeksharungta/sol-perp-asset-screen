@@ -11,7 +11,7 @@ export function formatUsd(value: number) {
   return usdFormatter.format(value);
 }
 
-// Intl isn't available on the UI thread, so prices that update from worklets use this instead of formatUsd.
+// Intl formatters can't be passed into worklets, so prices formatted on the UI thread use plain string maths.
 export function formatPrice(price: number) {
   "worklet";
   return `$${price.toFixed(2)}`;
@@ -76,7 +76,6 @@ export function formatSignedUsd(value: number) {
   return `${value < 0 ? "-" : "+"}${formatUsd(Math.abs(value))}`;
 }
 
-// Number() drops trailing zeros, so 1.20 shows as "$1.2M" like the Figma.
 const COMPACT_UNITS = [
   { size: 1_000_000_000, suffix: "B" },
   { size: 1_000_000, suffix: "M" },
@@ -85,6 +84,7 @@ const COMPACT_UNITS = [
 
 export function formatCompactUsd(value: number) {
   for (const { size, suffix } of COMPACT_UNITS) {
+    // Number() drops trailing zeros, so 1.20 shows as "$1.2M" like the Figma.
     const rounded = Number((value / size).toFixed(2));
     if (rounded >= 1) {
       return `$${rounded}${suffix}`;

@@ -2,9 +2,6 @@ import type { TraderPost } from "../types/traderPost";
 
 import { avatars } from "./avatars";
 
-const sampleThesis =
-  "Expecting SOL to break $145 after the OI expansion and volume confirmation on the 4H. Adding on a retest of $140, stop below the weekly low and trailing once we clear $160.";
-
 export const traderPosts: TraderPost[] = [
   {
     id: "candlefox",
@@ -19,7 +16,8 @@ export const traderPosts: TraderPost[] = [
     leverage: 10,
     positionValue: 46_424.93,
     pnl: 28_008.63,
-    thesis: sampleThesis,
+    thesis:
+      "Expecting SOL to break $145 after the OI expansion and volume confirmation on the 4H. Adding on a retest of $140, stop below the weekly low and trailing once we clear $160.",
     avgEntry: 148.6,
     takeProfit: 195,
     stopLoss: 138,
@@ -90,7 +88,7 @@ export const traderPosts: TraderPost[] = [
         side: "short",
         leverage: 3,
         thesis: "Shorted the lower high, stopped out at $166.",
-        pnl: -980.25,
+        pnl: -742.6,
         closedAt: Date.UTC(2026, 9, 12),
       },
     ],
@@ -115,7 +113,7 @@ export const traderPosts: TraderPost[] = [
     liqPrice: 126.25,
     likes: 64,
     isLiked: false,
-    commentCount: 1,
+    commentCount: 3,
     copyingCount: 18,
   },
   {
@@ -185,7 +183,7 @@ export const traderPosts: TraderPost[] = [
     liqPrice: 139.7,
     likes: 58,
     isLiked: false,
-    commentCount: 1,
+    commentCount: 6,
     copyingCount: 340,
   },
   {
@@ -194,7 +192,7 @@ export const traderPosts: TraderPost[] = [
     avatar: avatars.basisbro,
     isVerified: false,
     isFollowed: false,
-    rank: 500,
+    rank: 2500,
     winRate: 49,
     accountValue: 41_000,
     side: "short",
@@ -207,7 +205,7 @@ export const traderPosts: TraderPost[] = [
     liqPrice: 191.2,
     likes: 12,
     isLiked: false,
-    commentCount: 1,
+    commentCount: 2,
     copyingCount: 2,
   },
 ];
