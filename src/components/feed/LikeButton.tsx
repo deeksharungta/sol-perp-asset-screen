@@ -56,8 +56,7 @@ export function LikeButton({
 }: LikeButtonProps) {
   const heartScale = useSharedValue(1);
   const burstProgress = useSharedValue(0);
-  const burst = useSharedValue(createBurst);
-  const [isBursting, setIsBursting] = useState(false);
+  const [burst, setBurst] = useState<BurstDotShape[] | null>(null);
 
   const handlePress = () => {
     if (isLiked) {
@@ -70,12 +69,11 @@ export function LikeButton({
         withTiming(LIKE_POP_SCALE, likePopTiming),
         withSpring(1, pressSpring),
       );
-      burst.value = createBurst();
-      setIsBursting(true);
+      setBurst(createBurst());
       burstProgress.value = 0;
       burstProgress.value = withTiming(1, likeBurstTiming, (finished) => {
         if (finished) {
-          scheduleOnRN(setIsBursting, false);
+          scheduleOnRN(setBurst, null);
         }
       });
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -108,15 +106,10 @@ export function LikeButton({
         <Animated.View style={heartStyle}>
           <HeartIcon isFilled={isLiked} />
         </Animated.View>
-        {isBursting && (
+        {burst && (
           <View className="pointer-events-none absolute inset-0 items-center justify-center">
-            {Array.from({ length: BURST_DOT_COUNT }, (_, index) => (
-              <BurstDot
-                key={index}
-                index={index}
-                burst={burst}
-                progress={burstProgress}
-              />
+            {burst.map((shape, index) => (
+              <BurstDot key={index} shape={shape} progress={burstProgress} />
             ))}
           </View>
         )}
@@ -126,14 +119,15 @@ export function LikeButton({
 }
 
 type BurstDotProps = {
-  index: number;
-  burst: SharedValue<BurstDotShape[]>;
+  shape: BurstDotShape;
   progress: SharedValue<number>;
 };
 
-function BurstDot({ index, burst, progress }: BurstDotProps) {
+function BurstDot({
+  shape: { angle, travel, scale },
+  progress,
+}: BurstDotProps) {
   const dotStyle = useAnimatedStyle(() => {
-    const { angle, travel, scale } = burst.value[index];
     const distance = BURST_START_DISTANCE + progress.value * travel;
     return {
       opacity: interpolate(progress.value, [0, 0.2, 1], [0, 1, 0]),

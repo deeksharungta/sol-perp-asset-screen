@@ -1,10 +1,10 @@
-import { startTransition, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { traderPosts } from "../data/traderPosts";
 
 export function useFeed() {
   const [posts, setPosts] = useState(traderPosts);
-  const [isFollowingOnly, setIsFollowingOnly] = useState(true);
+  const [isFollowingOnly, setFollowingOnly] = useState(true);
   const [isLargestFirst, setIsLargestFirst] = useState(true);
 
   const visiblePosts = useMemo(() => {
@@ -33,12 +33,6 @@ export function useFeed() {
     );
   }, []);
 
-  const changeFollowingOnly = useCallback((value: boolean) => {
-    startTransition(() => {
-      setIsFollowingOnly(value);
-    });
-  }, []);
-
   const toggleSort = useCallback(() => {
     setIsLargestFirst((value) => !value);
   }, []);
@@ -47,7 +41,7 @@ export function useFeed() {
     visiblePosts,
     toggleLike,
     isFollowingOnly,
-    changeFollowingOnly,
+    setFollowingOnly,
     isLargestFirst,
     toggleSort,
   };

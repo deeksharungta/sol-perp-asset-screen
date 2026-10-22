@@ -10,7 +10,7 @@ import { scheduleOnRN } from "react-native-worklets";
 
 import { scrubFadeTiming, scrubGlideTiming } from "../theme/animations";
 import type { Candle } from "../types/candle";
-import { clamp, xToIndex } from "../utils/chartMath";
+import { clamp, withLivePrice, xToIndex } from "../utils/chartMath";
 
 const SCRUB_ACTIVATION_DISTANCE = 8;
 
@@ -38,9 +38,11 @@ export function useChartScrub({
   const scrubX = useSharedValue(0);
   const scrubPrice = useSharedValue(candles[lastIndex].close);
 
-  const closeAt = (index: number) => {
+  const candleAt = (index: number) => {
     "worklet";
-    return index === lastIndex ? livePrice.value : candles[index].close;
+    return index === lastIndex
+      ? withLivePrice(candles[index], livePrice.value)
+      : candles[index];
   };
 
   useAnimatedReaction(
@@ -60,7 +62,7 @@ export function useChartScrub({
       const index = xToIndex(event.x, candleStep.value, candleCount);
       scrubX.set(clamp(event.x, 0, plotWidth.value));
       scrubIndex.set(index);
-      scrubPrice.set(closeAt(index));
+      scrubPrice.set(candleAt(index).close);
       scrubProgress.set(withTiming(1, scrubFadeTiming));
       scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Light);
     },
@@ -69,7 +71,7 @@ export function useChartScrub({
       const index = xToIndex(event.x, candleStep.value, candleCount);
       if (index !== scrubIndex.value) {
         scrubIndex.set(index);
-        scrubPrice.set(withTiming(closeAt(index), scrubGlideTiming));
+        scrubPrice.set(withTiming(candleAt(index).close, scrubGlideTiming));
         scheduleOnRN(Haptics.selectionAsync);
       }
     },
