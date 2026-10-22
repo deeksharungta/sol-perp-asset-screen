@@ -32,7 +32,7 @@ export const AssetOverview = memo(function AssetOverview({
 
   const priceFadeStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
-      scrubProgress.value,
+      scrubProgress.get(),
       [0, 0.5],
       [1, 0],
       Extrapolation.CLAMP,

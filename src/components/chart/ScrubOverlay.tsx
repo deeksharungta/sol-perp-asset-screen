@@ -24,19 +24,19 @@ export function ScrubOverlay({
 }: ScrubOverlayProps) {
   const crosshair = useDerivedValue(() =>
     Skia.PathBuilder.Make()
-      .moveTo(scrubX.value, 0)
-      .lineTo(scrubX.value, PLOT_HEIGHT)
+      .moveTo(scrubX.get(), 0)
+      .lineTo(scrubX.get(), PLOT_HEIGHT)
       .detach(),
   );
   // Covers everything except the selected candle's slot.
   const dimmedArea = useDerivedValue(() => {
-    const selectedX = indexToX(scrubIndex.value, candleStep.value);
-    const slotLeft = selectedX - candleStep.value / 2;
-    const slotRight = selectedX + candleStep.value / 2;
+    const selectedX = indexToX(scrubIndex.get(), candleStep.get());
+    const slotLeft = selectedX - candleStep.get() / 2;
+    const slotRight = selectedX + candleStep.get() / 2;
     return Skia.PathBuilder.Make()
       .addRect(Skia.XYWHRect(0, 0, slotLeft, PLOT_HEIGHT))
       .addRect(
-        Skia.XYWHRect(slotRight, 0, plotWidth.value - slotRight, PLOT_HEIGHT),
+        Skia.XYWHRect(slotRight, 0, plotWidth.get() - slotRight, PLOT_HEIGHT),
       )
       .detach();
   });

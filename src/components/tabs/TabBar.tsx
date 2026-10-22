@@ -26,7 +26,7 @@ export function TabBar({
   const tabWidth = useSharedValue(0);
 
   const handleLayout = (event: LayoutChangeEvent) => {
-    tabWidth.value = event.nativeEvent.layout.width / tabs.length;
+    tabWidth.set(event.nativeEvent.layout.width / tabs.length);
   };
 
   const handlePress = (index: number) => {
@@ -39,8 +39,8 @@ export function TabBar({
   };
 
   const indicatorStyle = useAnimatedStyle(() => ({
-    width: tabWidth.value,
-    transform: [{ translateX: indicatorIndex.value * tabWidth.value }],
+    width: tabWidth.get(),
+    transform: [{ translateX: indicatorIndex.get() * tabWidth.get() }],
   }));
 
   return (

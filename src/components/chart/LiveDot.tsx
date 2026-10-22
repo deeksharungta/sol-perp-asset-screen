@@ -26,16 +26,17 @@ export function LiveDot({ x, y, color, chartType }: LiveDotProps) {
   const livePulse = useSharedValue(0);
 
   useEffect(() => {
-    livePulse.value =
-      chartType === "line" ? withRepeat(withTiming(1, livePulseTiming), -1) : 0;
+    livePulse.set(
+      chartType === "line" ? withRepeat(withTiming(1, livePulseTiming), -1) : 0,
+    );
   }, [chartType, livePulse]);
 
   const pulseRadius = useDerivedValue(
     () =>
-      END_DOT_RADIUS + (LIVE_PULSE_RADIUS - END_DOT_RADIUS) * livePulse.value,
+      END_DOT_RADIUS + (LIVE_PULSE_RADIUS - END_DOT_RADIUS) * livePulse.get(),
   );
   const pulseOpacity = useDerivedValue(
-    () => LIVE_PULSE_OPACITY * (1 - livePulse.value),
+    () => LIVE_PULSE_OPACITY * (1 - livePulse.get()),
   );
 
   return (

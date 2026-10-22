@@ -109,40 +109,41 @@ export function CandleChart({
   const zoomProgress = useSharedValue(1);
 
   useEffect(() => {
-    drawProgress.value = withTiming(1, drawInTiming);
+    drawProgress.set(withTiming(1, drawInTiming));
   }, [drawProgress]);
 
   useEffect(() => {
     if (previousCandles === candles) {
       return;
     }
-    zoomProgress.value = 0;
-    zoomProgress.value = withTiming(1, timeframeZoomTiming, (finished) => {
-      if (finished) {
-        scheduleOnRN(setIsZooming, false);
-      }
-    });
+    zoomProgress.set(0);
+    zoomProgress.set(
+      withTiming(1, timeframeZoomTiming, (finished) => {
+        if (finished) {
+          scheduleOnRN(setIsZooming, false);
+        }
+      }),
+    );
   }, [candles, previousCandles, zoomProgress]);
 
   useEffect(() => {
-    lineProgress.value = withTiming(
-      chartType === "line" ? 1 : 0,
-      chartMorphTiming,
+    lineProgress.set(
+      withTiming(chartType === "line" ? 1 : 0, chartMorphTiming),
     );
   }, [chartType, lineProgress]);
 
-  const plotWidth = useDerivedValue(() => canvasSize.value.width - AXIS_WIDTH);
-  const candleStep = useDerivedValue(() => plotWidth.value / candleCount);
+  const plotWidth = useDerivedValue(() => canvasSize.get().width - AXIS_WIDTH);
+  const candleStep = useDerivedValue(() => plotWidth.get() / candleCount);
   const minPrice = useDerivedValue(() =>
     interpolate(
-      zoomProgress.value,
+      zoomProgress.get(),
       [0, 1],
       [previousRange.minPrice, range.minPrice],
     ),
   );
   const maxPrice = useDerivedValue(() =>
     interpolate(
-      zoomProgress.value,
+      zoomProgress.get(),
       [0, 1],
       [previousRange.maxPrice, range.maxPrice],
     ),
@@ -160,94 +161,94 @@ export function CandleChart({
 
   // Snaps the live price to half a pixel, so ticks too small to see don't rebuild the paths.
   const chartPrice = useDerivedValue(() => {
-    const step = (0.5 * (maxPrice.value - minPrice.value)) / PLOT_HEIGHT;
-    return Math.round(livePrice.value / step) * step;
+    const step = (0.5 * (maxPrice.get() - minPrice.get())) / PLOT_HEIGHT;
+    return Math.round(livePrice.get() / step) * step;
   });
 
   const chartScale = useDerivedValue(() => ({
-    candleStep: candleStep.value,
-    minPrice: minPrice.value,
-    maxPrice: maxPrice.value,
+    candleStep: candleStep.get(),
+    minPrice: minPrice.get(),
+    maxPrice: maxPrice.get(),
   }));
   const paths = useDerivedValue(() =>
     buildChartPaths(
       candles,
-      chartPrice.value,
+      chartPrice.get(),
       {
-        ...chartScale.value,
-        zoom: Math.exp(logRatio * (1 - zoomProgress.value)),
+        ...chartScale.get(),
+        zoom: Math.exp(logRatio * (1 - zoomProgress.get())),
       },
-      { draw: drawProgress.value, line: lineProgress.value },
+      { draw: drawProgress.get(), line: lineProgress.get() },
     ),
   );
   const previousPaths = useDerivedValue(() =>
     buildChartPaths(
-      zoomProgress.value < 1 ? previousCandles : [],
-      chartPrice.value,
-      { ...chartScale.value, zoom: Math.exp(-logRatio * zoomProgress.value) },
-      { draw: 1, line: lineProgress.value },
+      zoomProgress.get() < 1 ? previousCandles : [],
+      chartPrice.get(),
+      { ...chartScale.get(), zoom: Math.exp(-logRatio * zoomProgress.get()) },
+      { draw: 1, line: lineProgress.get() },
     ),
   );
-  const previousOpacity = useDerivedValue(() => 1 - zoomProgress.value);
+  const previousOpacity = useDerivedValue(() => 1 - zoomProgress.get());
 
   const lastPointX = useDerivedValue(() =>
-    indexToX(candleCount - 1, candleStep.value),
+    indexToX(candleCount - 1, candleStep.get()),
   );
   const livePriceY = useDerivedValue(() =>
-    priceToY(chartPrice.value, minPrice.value, maxPrice.value, PLOT_HEIGHT),
+    priceToY(chartPrice.get(), minPrice.get(), maxPrice.get(), PLOT_HEIGHT),
   );
   const tagPrice = useDerivedValue(() =>
     interpolate(
-      scrubProgress.value,
+      scrubProgress.get(),
       [0, 1],
-      [livePrice.value, scrubPrice.value],
+      [livePrice.get(), scrubPrice.get()],
     ),
   );
   const tagY = useDerivedValue(() =>
     priceToY(
       interpolate(
-        scrubProgress.value,
+        scrubProgress.get(),
         [0, 1],
-        [chartPrice.value, scrubPrice.value],
+        [chartPrice.get(), scrubPrice.get()],
       ),
-      minPrice.value,
-      maxPrice.value,
+      minPrice.get(),
+      maxPrice.get(),
       PLOT_HEIGHT,
     ),
   );
   const baseColor = useDerivedValue(() =>
     interpolateColor(
-      zoomProgress.value,
+      zoomProgress.get(),
       [0, 1],
       [previousPriceColor, priceColor],
     ),
   );
   const tagColor = useDerivedValue(() => {
-    const candle = candleAt(candles, scrubIndex.value, livePrice.value);
+    const candle = candleAt(candles, scrubIndex.get(), livePrice.get());
     return interpolateColor(
-      scrubProgress.value,
+      scrubProgress.get(),
       [0, 1],
       [
-        baseColor.value,
+        baseColor.get(),
         candle.close >= candle.open
           ? colors.priceLineGreen
           : colors.priceLineRed,
       ],
     );
   });
-  const priceLineStart = useDerivedValue(() => vec(0, tagY.value));
+  const priceLineStart = useDerivedValue(() => vec(0, tagY.get()));
   const priceLineEnd = useDerivedValue(() =>
-    vec(canvasSize.value.width - AXIS_RIGHT_INSET, tagY.value),
+    vec(canvasSize.get().width - AXIS_RIGHT_INSET, tagY.get()),
   );
 
   const lineOpacity = useDerivedValue(() =>
-    interpolate(lineProgress.value, [0, 0.6], [0, 1], Extrapolation.CLAMP),
+    interpolate(lineProgress.get(), [0, 0.6], [0, 1], Extrapolation.CLAMP),
   );
   const revealOpacity = useDerivedValue(() =>
-    interpolate(drawProgress.value, [0.6, 1], [0, 1], Extrapolation.CLAMP),
+    interpolate(drawProgress.get(), [0.6, 1], [0, 1], Extrapolation.CLAMP),
   );
   const axisFadeStyle = useAnimatedStyle(() => ({
-    opacity: revealOpacity.value,
+    opacity: revealOpacity.get(),
   }));
 
   return (

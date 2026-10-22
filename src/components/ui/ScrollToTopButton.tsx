@@ -28,7 +28,7 @@ export const ScrollToTopButton = memo(function ScrollToTopButton({
   const [isVisible, setIsVisible] = useState(false);
 
   useAnimatedReaction(
-    () => scrollY.value > SHOW_AFTER_OFFSET,
+    () => scrollY.get() > SHOW_AFTER_OFFSET,
     (shouldShow, wasShown) => {
       if (shouldShow !== wasShown) {
         scheduleOnRN(setIsVisible, shouldShow);

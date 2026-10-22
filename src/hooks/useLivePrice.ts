@@ -21,23 +21,25 @@ export function useLivePrice(basePrice: number) {
     const interval = setInterval(() => {
       const randomStep = (Math.random() - 0.5) * 2 * MAX_TICK_CHANGE * price;
       price += randomStep + (basePrice - price) * PULL_TO_BASE;
-      targetPrice.value = price;
+      targetPrice.set(price);
     }, TICK_INTERVAL);
     return () => clearInterval(interval);
   }, [basePrice, targetPrice]);
 
   // Eases toward the newest price every frame, and stops writing once it has caught up.
   useFrameCallback((frame) => {
-    const distance = targetPrice.value - livePrice.value;
+    const distance = targetPrice.get() - livePrice.get();
     if (Math.abs(distance) < SETTLED_DISTANCE) {
       return;
     }
     if (isReducedMotion) {
-      livePrice.value = targetPrice.value;
+      livePrice.set(targetPrice.get());
       return;
     }
     const elapsed = frame.timeSincePreviousFrame ?? 16;
-    livePrice.value += distance * (1 - Math.exp(-elapsed / CHASE_TIME));
+    livePrice.set(
+      livePrice.get() + distance * (1 - Math.exp(-elapsed / CHASE_TIME)),
+    );
   });
 
   return livePrice;

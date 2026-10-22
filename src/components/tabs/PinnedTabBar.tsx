@@ -30,11 +30,11 @@ export const PinnedTabBar = memo(function PinnedTabBar({
 }: PinnedTabBarProps) {
   const [isTouchable, setIsTouchable] = useState(false);
   const isPinned = useDerivedValue(
-    () => tabRowY.value > 0 && scrollY.value >= tabRowY.value,
+    () => tabRowY.get() > 0 && scrollY.get() >= tabRowY.get(),
   );
 
   useAnimatedReaction(
-    () => isPinned.value,
+    () => isPinned.get(),
     (pinned, wasPinned) => {
       if (pinned !== wasPinned) {
         scheduleOnRN(setIsTouchable, pinned);
@@ -43,7 +43,7 @@ export const PinnedTabBar = memo(function PinnedTabBar({
   );
 
   const pinStyle = useAnimatedStyle(() => ({
-    opacity: isPinned.value ? 1 : 0,
+    opacity: isPinned.get() ? 1 : 0,
   }));
 
   return (

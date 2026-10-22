@@ -39,38 +39,38 @@ export function PriceBlock({
   const [selectedMetric, setSelectedMetric] = useState(metrics[0]);
   const [isMetricSheetOpen, setIsMetricSheetOpen] = useState(false);
   const [metricSheetAnchorY, setMetricSheetAnchorY] = useState(0);
-  const priceText = useDerivedValue(() => formatPrice(livePrice.value));
+  const priceText = useDerivedValue(() => formatPrice(livePrice.get()));
   const priceFlash = useSharedValue(0);
   const priceDirection = useSharedValue(0);
 
   // The live price glides every frame, so flash only when it turns, not on every frame it moves.
   useAnimatedReaction(
-    () => livePrice.value,
+    () => livePrice.get(),
     (current, previous) => {
       if (previous === null || current === previous) {
         return;
       }
       const direction = current > previous ? 1 : -1;
-      if (direction === priceDirection.value) {
+      if (direction === priceDirection.get()) {
         return;
       }
-      priceDirection.value = direction;
-      priceFlash.value = direction;
-      priceFlash.value = withTiming(0, priceFlashTiming);
+      priceDirection.set(direction);
+      priceFlash.set(direction);
+      priceFlash.set(withTiming(0, priceFlashTiming));
     },
   );
 
   const priceFlashStyle = useAnimatedStyle(() => ({
     color: interpolateColor(
-      priceFlash.value,
+      priceFlash.get(),
       [-1, 0, 1],
       [colors.textRed, colors.textPrimary, colors.textGreen],
     ),
   }));
   const changeText = useDerivedValue(() =>
-    formatPriceChange(livePrice.value, timeframeOpen),
+    formatPriceChange(livePrice.get(), timeframeOpen),
   );
-  const isUp = useDerivedValue(() => livePrice.value >= timeframeOpen);
+  const isUp = useDerivedValue(() => livePrice.get() >= timeframeOpen);
 
   const handleOpenMetrics = () => {
     metricRef.current?.measureInWindow((_x, y, _width, height) => {

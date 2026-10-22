@@ -25,11 +25,11 @@ type AboutSectionProps = {
 };
 
 export function AboutSection({ market, livePrice }: AboutSectionProps) {
-  const priceText = useDerivedValue(() => formatPrice(livePrice.value));
+  const priceText = useDerivedValue(() => formatPrice(livePrice.get()));
   const changeText = useDerivedValue(() =>
-    formatPriceChange(livePrice.value, market.openPrice),
+    formatPriceChange(livePrice.get(), market.openPrice),
   );
-  const isUp = useDerivedValue(() => livePrice.value >= market.openPrice);
+  const isUp = useDerivedValue(() => livePrice.get() >= market.openPrice);
 
   const stats: {
     label: string;

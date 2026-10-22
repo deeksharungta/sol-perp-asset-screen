@@ -30,15 +30,15 @@ export function TradeButton({ side, onPress }: TradeButtonProps) {
   };
 
   const handlePressIn = () => {
-    pressScale.value = withSpring(PRESSED_SCALE, pressSpring);
+    pressScale.set(withSpring(PRESSED_SCALE, pressSpring));
   };
 
   const handlePressOut = () => {
-    pressScale.value = withSpring(1, pressSpring);
+    pressScale.set(withSpring(1, pressSpring));
   };
 
   const pressStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pressScale.value }],
+    transform: [{ scale: pressScale.get() }],
   }));
 
   return (

@@ -20,11 +20,11 @@ export const HeaderFade = memo(function HeaderFade({
 }: HeaderFadeProps) {
   // iOS blur ignores parent opacity, so the blur is hidden through its intensity instead.
   const blurProps = useAnimatedProps(() => ({
-    intensity: isVisible.value ? BLUR_INTENSITY : 0,
+    intensity: isVisible.get() ? BLUR_INTENSITY : 0,
   }));
 
   const fadeStyle = useAnimatedStyle(() => ({
-    opacity: isVisible.value ? 1 : 0,
+    opacity: isVisible.get() ? 1 : 0,
   }));
 
   return (
