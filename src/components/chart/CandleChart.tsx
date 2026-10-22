@@ -30,10 +30,11 @@ import { colors } from "../../theme/colors";
 import type { Candle, ChartType, Timeframe } from "../../types/candle";
 import {
   buildChartPaths,
+  candleAt,
   getPriceRange,
   indexToX,
+  PLOT_HEIGHT,
   priceToY,
-  withLivePrice,
 } from "../../utils/chartMath";
 import { formatUsd } from "../../utils/format";
 import { ChartLayer } from "./ChartLayer";
@@ -41,7 +42,6 @@ import { LiveDot } from "./LiveDot";
 import { AXIS_RIGHT_INSET, PriceAxis } from "./PriceAxis";
 import { ScrubOverlay } from "./ScrubOverlay";
 
-const PLOT_HEIGHT = 176;
 const AXIS_WIDTH = 70;
 const PRICE_LINE_OPACITY = 0.5;
 const DASH_INTERVALS = [4, 4];
@@ -166,7 +166,6 @@ export function CandleChart({
 
   const sizes = useDerivedValue(() => ({
     candleStep: candleStep.value,
-    plotHeight: PLOT_HEIGHT,
     minPrice: minPrice.value,
     maxPrice: maxPrice.value,
   }));
@@ -221,11 +220,7 @@ export function CandleChart({
     ),
   );
   const tagColor = useDerivedValue(() => {
-    const index = scrubIndex.value;
-    const candle =
-      index === candleCount - 1
-        ? withLivePrice(candles[index], livePrice.value)
-        : candles[index];
+    const candle = candleAt(candles, scrubIndex.value, livePrice.value);
     return interpolateColor(
       scrubProgress.value,
       [0, 1],
@@ -267,7 +262,6 @@ export function CandleChart({
               opacity={previousOpacity}
               lineProgress={lineProgress}
               lineOpacity={lineOpacity}
-              plotHeight={PLOT_HEIGHT}
             />
             <ChartLayer
               paths={paths}
@@ -275,7 +269,6 @@ export function CandleChart({
               opacity={zoomProgress}
               lineProgress={lineProgress}
               lineOpacity={lineOpacity}
-              plotHeight={PLOT_HEIGHT}
             />
             <Group opacity={lineOpacity}>
               <LiveDot
@@ -291,7 +284,6 @@ export function CandleChart({
               scrubProgress={scrubProgress}
               candleStep={candleStep}
               plotWidth={plotWidth}
-              height={PLOT_HEIGHT}
             />
             <Group opacity={revealOpacity}>
               <Line
@@ -317,7 +309,6 @@ export function CandleChart({
               tagY={tagY}
               tagPrice={tagPrice}
               tagColor={tagColor}
-              height={PLOT_HEIGHT}
             />
           </Animated.View>
         </View>

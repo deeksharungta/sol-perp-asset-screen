@@ -90,10 +90,21 @@ function buildFineHistory(longHistory: number[]) {
   return prices;
 }
 
-function buildCandles(
-  pricesBetween: (start: number, end: number) => number[],
-  span: number,
-) {
+const longHistory = buildLongHistory();
+const fineHistory = buildFineHistory(longHistory);
+
+function pricesBetween(start: number, end: number) {
+  const isRecent = start >= NOW - DETAIL_SPAN;
+  const series = isRecent ? fineHistory : longHistory;
+  const step = isRecent ? FINE_STEP : LONG_STEP;
+  const last = series.length - 1;
+  return series.slice(
+    last - (NOW - start) / step,
+    last - (NOW - end) / step + 1,
+  );
+}
+
+function buildCandles(span: number) {
   const bucketSpan = span / CANDLE_COUNT;
   return Array.from({ length: CANDLE_COUNT }, (_, i): Candle => {
     const end = NOW - (CANDLE_COUNT - 1 - i) * bucketSpan;
@@ -108,31 +119,13 @@ function buildCandles(
   });
 }
 
-function buildCandlesByTimeframe(): Record<Timeframe, Candle[]> {
-  const longHistory = buildLongHistory();
-  const fineHistory = buildFineHistory(longHistory);
-  const pricesBetween = (start: number, end: number) => {
-    const isRecent = start >= NOW - DETAIL_SPAN;
-    const series = isRecent ? fineHistory : longHistory;
-    const step = isRecent ? FINE_STEP : LONG_STEP;
-    const last = series.length - 1;
-    return series.slice(
-      last - (NOW - start) / step,
-      last - (NOW - end) / step + 1,
-    );
-  };
-  const candlesFor = (span: number) => buildCandles(pricesBetween, span);
-
-  return {
-    "1H": candlesFor(HOUR),
-    "1D": candlesFor(DAY),
-    "1W": candlesFor(7 * DAY),
-    "1M": candlesFor(DETAIL_SPAN),
-    "3M": candlesFor(90 * DAY),
-    "6M": candlesFor(180 * DAY),
-    "1Y": candlesFor(360 * DAY),
-    All: candlesFor(HISTORY_SPAN),
-  };
-}
-
-export const candlesByTimeframe = buildCandlesByTimeframe();
+export const candlesByTimeframe: Record<Timeframe, Candle[]> = {
+  "1H": buildCandles(HOUR),
+  "1D": buildCandles(DAY),
+  "1W": buildCandles(7 * DAY),
+  "1M": buildCandles(DETAIL_SPAN),
+  "3M": buildCandles(90 * DAY),
+  "6M": buildCandles(180 * DAY),
+  "1Y": buildCandles(360 * DAY),
+  All: buildCandles(HISTORY_SPAN),
+};

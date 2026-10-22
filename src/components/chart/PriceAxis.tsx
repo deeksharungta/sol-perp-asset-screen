@@ -8,7 +8,12 @@ import Animated, {
 } from "react-native-reanimated";
 
 import { typography } from "../../theme/typography";
-import { clamp, priceToY, type PriceRange } from "../../utils/chartMath";
+import {
+  clamp,
+  PLOT_HEIGHT,
+  priceToY,
+  type PriceRange,
+} from "../../utils/chartMath";
 import { formatPrice } from "../../utils/format";
 import { AnimatedText } from "../ui/AnimatedText";
 
@@ -25,7 +30,6 @@ type PriceAxisProps = {
   tagY: SharedValue<number>;
   tagPrice: SharedValue<number>;
   tagColor: SharedValue<string>;
-  height: number;
 };
 
 export function PriceAxis({
@@ -35,14 +39,13 @@ export function PriceAxis({
   tagY,
   tagPrice,
   tagColor,
-  height,
 }: PriceAxisProps) {
   const tagText = useDerivedValue(() => formatPrice(tagPrice.value));
   const tagTop = useDerivedValue(() =>
     clamp(
       tagY.value - TAG_HEIGHT / 2,
       -EDGE_ROOM,
-      height + EDGE_ROOM - TAG_HEIGHT,
+      PLOT_HEIGHT + EDGE_ROOM - TAG_HEIGHT,
     ),
   );
   const tagStyle = useAnimatedStyle(() => ({
@@ -69,10 +72,10 @@ export function PriceAxis({
   return (
     <View className="pointer-events-none absolute inset-0">
       <Animated.View className="absolute inset-0" style={previousLabelsStyle}>
-        <PriceLabels range={previousRange} tagTop={tagTop} height={height} />
+        <PriceLabels range={previousRange} tagTop={tagTop} />
       </Animated.View>
       <Animated.View className="absolute inset-0" style={labelsStyle}>
-        <PriceLabels range={range} tagTop={tagTop} height={height} />
+        <PriceLabels range={range} tagTop={tagTop} />
       </Animated.View>
 
       <Animated.View
@@ -95,13 +98,11 @@ export function PriceAxis({
 type PriceLabelsProps = {
   range: PriceRange;
   tagTop: SharedValue<number>;
-  height: number;
 };
 
 function PriceLabels({
   range: { minPrice, maxPrice, step },
   tagTop,
-  height,
 }: PriceLabelsProps) {
   const labelCount = Math.round((maxPrice - minPrice) / step) + 1;
   const labelPrices = Array.from(
@@ -113,7 +114,7 @@ function PriceLabels({
     <PriceLabel
       key={price}
       text={`$${price.toFixed(step >= 1 ? 0 : 2)}`}
-      y={priceToY(price, minPrice, maxPrice, height)}
+      y={priceToY(price, minPrice, maxPrice, PLOT_HEIGHT)}
       tagTop={tagTop}
     />
   ));

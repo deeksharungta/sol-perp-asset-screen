@@ -1,16 +1,12 @@
 import { memo } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
-  useAnimatedReaction,
   useAnimatedStyle,
   useReducedMotion,
-  useSharedValue,
-  withTiming,
   type SharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { slideTiming } from "../../theme/animations";
 import { colors } from "../../theme/colors";
 import { MaskedBlur } from "../ui/MaskedBlur";
 import { TradeButton } from "./TradeButton";
@@ -19,46 +15,38 @@ const TRADE_BAR_HEIGHT = 72;
 const MIN_BOTTOM_SPACE = 12;
 const COMPACT_SHRINK = 0.06;
 
-function useTradeBarInset() {
-  const insets = useSafeAreaInsets();
-  return Math.max(insets.bottom, MIN_BOTTOM_SPACE);
-}
-
 export function useTradeBarHeight() {
-  return useTradeBarInset() + TRADE_BAR_HEIGHT;
+  const insets = useSafeAreaInsets();
+  return Math.max(insets.bottom, MIN_BOTTOM_SPACE) + TRADE_BAR_HEIGHT;
 }
 
 type TradeBarProps = {
-  isPastChart: SharedValue<boolean>;
+  pastChartProgress: SharedValue<number>;
   onGoLong: () => void;
   onGoShort: () => void;
 };
 
 export const TradeBar = memo(function TradeBar({
-  isPastChart,
+  pastChartProgress,
   onGoLong,
   onGoShort,
 }: TradeBarProps) {
-  const bottomInset = useTradeBarInset();
-  const compactProgress = useSharedValue(0);
+  const height = useTradeBarHeight();
   const isReducedMotion = useReducedMotion();
-  useAnimatedReaction(
-    () => !isReducedMotion && isPastChart.value,
-    (isCompact, wasCompact) => {
-      if (isCompact !== wasCompact) {
-        compactProgress.value = withTiming(isCompact ? 1 : 0, slideTiming);
-      }
-    },
-  );
   const compactStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 - compactProgress.value * COMPACT_SHRINK }],
+    transform: [
+      {
+        scale:
+          1 - (isReducedMotion ? 0 : pastChartProgress.value) * COMPACT_SHRINK,
+      },
+    ],
     transformOrigin: "bottom",
   }));
 
   return (
     <View
       className="pointer-events-box-none absolute bottom-0 left-0 right-0 px-4 pt-6"
-      style={{ paddingBottom: bottomInset }}
+      style={{ height }}
     >
       <MaskedBlur maskStyle={styles.blurMask} />
       <View

@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { Text, View, type StyleProp, type TextStyle } from "react-native";
 import Animated, {
   Extrapolation,
@@ -12,7 +12,7 @@ import Animated, {
 import { colors } from "../../theme/colors";
 import { typography } from "../../theme/typography";
 import type { Candle, Timeframe } from "../../types/candle";
-import { withLivePrice } from "../../utils/chartMath";
+import { candleAt } from "../../utils/chartMath";
 import {
   formatCandleTime,
   formatPrice,
@@ -37,17 +37,13 @@ export const ScrubDetails = memo(function ScrubDetails({
   livePrice,
 }: ScrubDetailsProps) {
   const timeframeOpen = candles[0].open;
-  const timeLabels = useMemo(
-    () => candles.map((candle) => formatCandleTime(candle.time, timeframe)),
-    [candles, timeframe],
+  const timeLabels = candles.map((candle) =>
+    formatCandleTime(candle.time, timeframe),
   );
 
-  const scrubCandle = useDerivedValue(() => {
-    const candle = candles[scrubIndex.value];
-    return scrubIndex.value === candles.length - 1
-      ? withLivePrice(candle, livePrice.value)
-      : candle;
-  });
+  const scrubCandle = useDerivedValue(() =>
+    candleAt(candles, scrubIndex.value, livePrice.value),
+  );
   const isUp = useDerivedValue(() => scrubCandle.value.close >= timeframeOpen);
 
   const close = useDerivedValue(() => formatPrice(scrubCandle.value.close));

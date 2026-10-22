@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 import { useDerivedValue, type SharedValue } from "react-native-reanimated";
 
 import { colors } from "../../theme/colors";
-import { indexToX } from "../../utils/chartMath";
+import { indexToX, PLOT_HEIGHT } from "../../utils/chartMath";
 
 const DIM_OPACITY = 0.5;
 
@@ -13,7 +13,6 @@ type ScrubOverlayProps = {
   scrubProgress: SharedValue<number>;
   candleStep: SharedValue<number>;
   plotWidth: SharedValue<number>;
-  height: number;
 };
 
 export function ScrubOverlay({
@@ -22,24 +21,23 @@ export function ScrubOverlay({
   scrubProgress,
   candleStep,
   plotWidth,
-  height,
 }: ScrubOverlayProps) {
-  const selectedX = useDerivedValue(() =>
-    indexToX(scrubIndex.value, candleStep.value),
-  );
   const crosshair = useDerivedValue(() =>
     Skia.PathBuilder.Make()
       .moveTo(scrubX.value, 0)
-      .lineTo(scrubX.value, height)
+      .lineTo(scrubX.value, PLOT_HEIGHT)
       .detach(),
   );
   // Covers everything except the selected candle's slot.
   const dimmedArea = useDerivedValue(() => {
-    const slotLeft = selectedX.value - candleStep.value / 2;
-    const slotRight = selectedX.value + candleStep.value / 2;
+    const selectedX = indexToX(scrubIndex.value, candleStep.value);
+    const slotLeft = selectedX - candleStep.value / 2;
+    const slotRight = selectedX + candleStep.value / 2;
     return Skia.PathBuilder.Make()
-      .addRect(Skia.XYWHRect(0, 0, slotLeft, height))
-      .addRect(Skia.XYWHRect(slotRight, 0, plotWidth.value - slotRight, height))
+      .addRect(Skia.XYWHRect(0, 0, slotLeft, PLOT_HEIGHT))
+      .addRect(
+        Skia.XYWHRect(slotRight, 0, plotWidth.value - slotRight, PLOT_HEIGHT),
+      )
       .detach();
   });
 

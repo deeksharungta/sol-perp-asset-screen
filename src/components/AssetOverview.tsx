@@ -1,5 +1,5 @@
 import { memo, useState } from "react";
-import { View, type LayoutChangeEvent } from "react-native";
+import { View } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -10,51 +10,25 @@ import Animated, {
 
 import { candlesByTimeframe } from "../data/candles";
 import type { Timeframe } from "../types/candle";
-import type { AssetTab, Market } from "../types/market";
+import type { Market } from "../types/market";
 import { ChartSection } from "./chart/ChartSection";
 import { ScrubDetails } from "./chart/ScrubDetails";
-import { FeedFilters } from "./feed/FeedFilters";
-import { PriceSection } from "./price/PriceSection";
-import { TabBar } from "./tabs/TabBar";
+import { PriceBlock } from "./price/PriceBlock";
 
 type AssetOverviewProps = {
   market: Market;
   livePrice: SharedValue<number>;
-  tabs: readonly AssetTab[];
-  activeTabIndex: number;
-  onTabChange: (index: number) => void;
-  indicatorIndex: SharedValue<number>;
-  tabRowY: SharedValue<number>;
-  showFeedFilters: boolean;
-  isFollowingOnly: boolean;
-  onFollowingOnlyChange: (value: boolean) => void;
-  isLargestFirst: boolean;
-  onSortPress: () => void;
 };
 
 export const AssetOverview = memo(function AssetOverview({
   market,
   livePrice,
-  tabs,
-  activeTabIndex,
-  onTabChange,
-  indicatorIndex,
-  tabRowY,
-  showFeedFilters,
-  isFollowingOnly,
-  onFollowingOnlyChange,
-  isLargestFirst,
-  onSortPress,
 }: AssetOverviewProps) {
   const [timeframe, setTimeframe] = useState<Timeframe>("1D");
   const candles = candlesByTimeframe[timeframe];
   // Shared with the chart so the scrub panel can replace the price block without re-renders.
   const scrubIndex = useSharedValue(0);
   const scrubProgress = useSharedValue(0);
-
-  const handleTabRowLayout = (event: LayoutChangeEvent) => {
-    tabRowY.value = event.nativeEvent.layout.y;
-  };
 
   const priceFadeStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
@@ -66,10 +40,10 @@ export const AssetOverview = memo(function AssetOverview({
   }));
 
   return (
-    <View className="gap-6 pb-4 pt-3">
+    <View className="gap-6 pt-3">
       <View>
         <Animated.View style={priceFadeStyle}>
-          <PriceSection
+          <PriceBlock
             livePrice={livePrice}
             timeframeOpen={candles[0].open}
             timeframe={timeframe}
@@ -92,22 +66,6 @@ export const AssetOverview = memo(function AssetOverview({
         scrubProgress={scrubProgress}
         livePrice={livePrice}
       />
-      <View onLayout={handleTabRowLayout} className="gap-4">
-        <TabBar
-          tabs={tabs}
-          activeIndex={activeTabIndex}
-          indicatorIndex={indicatorIndex}
-          onChange={onTabChange}
-        />
-        {showFeedFilters && (
-          <FeedFilters
-            isFollowingOnly={isFollowingOnly}
-            onFollowingOnlyChange={onFollowingOnlyChange}
-            isLargestFirst={isLargestFirst}
-            onSortPress={onSortPress}
-          />
-        )}
-      </View>
     </View>
   );
 });
