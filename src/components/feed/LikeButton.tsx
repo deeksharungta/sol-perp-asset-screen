@@ -60,29 +60,35 @@ export function LikeButton({
 
   const handlePress = () => {
     if (isLiked) {
-      heartScale.value = withSequence(
-        withTiming(UNLIKE_DIP_SCALE, likePopTiming),
-        withTiming(1, likePopTiming),
+      heartScale.set(
+        withSequence(
+          withTiming(UNLIKE_DIP_SCALE, likePopTiming),
+          withTiming(1, likePopTiming),
+        ),
       );
     } else {
-      heartScale.value = withSequence(
-        withTiming(LIKE_POP_SCALE, likePopTiming),
-        withSpring(1, pressSpring),
+      heartScale.set(
+        withSequence(
+          withTiming(LIKE_POP_SCALE, likePopTiming),
+          withSpring(1, pressSpring),
+        ),
       );
       setBurst(createBurst());
-      burstProgress.value = 0;
-      burstProgress.value = withTiming(1, likeBurstTiming, (finished) => {
-        if (finished) {
-          scheduleOnRN(setBurst, null);
-        }
-      });
+      burstProgress.set(0);
+      burstProgress.set(
+        withTiming(1, likeBurstTiming, (finished) => {
+          if (finished) {
+            scheduleOnRN(setBurst, null);
+          }
+        }),
+      );
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     onPress();
   };
 
   const heartStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: heartScale.value }],
+    transform: [{ scale: heartScale.get() }],
   }));
 
   return (
@@ -128,13 +134,13 @@ function BurstDot({
   progress,
 }: BurstDotProps) {
   const dotStyle = useAnimatedStyle(() => {
-    const distance = BURST_START_DISTANCE + progress.value * travel;
+    const distance = BURST_START_DISTANCE + progress.get() * travel;
     return {
-      opacity: interpolate(progress.value, [0, 0.2, 1], [0, 1, 0]),
+      opacity: interpolate(progress.get(), [0, 0.2, 1], [0, 1, 0]),
       transform: [
         { translateX: Math.cos(angle) * distance },
         { translateY: Math.sin(angle) * distance },
-        { scale: interpolate(progress.value, [0, 1], [scale, scale * 0.4]) },
+        { scale: interpolate(progress.get(), [0, 1], [scale, scale * 0.4]) },
       ],
     };
   });

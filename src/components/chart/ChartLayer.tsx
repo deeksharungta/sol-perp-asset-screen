@@ -33,27 +33,27 @@ export function ChartLayer({
     ? colors.priceLineGreenTransparent
     : colors.priceLineRedTransparent;
 
-  const greenCandles = useDerivedValue(() => paths.value.greenCandles);
-  const redCandles = useDerivedValue(() => paths.value.redCandles);
-  const closeLine = useDerivedValue(() => paths.value.closeLine);
-  const closeArea = useDerivedValue(() => paths.value.closeArea);
+  const greenCandles = useDerivedValue(() => paths.get().greenCandles);
+  const redCandles = useDerivedValue(() => paths.get().redCandles);
+  const closeLine = useDerivedValue(() => paths.get().closeLine);
+  const closeArea = useDerivedValue(() => paths.get().closeArea);
 
   const greenCandleColor = useDerivedValue(() =>
     interpolateColor(
-      lineProgress.value,
+      lineProgress.get(),
       [0, 1],
       [colors.priceLineGreen, priceColor],
     ),
   );
   const redCandleColor = useDerivedValue(() =>
     interpolateColor(
-      lineProgress.value,
+      lineProgress.get(),
       [0, 1],
       [colors.priceLineRed, priceColor],
     ),
   );
   const candlesOpacity = useDerivedValue(() =>
-    interpolate(lineProgress.value, [0.7, 1], [1, 0], Extrapolation.CLAMP),
+    interpolate(lineProgress.get(), [0.7, 1], [1, 0], Extrapolation.CLAMP),
   );
 
   return (

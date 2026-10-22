@@ -37,7 +37,7 @@ export const TradeBar = memo(function TradeBar({
     transform: [
       {
         scale:
-          1 - (isReducedMotion ? 0 : pastChartProgress.value) * COMPACT_SHRINK,
+          1 - (isReducedMotion ? 0 : pastChartProgress.get()) * COMPACT_SHRINK,
       },
     ],
     transformOrigin: "bottom",

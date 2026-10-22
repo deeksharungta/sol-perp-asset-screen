@@ -42,22 +42,22 @@ export const ScrubDetails = memo(function ScrubDetails({
   );
 
   const scrubCandle = useDerivedValue(() =>
-    candleAt(candles, scrubIndex.value, livePrice.value),
+    candleAt(candles, scrubIndex.get(), livePrice.get()),
   );
-  const isUp = useDerivedValue(() => scrubCandle.value.close >= timeframeOpen);
+  const isUp = useDerivedValue(() => scrubCandle.get().close >= timeframeOpen);
 
-  const closeText = useDerivedValue(() => formatPrice(scrubCandle.value.close));
+  const closeText = useDerivedValue(() => formatPrice(scrubCandle.get().close));
   const changeText = useDerivedValue(() =>
-    formatPriceChange(scrubCandle.value.close, timeframeOpen),
+    formatPriceChange(scrubCandle.get().close, timeframeOpen),
   );
-  const timeText = useDerivedValue(() => timeLabels[scrubIndex.value]);
-  const openText = useDerivedValue(() => formatPrice(scrubCandle.value.open));
-  const highText = useDerivedValue(() => formatPrice(scrubCandle.value.high));
-  const lowText = useDerivedValue(() => formatPrice(scrubCandle.value.low));
+  const timeText = useDerivedValue(() => timeLabels[scrubIndex.get()]);
+  const openText = useDerivedValue(() => formatPrice(scrubCandle.get().open));
+  const highText = useDerivedValue(() => formatPrice(scrubCandle.get().high));
+  const lowText = useDerivedValue(() => formatPrice(scrubCandle.get().low));
 
   const fadeStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
-      scrubProgress.value,
+      scrubProgress.get(),
       [0.5, 1],
       [0, 1],
       Extrapolation.CLAMP,
@@ -65,7 +65,7 @@ export const ScrubDetails = memo(function ScrubDetails({
   }));
   const candleColorStyle = useAnimatedStyle(() => ({
     color:
-      scrubCandle.value.close >= scrubCandle.value.open
+      scrubCandle.get().close >= scrubCandle.get().open
         ? colors.textGreen
         : colors.textRed,
   }));

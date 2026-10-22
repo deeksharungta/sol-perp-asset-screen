@@ -65,20 +65,20 @@ export function AssetDetailScreen() {
   const tabRowY = useSharedValue(0);
   const isHeaderFadeVisible = useDerivedValue(
     () =>
-      scrollY.value > 0 && scrollY.value < tabRowY.value - HEADER_FADE_HEIGHT,
+      scrollY.get() > 0 && scrollY.get() < tabRowY.get() - HEADER_FADE_HEIGHT,
   );
   const pastChartProgress = useSharedValue(0);
   useAnimatedReaction(
-    () => scrollY.value > PAST_CHART_OFFSET,
+    () => scrollY.get() > PAST_CHART_OFFSET,
     (isPast, wasPast) => {
       if (isPast !== wasPast) {
-        pastChartProgress.value = withTiming(isPast ? 1 : 0, slideTiming);
+        pastChartProgress.set(withTiming(isPast ? 1 : 0, slideTiming));
       }
     },
   );
 
   const handleScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = event.contentOffset.y;
+    scrollY.set(event.contentOffset.y);
   });
 
   const renderPost: ListRenderItem<TraderPost> = useCallback(
@@ -96,7 +96,7 @@ export function AssetDetailScreen() {
 
   const handleShare = useCallback(() => {
     Share.share({
-      message: `${market.symbol} is trading at ${formatUsd(livePrice.value)}`,
+      message: `${market.symbol} is trading at ${formatUsd(livePrice.get())}`,
     });
   }, [livePrice]);
 
@@ -127,7 +127,7 @@ export function AssetDetailScreen() {
   // Scrolls up to the tab row if needed, so the new tab starts at its top.
   useLayoutEffect(() => {
     listRef.current?.scrollToOffset({
-      offset: Math.min(scrollY.value, tabRowY.value),
+      offset: Math.min(scrollY.get(), tabRowY.get()),
       animated: false,
     });
   }, [activeTabIndex, scrollY, tabRowY]);

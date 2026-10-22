@@ -26,21 +26,22 @@ export function TimeframeSelector({
 
   const handleLayout = (event: LayoutChangeEvent) => {
     const rowWidth = event.nativeEvent.layout.width;
-    optionWidth.value =
-      (rowWidth - OPTION_GAP * (timeframes.length - 1)) / timeframes.length;
+    optionWidth.set(
+      (rowWidth - OPTION_GAP * (timeframes.length - 1)) / timeframes.length,
+    );
   };
 
   const handlePress = (index: number) => {
-    pillIndex.value = withTiming(index, slideTiming);
+    pillIndex.set(withTiming(index, slideTiming));
     onChange(timeframes[index]);
   };
 
   const pillStyle = useAnimatedStyle(() => ({
-    width: optionWidth.value + PILL_OVERHANG * 2,
+    width: optionWidth.get() + PILL_OVERHANG * 2,
     transform: [
       {
         translateX:
-          pillIndex.value * (optionWidth.value + OPTION_GAP) - PILL_OVERHANG,
+          pillIndex.get() * (optionWidth.get() + OPTION_GAP) - PILL_OVERHANG,
       },
     ],
   }));

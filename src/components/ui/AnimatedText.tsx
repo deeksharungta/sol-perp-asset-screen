@@ -17,8 +17,8 @@ type AnimatedTextProps = {
 
 export function AnimatedText({ text, className, style }: AnimatedTextProps) {
   const animatedProps = useAnimatedProps(() => ({
-    text: text.value,
-    defaultValue: text.value,
+    text: text.get(),
+    defaultValue: text.get(),
   }));
 
   return (

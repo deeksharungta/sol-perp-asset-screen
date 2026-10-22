@@ -39,9 +39,9 @@ export function useChartScrub({
   const scrubPrice = useSharedValue(candles[lastIndex].close);
 
   useAnimatedReaction(
-    () => (scrubIndex.value === lastIndex ? livePrice.value : null),
+    () => (scrubIndex.get() === lastIndex ? livePrice.get() : null),
     (price) => {
-      if (price !== null && scrubProgress.value > 0) {
+      if (price !== null && scrubProgress.get() > 0) {
         scrubPrice.set(withTiming(price, scrubGlideTiming));
       }
     },
@@ -52,21 +52,21 @@ export function useChartScrub({
     activeOffsetX: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
     failOffsetY: [-SCRUB_ACTIVATION_DISTANCE, SCRUB_ACTIVATION_DISTANCE],
     onActivate: (event) => {
-      const index = xToIndex(event.x, candleStep.value, candleCount);
-      scrubX.set(clamp(event.x, 0, plotWidth.value));
+      const index = xToIndex(event.x, candleStep.get(), candleCount);
+      scrubX.set(clamp(event.x, 0, plotWidth.get()));
       scrubIndex.set(index);
-      scrubPrice.set(candleAt(candles, index, livePrice.value).close);
+      scrubPrice.set(candleAt(candles, index, livePrice.get()).close);
       scrubProgress.set(withTiming(1, scrubFadeTiming));
       scheduleOnRN(Haptics.impactAsync, Haptics.ImpactFeedbackStyle.Light);
     },
     onUpdate: (event) => {
-      scrubX.set(clamp(event.x, 0, plotWidth.value));
-      const index = xToIndex(event.x, candleStep.value, candleCount);
-      if (index !== scrubIndex.value) {
+      scrubX.set(clamp(event.x, 0, plotWidth.get()));
+      const index = xToIndex(event.x, candleStep.get(), candleCount);
+      if (index !== scrubIndex.get()) {
         scrubIndex.set(index);
         scrubPrice.set(
           withTiming(
-            candleAt(candles, index, livePrice.value).close,
+            candleAt(candles, index, livePrice.get()).close,
             scrubGlideTiming,
           ),
         );

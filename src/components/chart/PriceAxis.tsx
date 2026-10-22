@@ -40,21 +40,21 @@ export function PriceAxis({
   tagPrice,
   tagColor,
 }: PriceAxisProps) {
-  const tagText = useDerivedValue(() => formatPrice(tagPrice.value));
+  const tagText = useDerivedValue(() => formatPrice(tagPrice.get()));
   const tagTop = useDerivedValue(() =>
     clamp(
-      tagY.value - TAG_HEIGHT / 2,
+      tagY.get() - TAG_HEIGHT / 2,
       -EDGE_ROOM,
       PLOT_HEIGHT + EDGE_ROOM - TAG_HEIGHT,
     ),
   );
   const tagStyle = useAnimatedStyle(() => ({
-    backgroundColor: tagColor.value,
-    transform: [{ translateY: tagTop.value }],
+    backgroundColor: tagColor.get(),
+    transform: [{ translateY: tagTop.get() }],
   }));
   const previousLabelsStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
-      zoomProgress.value,
+      zoomProgress.get(),
       [0, 0.5],
       [1, 0],
       Extrapolation.CLAMP,
@@ -62,7 +62,7 @@ export function PriceAxis({
   }));
   const labelsStyle = useAnimatedStyle(() => ({
     opacity: interpolate(
-      zoomProgress.value,
+      zoomProgress.get(),
       [0.5, 1],
       [0, 1],
       Extrapolation.CLAMP,
@@ -128,7 +128,7 @@ type PriceLabelProps = {
 
 function PriceLabel({ text, y, tagTop }: PriceLabelProps) {
   const hideStyle = useAnimatedStyle(() => {
-    const tagCenterY = tagTop.value + TAG_HEIGHT / 2;
+    const tagCenterY = tagTop.get() + TAG_HEIGHT / 2;
     const isCovered =
       Math.abs(y - tagCenterY) < (LABEL_HEIGHT + TAG_HEIGHT) / 2;
     return { opacity: isCovered ? 0 : 1 };

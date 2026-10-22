@@ -33,23 +33,25 @@ export function Toggle({
   const handlePress = () => {
     const nextIsOn = !isOn;
     setIsOn(nextIsOn);
-    progress.value = withTiming(nextIsOn ? 1 : 0, slideTiming, (finished) => {
-      if (finished) {
-        scheduleOnRN(onValueChange, nextIsOn);
-      }
-    });
+    progress.set(
+      withTiming(nextIsOn ? 1 : 0, slideTiming, (finished) => {
+        if (finished) {
+          scheduleOnRN(onValueChange, nextIsOn);
+        }
+      }),
+    );
   };
 
   const trackStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
-      progress.value,
+      progress.get(),
       [0, 1],
       [colors.toggleOff, colors.accent],
     ),
   }));
 
   const knobStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: progress.value * KNOB_TRAVEL }],
+    transform: [{ translateX: progress.get() * KNOB_TRAVEL }],
   }));
 
   return (

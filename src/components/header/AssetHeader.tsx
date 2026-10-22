@@ -40,19 +40,19 @@ export const AssetHeader = memo(function AssetHeader({
 }: AssetHeaderProps) {
   const insets = useSafeAreaInsets();
 
-  const priceText = useDerivedValue(() => formatPrice(livePrice.value));
+  const priceText = useDerivedValue(() => formatPrice(livePrice.get()));
   const changeText = useDerivedValue(() =>
-    formatPercentChange(livePrice.value, market.openPrice),
+    formatPercentChange(livePrice.get(), market.openPrice),
   );
-  const isUp = useDerivedValue(() => livePrice.value >= market.openPrice);
+  const isUp = useDerivedValue(() => livePrice.get() >= market.openPrice);
   const assetNameStyle = useAnimatedStyle(() => ({
-    opacity: 1 - pastChartProgress.value,
-    transform: [{ translateY: -pastChartProgress.value * PRICE_PEEK_SLIDE }],
+    opacity: 1 - pastChartProgress.get(),
+    transform: [{ translateY: -pastChartProgress.get() * PRICE_PEEK_SLIDE }],
   }));
   const priceStyle = useAnimatedStyle(() => ({
-    opacity: pastChartProgress.value,
+    opacity: pastChartProgress.get(),
     transform: [
-      { translateY: (1 - pastChartProgress.value) * PRICE_PEEK_SLIDE },
+      { translateY: (1 - pastChartProgress.get()) * PRICE_PEEK_SLIDE },
     ],
   }));
 

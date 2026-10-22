@@ -22,13 +22,13 @@ export function AnimatedPriceChange({
   children,
 }: AnimatedPriceChangeProps) {
   const colorStyle = useAnimatedStyle(() => ({
-    color: isUp.value ? colors.textGreen : colors.textRed,
+    color: isUp.get() ? colors.textGreen : colors.textRed,
   }));
   const upTriangleStyle = useAnimatedStyle(() => ({
-    opacity: isUp.value ? 1 : 0,
+    opacity: isUp.get() ? 1 : 0,
   }));
   const downTriangleStyle = useAnimatedStyle(() => ({
-    opacity: isUp.value ? 0 : 1,
+    opacity: isUp.get() ? 0 : 1,
   }));
 
   return (
