@@ -7,13 +7,16 @@ import {
   type ListRenderItem,
 } from "react-native";
 import Animated, {
+  useAnimatedReaction,
   useAnimatedScrollHandler,
   useDerivedValue,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 import { AssetOverview } from "../components/AssetOverview";
 import { AboutSection } from "../components/about/AboutSection";
+import { FeedFilters } from "../components/feed/FeedFilters";
 import { TraderCard } from "../components/feed/TraderCard";
 import { AssetHeader } from "../components/header/AssetHeader";
 import {
@@ -22,6 +25,7 @@ import {
 } from "../components/header/HeaderFade";
 import { HoldersSection } from "../components/holders/HoldersSection";
 import { PinnedTabBar } from "../components/tabs/PinnedTabBar";
+import { TabBar } from "../components/tabs/TabBar";
 import { TradeBar, useTradeBarHeight } from "../components/trade/TradeBar";
 import { ScrollToTopButton } from "../components/ui/ScrollToTopButton";
 import { Toast } from "../components/ui/Toast";
@@ -29,7 +33,7 @@ import { solPerpMarket as market } from "../data/market";
 import { useFeed } from "../hooks/useFeed";
 import { useLivePrice } from "../hooks/useLivePrice";
 import { useToast } from "../hooks/useToast";
-import { feedReorderLayout } from "../theme/animations";
+import { feedReorderLayout, slideTiming } from "../theme/animations";
 import { assetTabs } from "../types/market";
 import type { TraderPost } from "../types/traderPost";
 import { formatUsd } from "../utils/format";
@@ -50,7 +54,15 @@ export function AssetDetailScreen() {
     () =>
       scrollY.value > 0 && scrollY.value < tabRowY.value - HEADER_FADE_HEIGHT,
   );
-  const isPastChart = useDerivedValue(() => scrollY.value > PAST_CHART_OFFSET);
+  const pastChartProgress = useSharedValue(0);
+  useAnimatedReaction(
+    () => scrollY.value > PAST_CHART_OFFSET,
+    (isPast, wasPast) => {
+      if (isPast !== wasPast) {
+        pastChartProgress.value = withTiming(isPast ? 1 : 0, slideTiming);
+      }
+    },
+  );
 
   const handleScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
@@ -114,13 +126,17 @@ export function AssetDetailScreen() {
     setListHeight(event.nativeEvent.layout.height);
   };
 
+  const handleTabRowLayout = (event: LayoutChangeEvent) => {
+    tabRowY.set(event.nativeEvent.layout.y);
+  };
+
   return (
     <View className="flex-1 bg-background">
       <View className="pb-3">
         <AssetHeader
           market={market}
           livePrice={livePrice}
-          isPastChart={isPastChart}
+          pastChartProgress={pastChartProgress}
           onTitlePress={handleScrollToTop}
           onBackPress={handleBack}
           onSharePress={handleShare}
@@ -156,20 +172,25 @@ export function AssetDetailScreen() {
             </View>
           }
           ListHeaderComponent={
-            <AssetOverview
-              market={market}
-              livePrice={livePrice}
-              tabs={assetTabs}
-              activeTabIndex={activeTabIndex}
-              onTabChange={setActiveTabIndex}
-              indicatorIndex={indicatorIndex}
-              tabRowY={tabRowY}
-              showFeedFilters={activeTab === "Feed"}
-              isFollowingOnly={isFollowingOnly}
-              onFollowingOnlyChange={setFollowingOnly}
-              isLargestFirst={isLargestFirst}
-              onSortPress={toggleSort}
-            />
+            <>
+              <AssetOverview market={market} livePrice={livePrice} />
+              <View onLayout={handleTabRowLayout} className="mb-4 mt-6 gap-4">
+                <TabBar
+                  tabs={assetTabs}
+                  activeIndex={activeTabIndex}
+                  indicatorIndex={indicatorIndex}
+                  onChange={setActiveTabIndex}
+                />
+                {activeTab === "Feed" && (
+                  <FeedFilters
+                    isFollowingOnly={isFollowingOnly}
+                    onFollowingOnlyChange={setFollowingOnly}
+                    isLargestFirst={isLargestFirst}
+                    onSortPress={toggleSort}
+                  />
+                )}
+              </View>
+            </>
           }
         />
         <HeaderFade isVisible={isHeaderFadeVisible} />
@@ -189,7 +210,7 @@ export function AssetDetailScreen() {
       </View>
 
       <TradeBar
-        isPastChart={isPastChart}
+        pastChartProgress={pastChartProgress}
         onGoLong={handleGoLong}
         onGoShort={handleGoShort}
       />

@@ -4,6 +4,7 @@ import type { Candle } from "../types/candle";
 
 const TARGET_LABEL_STEPS = 4;
 const PRICE_PADDING = 0.15;
+export const PLOT_HEIGHT = 176;
 const CANDLE_GAP = 1.5;
 const WICK_WIDTH = 1;
 const DRAW_IN_SPREAD = 10;
@@ -38,13 +39,17 @@ export function xToIndex(x: number, candleStep: number, candleCount: number) {
   return clamp(Math.floor(x / candleStep), 0, candleCount - 1);
 }
 
-export function withLivePrice(candle: Candle, price: number) {
+export function candleAt(candles: Candle[], index: number, livePrice: number) {
   "worklet";
+  const candle = candles[index];
+  if (index < candles.length - 1) {
+    return candle;
+  }
   return {
     ...candle,
-    close: price,
-    high: Math.max(candle.high, price),
-    low: Math.min(candle.low, price),
+    close: livePrice,
+    high: Math.max(candle.high, livePrice),
+    low: Math.min(candle.low, livePrice),
   };
 }
 
@@ -103,7 +108,6 @@ export function getPriceRange(candles: Candle[]) {
 
 type ChartSizes = {
   candleStep: number;
-  plotHeight: number;
   minPrice: number;
   maxPrice: number;
   zoom: number;
@@ -117,7 +121,7 @@ type ChartProgress = {
 export function buildChartPaths(
   candles: Candle[],
   livePrice: number,
-  { candleStep, plotHeight, minPrice, maxPrice, zoom }: ChartSizes,
+  { candleStep, minPrice, maxPrice, zoom }: ChartSizes,
   progress: ChartProgress,
 ) {
   "worklet";
@@ -131,13 +135,10 @@ export function buildChartPaths(
   const redCandles = Skia.PathBuilder.Make();
   const closePoints: Point[] = [];
 
-  candles.forEach((candle, index) => {
+  candles.forEach((_, index) => {
     const x = toX(index);
-    const isLiveCandle = index === candleCount - 1;
-    const { open, high, low, close } = isLiveCandle
-      ? withLivePrice(candle, livePrice)
-      : candle;
-    const closeY = priceToY(close, minPrice, maxPrice, plotHeight);
+    const { open, high, low, close } = candleAt(candles, index, livePrice);
+    const closeY = priceToY(close, minPrice, maxPrice, PLOT_HEIGHT);
     closePoints.push({ x, y: closeY });
 
     const reveal =
@@ -151,11 +152,11 @@ export function buildChartPaths(
     }
 
     const collapse = (y: number) => y + (closeY - y) * progress.line;
-    const highY = collapse(priceToY(high, minPrice, maxPrice, plotHeight));
-    const lowY = collapse(priceToY(low, minPrice, maxPrice, plotHeight));
+    const highY = collapse(priceToY(high, minPrice, maxPrice, PLOT_HEIGHT));
+    const lowY = collapse(priceToY(low, minPrice, maxPrice, PLOT_HEIGHT));
     const middleY = (highY + lowY) / 2;
     const grow = (y: number) => middleY + (y - middleY) * reveal;
-    const openY = collapse(priceToY(open, minPrice, maxPrice, plotHeight));
+    const openY = collapse(priceToY(open, minPrice, maxPrice, PLOT_HEIGHT));
 
     const path = close >= open ? greenCandles : redCandles;
     path.addRect({
@@ -177,7 +178,7 @@ export function buildChartPaths(
   if (progress.line > 0) {
     addSmoothLine(closeLine, closePoints);
     addSmoothLine(closeArea, closePoints);
-    closeArea.lineTo(lastX, plotHeight).lineTo(toX(0), plotHeight).close();
+    closeArea.lineTo(lastX, PLOT_HEIGHT).lineTo(toX(0), PLOT_HEIGHT).close();
   }
 
   return {

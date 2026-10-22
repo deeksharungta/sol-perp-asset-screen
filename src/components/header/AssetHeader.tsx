@@ -1,16 +1,12 @@
 import { memo } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import Animated, {
-  useAnimatedReaction,
   useAnimatedStyle,
   useDerivedValue,
-  useSharedValue,
-  withTiming,
   type SharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { slideTiming } from "../../theme/animations";
 import { typography } from "../../theme/typography";
 import type { Market } from "../../types/market";
 import { formatPercentChange, formatPrice } from "../../utils/format";
@@ -26,7 +22,7 @@ const PRICE_PEEK_SLIDE = 4;
 type AssetHeaderProps = {
   market: Market;
   livePrice: SharedValue<number>;
-  isPastChart: SharedValue<boolean>;
+  pastChartProgress: SharedValue<number>;
   onTitlePress: () => void;
   onBackPress: () => void;
   onSharePress: () => void;
@@ -36,7 +32,7 @@ type AssetHeaderProps = {
 export const AssetHeader = memo(function AssetHeader({
   market,
   livePrice,
-  isPastChart,
+  pastChartProgress,
   onTitlePress,
   onBackPress,
   onSharePress,
@@ -49,22 +45,15 @@ export const AssetHeader = memo(function AssetHeader({
     formatPercentChange(livePrice.value, market.openPrice),
   );
   const isUp = useDerivedValue(() => livePrice.value >= market.openPrice);
-  const peekProgress = useSharedValue(0);
-  useAnimatedReaction(
-    () => isPastChart.value,
-    (isPeeking, wasPeeking) => {
-      if (isPeeking !== wasPeeking) {
-        peekProgress.value = withTiming(isPeeking ? 1 : 0, slideTiming);
-      }
-    },
-  );
   const assetNameStyle = useAnimatedStyle(() => ({
-    opacity: 1 - peekProgress.value,
-    transform: [{ translateY: -peekProgress.value * PRICE_PEEK_SLIDE }],
+    opacity: 1 - pastChartProgress.value,
+    transform: [{ translateY: -pastChartProgress.value * PRICE_PEEK_SLIDE }],
   }));
   const priceStyle = useAnimatedStyle(() => ({
-    opacity: peekProgress.value,
-    transform: [{ translateY: (1 - peekProgress.value) * PRICE_PEEK_SLIDE }],
+    opacity: pastChartProgress.value,
+    transform: [
+      { translateY: (1 - pastChartProgress.value) * PRICE_PEEK_SLIDE },
+    ],
   }));
 
   return (

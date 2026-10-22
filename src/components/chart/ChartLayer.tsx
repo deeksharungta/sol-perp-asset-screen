@@ -8,7 +8,7 @@ import {
 } from "react-native-reanimated";
 
 import { colors } from "../../theme/colors";
-import type { ChartPaths } from "../../utils/chartMath";
+import { PLOT_HEIGHT, type ChartPaths } from "../../utils/chartMath";
 
 const LINE_WIDTH = 2;
 const AREA_OPACITY = 0.24;
@@ -19,7 +19,6 @@ type ChartLayerProps = {
   opacity: SharedValue<number>;
   lineProgress: SharedValue<number>;
   lineOpacity: SharedValue<number>;
-  plotHeight: number;
 };
 
 export function ChartLayer({
@@ -28,7 +27,6 @@ export function ChartLayer({
   opacity,
   lineProgress,
   lineOpacity,
-  plotHeight,
 }: ChartLayerProps) {
   const priceColor = isUp ? colors.priceLineGreen : colors.priceLineRed;
   const priceFadeColor = isUp
@@ -68,7 +66,7 @@ export function ChartLayer({
         <Path path={closeArea} opacity={AREA_OPACITY}>
           <LinearGradient
             start={vec(0, 0)}
-            end={vec(0, plotHeight)}
+            end={vec(0, PLOT_HEIGHT)}
             colors={[priceColor, priceFadeColor]}
           />
         </Path>
