@@ -45,9 +45,9 @@ Expo SDK 58, React Native 0.88 (New Architecture), Reanimated 4, Gesture Handler
 
 ```
 src/
-  screens/      AssetDetailScreen: the list, the header, the trade bar and the live price
+  screens/      AssetDetailScreen: the list, the header, the tabs and filters, the trade bar and the live price
   components/
-    AssetOverview.tsx   everything above the feed: price block, chart, tabs, filters
+    AssetOverview.tsx   everything above the tabs: price block and chart
     chart/      CandleChart and its layers, the axis, the live dot, the scrub overlay and readout
     price/      price block and the metric switcher
     header/     header and the blur/fade under it
@@ -75,7 +75,9 @@ In candle mode the line isn't built, and in line mode the candles aren't. Scrubb
 
 **Gestures stay on the UI thread.** The scrub is one pan gesture. A vertical swipe fails it, so the page still scrolls when you start on the chart.
 
-**Live values don't re-render React.** The price, the scrub position and the scrub progress are shared values. Text that changes every frame (price, change, OHLC, tag) is a read-only `TextInput` whose text is set from the UI thread (`AnimatedText`). `Intl` isn't available on the UI thread, so candle times are formatted once on the JS side, and prices use a small worklet formatter.
+**Live values don't re-render React.** The price, the scrub position and the scrub progress are shared values. Text that changes every frame (price, change, OHLC, tag) is a read-only `TextInput` whose text is set from the UI thread (`AnimatedText`). `Intl` formatters can't be passed into worklets, so candle times are formatted once on the JS side, and prices use a small worklet formatter.
+
+**Shared values use `.get()` and `.set()`.** The React Compiler lint rejects `x.value = …` on a shared value that came in as a prop or hook argument, so every shared value is read with `.get()` and written with `.set()`, as Reanimated recommends with the compiler.
 
 **Mock live price.** `useLivePrice` picks a new target price every 500ms, and a frame callback eases the shown price toward it, so it glides like a live feed instead of jumping. It stops writing once it has caught up, so nothing redraws while the price is still. The price block, the header, the tag, the dashed line and the last candle all read the same shared value, so a tick doesn't re-render the screen or the feed.
 
@@ -110,7 +112,7 @@ Nothing else buzzes, so the haptics keep meaning something.
 - **Real filtering:** "People you follow" changes the list's data rather than hiding cards.
 - **Toggle timing:** the toggle reports the change only after its knob has finished sliding, so cards mounting or unmounting don't stutter the knob. Rapid taps still end on the right value.
 - **Animations:** cards fade in and out, and the Size sort animates the reorder. The "older" expander uses the same layout transition as the list, so the cards below move with it instead of sliding over the new rows.
-- **Re-renders:** cards are memoized, and liking a post creates a new object for that post only, so only that card re-renders. The screen's top-level pieces (overview, header, trade bar, fades) are memoized too, and every handler they get is a stable `useCallback`, so a toast or a tab switch doesn't re-render the chart.
+- **Re-renders:** cards are memoized, and liking a post creates a new object for that post only, so only that card re-renders. The screen's top-level pieces (overview, header, trade bar, fades) are memoized too, and every handler they get is stable (a `useCallback` or a state setter). The overview only takes the market and the live price, so a toast, a tab switch or a filter change doesn't re-render the chart.
 - **Holders and About:** they're short, so they render as the list footer instead of their own lists.
 
 **Mock data.** Every timeframe is cut from one continuous, seeded price history, so they agree with each other and look the same on every launch:
@@ -128,7 +130,7 @@ Nothing else buzzes, so the haptics keep meaning something.
   - The candles/line morph takes 450ms, the timeframe zoom 500ms, both ease-in-out.
   - Candles grow in from left to right over 700ms on first load.
 - **Pinned tabs:** the tab row pins under the header. It's an overlay copy that shares the indicator with the real row and appears exactly when the real row reaches the top, so the swap can't be seen.
-- **Long / Short:** the buttons settle slightly smaller once the chart scrolls away, at the same moment the header switches to the price, and stay full size with Reduce Motion on.
+- **Long / Short:** the buttons settle slightly smaller once the chart scrolls away. One animation drives this and the header's switch to the price, and the buttons stay full size with Reduce Motion on.
 - **Reduce Motion:** Reanimated's default `ReduceMotion.System` turns all of this off when Reduce Motion is on.
 
 **Safe areas.** The header and the trade bar use the safe-area insets. On phones without a home indicator (iPhone SE), the bar still keeps 12pt from the bottom edge.
@@ -157,8 +159,9 @@ Nothing else buzzes, so the haptics keep meaning something.
 ## Tested on
 
 - iPhone 17 Pro simulator, iOS 26.5
+- iPhone SE (3rd generation) simulator, iOS 26.5
 - iPhone 12, release build
-- Android: _to fill in_
+- Android 17, release build
 
 ## How I worked
 
