@@ -122,7 +122,7 @@ export function buildChartPaths(
 ) {
   "worklet";
   const candleCount = candles.length;
-  const bodyWidth = candleStep * Math.min(zoom, 1) - CANDLE_GAP;
+  const bodyWidth = Math.max(0, candleStep * Math.min(zoom, 1) - CANDLE_GAP);
   const lastX = indexToX(candleCount - 1, candleStep);
   const toX = (index: number) =>
     lastX - (lastX - indexToX(index, candleStep)) * zoom;
