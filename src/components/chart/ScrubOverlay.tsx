@@ -37,10 +37,9 @@ export function ScrubOverlay({
   const dimmedArea = useDerivedValue(() => {
     const slotLeft = selectedX.value - candleStep.value / 2;
     const slotRight = selectedX.value + candleStep.value / 2;
-    const plotRight = plotWidth.value;
     return Skia.PathBuilder.Make()
       .addRect(Skia.XYWHRect(0, 0, slotLeft, height))
-      .addRect(Skia.XYWHRect(slotRight, 0, plotRight - slotRight, height))
+      .addRect(Skia.XYWHRect(slotRight, 0, plotWidth.value - slotRight, height))
       .detach();
   });
 

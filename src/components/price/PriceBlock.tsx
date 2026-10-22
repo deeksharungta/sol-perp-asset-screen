@@ -21,7 +21,7 @@ import { MetricValue } from "./MetricValue";
 
 type PriceBlockProps = {
   livePrice: SharedValue<number>;
-  openPrice: number;
+  timeframeOpen: number;
   timeframe: Timeframe;
   metric: Metric;
   onOpenMetrics: (anchorY: number) => void;
@@ -29,7 +29,7 @@ type PriceBlockProps = {
 
 export function PriceBlock({
   livePrice,
-  openPrice,
+  timeframeOpen,
   timeframe,
   metric,
   onOpenMetrics,
@@ -64,9 +64,9 @@ export function PriceBlock({
     ),
   }));
   const changeText = useDerivedValue(() =>
-    formatPriceChange(livePrice.value, openPrice),
+    formatPriceChange(livePrice.value, timeframeOpen),
   );
-  const isUp = useDerivedValue(() => livePrice.value >= openPrice);
+  const isUp = useDerivedValue(() => livePrice.value >= timeframeOpen);
 
   const handleOpenMetrics = () => {
     metricRef.current?.measureInWindow((_x, y, _width, height) => {

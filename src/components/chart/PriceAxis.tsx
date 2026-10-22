@@ -12,6 +12,7 @@ import { clamp, priceToY, type PriceRange } from "../../utils/chartMath";
 import { formatPrice } from "../../utils/format";
 import { AnimatedText } from "../ui/AnimatedText";
 
+export const AXIS_RIGHT_INSET = 12;
 const LABEL_HEIGHT = 13;
 const TAG_WIDTH = 52;
 const TAG_HEIGHT = 16;
@@ -75,8 +76,11 @@ export function PriceAxis({
       </Animated.View>
 
       <Animated.View
-        className="absolute right-3 top-0 h-4 justify-center rounded-full"
-        style={[{ width: TAG_WIDTH }, tagStyle]}
+        className="absolute top-0 justify-center rounded-full"
+        style={[
+          { right: AXIS_RIGHT_INSET, width: TAG_WIDTH, height: TAG_HEIGHT },
+          tagStyle,
+        ]}
       >
         <AnimatedText
           text={tagText}

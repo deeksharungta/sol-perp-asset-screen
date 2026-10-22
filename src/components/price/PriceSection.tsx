@@ -8,14 +8,14 @@ import { PriceBlock } from "./PriceBlock";
 
 type PriceSectionProps = {
   livePrice: SharedValue<number>;
-  openPrice: number;
+  timeframeOpen: number;
   timeframe: Timeframe;
   metrics: Metric[];
 };
 
 export function PriceSection({
   livePrice,
-  openPrice,
+  timeframeOpen,
   timeframe,
   metrics,
 }: PriceSectionProps) {
@@ -41,7 +41,7 @@ export function PriceSection({
     <>
       <PriceBlock
         livePrice={livePrice}
-        openPrice={openPrice}
+        timeframeOpen={timeframeOpen}
         timeframe={timeframe}
         metric={selectedMetric}
         onOpenMetrics={handleOpenMetrics}
